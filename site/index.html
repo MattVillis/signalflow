@@ -54,6 +54,7 @@ code { font: 500 0.92em var(--mono); background: var(--panel); border: 1px solid
 .nav { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
 .nav a { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; color: var(--ink); padding: 6px 9px; border: 1px solid transparent; white-space: nowrap; }
 .nav a:hover { border-color: var(--rule); background: var(--paper); }
+.nav a.coffee { color: var(--muted); }
 .btn { display: inline-flex; align-items: center; gap: 8px; font: 600 12px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; padding: 11px 16px; border: 1.5px solid var(--ink); color: var(--ink); background: var(--paper); white-space: nowrap; }
 .btn:hover { background: var(--panel); }
 .btn.primary { background: var(--ink); color: var(--paper); }
@@ -142,7 +143,7 @@ section { padding-block: 72px; border-top: 1px solid var(--rule); }
 
 /* footer — a title block */
 footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
-.ftb { display: grid; grid-template-columns: 1.4fr 1.2fr 1fr 1fr; border-left: 1.5px solid var(--ink); border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); background: var(--paper); }
+.ftb { display: grid; grid-template-columns: 1.4fr 1.2fr 1fr 1fr 1fr; border-left: 1.5px solid var(--ink); border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); background: var(--paper); }
 .ftb div { padding: 14px 16px; border-right: 1px solid var(--rule); display: grid; gap: 4px; min-width: 0; }
 .ftb div:last-child { border-right: 0; }
 .ftb .k { font: 500 9px var(--mono); letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; }
@@ -158,8 +159,8 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
   .flow div:nth-child(2) { border-right: 0; }
   .flow div:nth-child(1), .flow div:nth-child(2) { border-bottom: 1px solid var(--rule); }
   .ftb { grid-template-columns: 1fr 1fr; }
-  .ftb div:nth-child(2) { border-right: 0; }
-  .ftb div:nth-child(1), .ftb div:nth-child(2) { border-bottom: 1px solid var(--rule); }
+  .ftb div:nth-child(2), .ftb div:nth-child(4) { border-right: 0; }
+  .ftb div:nth-child(-n+4) { border-bottom: 1px solid var(--rule); }
   section { padding-block: 52px; }
 }
 @media (max-width: 560px) {
@@ -188,6 +189,7 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
       <a href="#start">Get started</a>
       <a href="#library">Library</a>
       <a href="#beta">Beta</a>
+      <a href="https://buymeacoffee.com/mattvillis" target="_blank" rel="noreferrer" class="coffee" title="Enjoying SignalFlow? Buy me a coffee">☕ Coffee</a>
     </nav>
     <a class="btn primary small" href="https://mattvillis.github.io/signalflow/">Open app</a>
   </div>
@@ -404,6 +406,7 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
       <div><span class="k">Drawn by</span><span class="v">Matt Villis · Frequency OÜ</span></div>
       <div><span class="k">App</span><span class="v"><a href="https://mattvillis.github.io/signalflow/">Open ↗</a></span></div>
       <div><span class="k">Source of truth</span><span class="v"><a href="https://github.com/MattVillis/signalflow">GitHub ↗</a></span></div>
+      <div><span class="k">Support</span><span class="v"><a href="https://buymeacoffee.com/mattvillis" target="_blank" rel="noreferrer">☕ Buy me a coffee ↗</a></span></div>
     </div>
     <p class="fine-print">SignalFlow runs entirely in your browser. Project files never leave your machine unless you send them. The AI builder contacts only the engine you choose. Claude and Claude Code are products of Anthropic; device names belong to their manufacturers.</p>
   </div>
