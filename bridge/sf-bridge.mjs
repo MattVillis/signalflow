@@ -123,7 +123,21 @@ const cleanupImg = p => { if (p) { try { unlinkSync(p); } catch { /* gone */ } }
 /* ---- maintainer publish: direct commit into the symbols repo checkout ---- */
 const SYMBOLS_DIR = process.env.SF_SYMBOLS_DIR || join(dirname(SCRIPT), "..", "signalflow-symbols");
 const canPublish = () => existsSync(join(SYMBOLS_DIR, "library.json")) && existsSync(join(SYMBOLS_DIR, "scripts", "symbol.js"));
-function publishSymbols(list) {
+// The shared taxonomy (category renames/moves for shipped symbols, extra
+// categories) rides in library.json next to the symbols, so one sync carries
+// both. Kept deliberately dumb: strings only, capped, no schema of its own.
+function cleanCatalog(raw) {
+  const cats = (Array.isArray(raw?.cats) ? raw.cats : []).map(c => String(c).slice(0, 18)).filter(Boolean).slice(0, 16);
+  const defs = {};
+  Object.entries(raw?.defs && typeof raw.defs === "object" ? raw.defs : {}).slice(0, 400).forEach(([id, v]) => {
+    const e = {};
+    if (typeof v?.category === "string" && v.category.trim()) e.category = v.category.slice(0, 18);
+    if (typeof v?.name === "string" && v.name.trim()) e.name = v.name.toUpperCase().slice(0, 32);
+    if (Object.keys(e).length) defs[String(id).slice(0, 64)] = e;
+  });
+  return { cats, defs };
+}
+function publishSymbols(list, catalog) {
   if (!canPublish()) return { ok: false, error: `symbols repo checkout not found at ${SYMBOLS_DIR} (set SF_SYMBOLS_DIR)` };
   const git = (...a) => spawnSync("git", a, { cwd: SYMBOLS_DIR, encoding: "utf8" });
   const lib = createRequire(import.meta.url)(join(SYMBOLS_DIR, "scripts", "symbol.js"));
@@ -141,16 +155,21 @@ function publishSymbols(list) {
     if (cur && JSON.stringify({ ...cur, rev: 0 }) === JSON.stringify({ ...sym, rev: 0 })) continue;
     lib.upsert(file.library, sym) === "added" ? added++ : updated++;
   }
-  if (!added && !updated) return { ok: true, added, updated, bad, note: "nothing to publish" };
+  let catChanged = false;
+  if (catalog) {
+    const next = cleanCatalog(catalog);
+    if (JSON.stringify(next) !== JSON.stringify(file.catalog || { cats: [], defs: {} })) { file.catalog = next; catChanged = true; }
+  }
+  if (!added && !updated && !catChanged) return { ok: true, added, updated, bad, note: "nothing to publish" };
   file.updated = new Date().toISOString();
   writeFileSync(path, JSON.stringify(file, null, 2) + "\n");
-  const msg = `Publish from SignalFlow: ${added} added, ${updated} updated`;
+  const msg = `Publish from SignalFlow: ${added} added, ${updated} updated${catChanged ? ", taxonomy updated" : ""}`;
   git("add", "library.json");
   const commit = git("-c", "user.name=SignalFlow", "-c", "user.email=signalflow@users.noreply.github.com", "commit", "-q", "-m", msg);
   if (commit.status !== 0) return { ok: false, error: "git commit failed: " + (commit.stderr || commit.stdout).trim().slice(0, 300) };
   const push = git("push", "--quiet", "origin", "main");
   if (push.status !== 0) return { ok: false, error: "git push failed: " + (push.stderr || push.stdout).trim().slice(0, 300) };
-  return { ok: true, added, updated, bad, commit: git("rev-parse", "--short", "HEAD").stdout.trim() };
+  return { ok: true, added, updated, bad, catalog: catChanged, commit: git("rev-parse", "--short", "HEAD").stdout.trim() };
 }
 function execRaw(args, stdinPayload, timeoutMs, opts = {}) {
   return new Promise(resolve => {
@@ -360,9 +379,9 @@ else {
       let body = "";
       req.on("data", c => { body += c; if (body.length > 8e6) req.destroy(); });
       req.on("end", () => {
-        let list; try { ({ library: list } = JSON.parse(body)); } catch { res.writeHead(400, { "Content-Type": "application/json" }); return res.end('{"ok":false,"error":"bad JSON body"}'); }
-        const r = publishSymbols(list);
-        console.log(`[sf-bridge] publish: ${r.ok ? `${r.added} added, ${r.updated} updated${r.commit ? " → " + r.commit : ""}` : "FAILED " + r.error}`);
+        let list, catalog; try { ({ library: list, catalog } = JSON.parse(body)); } catch { res.writeHead(400, { "Content-Type": "application/json" }); return res.end('{"ok":false,"error":"bad JSON body"}'); }
+        const r = publishSymbols(list, catalog);
+        console.log(`[sf-bridge] publish: ${r.ok ? `${r.added} added, ${r.updated} updated${r.catalog ? ", taxonomy" : ""}${r.commit ? " → " + r.commit : ""}` : "FAILED " + r.error}`);
         res.writeHead(200, { "Content-Type": "application/json" }); res.end(JSON.stringify(r));
       });
       return;
