@@ -346,13 +346,34 @@ else if (sub === "install") { install(); }
 else if (sub === "uninstall") { uninstall(); }
 else {
   const server = http.createServer((req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    // The bridge is unauthenticated on localhost, so ANY page the user has open
+    // could otherwise POST to it: spend their Claude subscription via /run, or
+    // push to the symbols repo via /publish with their git credentials. Only
+    // the app's own origins may do that; requests with no Origin (curl, the
+    // launcher, tests) still work. SF_ORIGINS adds more, comma-separated.
+    const origin = req.headers.origin || "";
+    const okOrigin = !origin || origin === "null" || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      || origin === new URL(APP_URL).origin
+      || (process.env.SF_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean).includes(origin);
+    res.setHeader("Access-Control-Allow-Origin", okOrigin && origin ? origin : "*");
+    res.setHeader("Vary", "Origin");
     res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-SF-Token");
     // the hosted app (https) talks to this http://localhost bridge — Chrome's
     // Private Network Access wants this on the preflight
     res.setHeader("Access-Control-Allow-Private-Network", "true");
     if (req.method === "OPTIONS") { res.writeHead(204); return res.end(); }
+    // writes (jobs, publishing, quit) are origin-checked; reads are harmless
+    if (req.method === "POST" && !okOrigin) {
+      console.log(`[sf-bridge] refused ${req.url} from origin ${origin}`);
+      res.writeHead(403, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ ok: false, error: `origin ${origin} is not allowed to use this bridge` }));
+    }
+    // SF_TOKEN, when set, is also required on publishes (the app sends what it was given)
+    if (req.method === "POST" && req.url.startsWith("/publish") && process.env.SF_TOKEN && req.headers["x-sf-token"] !== process.env.SF_TOKEN) {
+      res.writeHead(403, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ ok: false, error: "publish token missing or wrong" }));
+    }
     if (req.method === "GET" && req.url.startsWith("/status")) {
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ ok: true, engine: ENGINE.note, publish: canPublish() }));
