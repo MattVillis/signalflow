@@ -188,7 +188,7 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
       <a href="#ai">AI builder</a>
       <a href="#start">Get started</a>
       <a href="#library">Library</a>
-      <a href="#beta">Beta</a>
+      <a href="#status">Status</a>
       <a href="../changelog.html">What’s new</a>
       <a href="https://buymeacoffee.com/mattvillis" target="_blank" rel="noreferrer" class="coffee" title="Enjoying SignalFlow? Buy me a coffee">☕ Coffee</a>
     </nav>
@@ -200,7 +200,7 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
   <div class="hero wrap">
     <div class="grid">
       <div>
-        <div class="eyebrow">AV signal-flow schematics · beta</div>
+        <div class="eyebrow">AV signal-flow schematics · v1.0</div>
         <h1>Draw the <em>signal path</em>, not the boxes.</h1>
         <p class="lede">Drop devices from a symbol library, click port to port, and SignalFlow draws the cable — spaced, colour-coded by signal, VLAN-aware, and ready to export. Built by a disguise operator for show days, not for CAD days.</p>
         <div class="cta">
@@ -221,9 +221,9 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
       <img src="app.png" width="3000" height="1615" alt="SignalFlow with a demo sheet open: a symbol library on the left, a media server, matrix, fibre extenders, a projector and a network switch wired up on the drafting grid, a signal legend and a title block in the corners." loading="eager">
       <figcaption class="tb">
         <div><span class="k">Project</span><span class="v">Demo sheet</span></div>
-        <div><span class="k">Drawn by</span><span class="v">SignalFlow beta</span></div>
+        <div><span class="k">Drawn by</span><span class="v">SignalFlow</span></div>
         <div><span class="k">Sheet</span><span class="v">1 / 1</span></div>
-        <div><span class="k">Rev</span><span class="v">Live build</span></div>
+        <div><span class="k">Rev</span><span class="v">1.0</span></div>
       </figcaption>
     </figure>
   </div>
@@ -363,14 +363,14 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
     </div>
   </section>
 
-  <section id="beta">
+  <section id="status">
     <div class="wrap">
       <div class="head">
         <div class="note">
           <div class="eyebrow">Note 5 · Status</div>
-          <h2>Beta, honestly. <span class="stamp">Rev β</span></h2>
+          <h2>Version 1.0. <span class="stamp">Rev 1.0</span></h2>
         </div>
-        <p class="lede">It's already drawing real shows. The rough edges are known, the roadmap is short, and your bug reports shape what gets built next.</p>
+        <p class="lede">Out of beta and drawing real shows. Releases follow plain version numbers: a patch fixes bugs, a minor version adds features, a major version would only change the file format. Your bug reports still shape what gets built next.</p>
       </div>
       <div class="beta">
         <div>
@@ -378,15 +378,14 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
           <ul class="list">
             <li>Symbol library with per-instance overrides; custom symbols kept per machine, import/export as a file.</li>
             <li>Auto, routed and flag links; spacing and crossing minimisation; VLAN colouring; zones and notes.</li>
-            <li>Multi-sheet projects, 60-step undo, SVG export, plain-JSON project files (v1–v3 all open).</li>
+            <li>Multi-sheet projects with off-page references, 60-step undo, SVG and PDF export at real paper sizes, plain-JSON project files (v1–v3 all open).</li>
+            <li>Equipment, cable and switch-port call lists with cable numbers; ghost views that filter a sheet down to one signal.</li>
             <li>AI symbol builder with evidence checking, three engines, background jobs.</li>
           </ul>
         </div>
         <div>
           <div class="eyebrow" style="margin-bottom:12px">On the list</div>
           <ul class="list todo">
-            <li>Cable numbers and a patch-list export.</li>
-            <li>Cross-sheet flag references.</li>
             <li>Device-native port numbering (25–26 for the 1G pair on a 24+2 switch).</li>
             <li>Revert-instance-to-library, zone selects contents, VLAN registry import/export.</li>
             <li>An OpenAI-compatible local engine (Ollama) for the builder.</li>
