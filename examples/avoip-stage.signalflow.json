@@ -1,0 +1,487 @@
+{
+ "version": 3,
+ "meta": {
+  "project": "AVOIP STAGE (EXAMPLE)",
+  "drawnBy": "SIGNALFLOW"
+ },
+ "library": [],
+ "sheets": [
+  {
+   "id": "shx1",
+   "name": "STAGE",
+   "devices": [
+    {
+     "id": "dx1",
+     "defId": "lightact",
+     "x": 40,
+     "y": 150,
+     "label": "MEDIA 1",
+     "override": {
+      "width": 168,
+      "ports": [
+       {
+        "label": "LAN A",
+        "side": "left",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p0",
+        "ip": "192.168.10.11"
+       },
+       {
+        "label": "LAN B",
+        "side": "left",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p1"
+       },
+       {
+        "label": "MAINS",
+        "side": "left",
+        "dir": "in",
+        "signal": "power",
+        "conn": "IEC C14",
+        "gap": true,
+        "id": "p2"
+       },
+       {
+        "label": "DP OUT 1",
+        "side": "right",
+        "dir": "out",
+        "signal": "video",
+        "conn": "DP",
+        "id": "p3"
+       },
+       {
+        "label": "DP OUT 2",
+        "side": "right",
+        "dir": "out",
+        "signal": "video",
+        "conn": "DP",
+        "id": "p4"
+       },
+       {
+        "label": "DP OUT 3",
+        "side": "right",
+        "dir": "out",
+        "signal": "video",
+        "conn": "DP",
+        "id": "p5"
+       },
+       {
+        "label": "DP OUT 4",
+        "side": "right",
+        "dir": "out",
+        "signal": "video",
+        "conn": "DP",
+        "id": "p6"
+       }
+      ]
+     }
+    },
+    {
+     "id": "dx2",
+     "defId": "lw-gvn-tx",
+     "x": 330,
+     "y": 40,
+     "label": "ENC 1",
+     "ip": "10.20.0.21"
+    },
+    {
+     "id": "dx3",
+     "defId": "lw-gvn-tx",
+     "x": 330,
+     "y": 330,
+     "label": "ENC 2",
+     "ip": "10.20.0.22"
+    },
+    {
+     "id": "dx4",
+     "defId": "switch8",
+     "x": 640,
+     "y": 230,
+     "label": "AV CORE",
+     "override": {
+      "width": 152,
+      "ports": [
+       {
+        "label": "PORT 1",
+        "side": "left",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p0",
+        "vlan": "20"
+       },
+       {
+        "label": "PORT 2",
+        "side": "left",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p1",
+        "vlan": "20"
+       },
+       {
+        "label": "PORT 3",
+        "side": "left",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p2",
+        "vlan": "20"
+       },
+       {
+        "label": "PORT 4",
+        "side": "left",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p3",
+        "vlan": "20"
+       },
+       {
+        "label": "MAINS",
+        "side": "left",
+        "dir": "in",
+        "signal": "power",
+        "conn": "IEC C14",
+        "gap": true,
+        "id": "p4"
+       },
+       {
+        "label": "PORT 5",
+        "side": "right",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p5",
+        "vlan": "30"
+       },
+       {
+        "label": "PORT 6",
+        "side": "right",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p6",
+        "vlan": "10"
+       },
+       {
+        "label": "PORT 7",
+        "side": "right",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p7",
+        "vlan": "10"
+       },
+       {
+        "label": "PORT 8",
+        "side": "right",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p8",
+        "vlan": "10"
+       }
+      ]
+     }
+    },
+    {
+     "id": "dx5",
+     "defId": "lw-gvn-rx",
+     "x": 930,
+     "y": 40,
+     "label": "DEC 1",
+     "ip": "10.20.0.23"
+    },
+    {
+     "id": "dx6",
+     "defId": "lw-gvn-rx",
+     "x": 930,
+     "y": 330,
+     "label": "DEC 2",
+     "ip": "10.20.0.24"
+    },
+    {
+     "id": "dx7",
+     "defId": "epson",
+     "x": 1230,
+     "y": 60,
+     "label": "PJ LEFT",
+     "ip": "192.168.10.21"
+    },
+    {
+     "id": "dx8",
+     "defId": "epson",
+     "x": 1230,
+     "y": 350,
+     "label": "PJ RIGHT",
+     "ip": "192.168.10.22"
+    },
+    {
+     "id": "dx9",
+     "defId": "dante",
+     "x": 640,
+     "y": 560,
+     "label": "FOH AUDIO",
+     "override": {
+      "width": 152,
+      "ports": [
+       {
+        "label": "DANTE PRI",
+        "side": "left",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p0",
+        "ip": "10.30.0.10"
+       },
+       {
+        "label": "DANTE SEC",
+        "side": "left",
+        "dir": "bi",
+        "signal": "network",
+        "conn": "RJ45",
+        "id": "p1"
+       },
+       {
+        "label": "MAINS",
+        "side": "left",
+        "dir": "in",
+        "signal": "power",
+        "conn": "IEC C14",
+        "gap": true,
+        "id": "p2"
+       },
+       {
+        "label": "OUT L",
+        "side": "right",
+        "dir": "out",
+        "signal": "audio",
+        "conn": "XLR",
+        "id": "p3"
+       },
+       {
+        "label": "OUT R",
+        "side": "right",
+        "dir": "out",
+        "signal": "audio",
+        "conn": "XLR",
+        "id": "p4"
+       }
+      ]
+     }
+    }
+   ],
+   "links": [
+    {
+     "id": "lx1",
+     "a": {
+      "dev": "dx1",
+      "port": "p3"
+     },
+     "b": {
+      "dev": "dx2",
+      "port": "p0"
+     },
+     "signal": "video",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx2",
+     "a": {
+      "dev": "dx1",
+      "port": "p4"
+     },
+     "b": {
+      "dev": "dx3",
+      "port": "p0"
+     },
+     "signal": "video",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx3",
+     "a": {
+      "dev": "dx2",
+      "port": "p5"
+     },
+     "b": {
+      "dev": "dx4",
+      "port": "p0"
+     },
+     "signal": "network",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx4",
+     "a": {
+      "dev": "dx3",
+      "port": "p5"
+     },
+     "b": {
+      "dev": "dx4",
+      "port": "p1"
+     },
+     "signal": "network",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx5",
+     "a": {
+      "dev": "dx4",
+      "port": "p2"
+     },
+     "b": {
+      "dev": "dx5",
+      "port": "p0"
+     },
+     "signal": "network",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx6",
+     "a": {
+      "dev": "dx4",
+      "port": "p3"
+     },
+     "b": {
+      "dev": "dx6",
+      "port": "p0"
+     },
+     "signal": "network",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx7",
+     "a": {
+      "dev": "dx5",
+      "port": "p3"
+     },
+     "b": {
+      "dev": "dx7",
+      "port": "p0"
+     },
+     "signal": "video",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx8",
+     "a": {
+      "dev": "dx6",
+      "port": "p3"
+     },
+     "b": {
+      "dev": "dx8",
+      "port": "p0"
+     },
+     "signal": "video",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx9",
+     "a": {
+      "dev": "dx9",
+      "port": "p0"
+     },
+     "b": {
+      "dev": "dx4",
+      "port": "p5"
+     },
+     "signal": "network",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx10",
+     "a": {
+      "dev": "dx1",
+      "port": "p0"
+     },
+     "b": {
+      "dev": "dx4",
+      "port": "p6"
+     },
+     "signal": "network",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx11",
+     "a": {
+      "dev": "dx7",
+      "port": "p1"
+     },
+     "b": {
+      "dev": "dx4",
+      "port": "p7"
+     },
+     "signal": "network",
+     "mode": "auto",
+     "pts": []
+    },
+    {
+     "id": "lx12",
+     "a": {
+      "dev": "dx8",
+      "port": "p1"
+     },
+     "b": {
+      "dev": "dx4",
+      "port": "p8"
+     },
+     "signal": "network",
+     "mode": "auto",
+     "pts": []
+    }
+   ],
+   "zones": [],
+   "notes": []
+  }
+ ],
+ "active": 0,
+ "view": {
+  "x": 10,
+  "y": 10,
+  "k": 1.1
+ },
+ "vlans": [
+  {
+   "num": "10",
+   "name": "CONTROL",
+   "color": "#2563AB",
+   "subnet": "192.168.10",
+   "start": 10
+  },
+  {
+   "num": "20",
+   "name": "AV",
+   "color": "#7C3AED",
+   "subnet": "10.20.0",
+   "start": 21
+  },
+  {
+   "num": "30",
+   "name": "DANTE",
+   "color": "#0E7490",
+   "subnet": "10.30.0",
+   "start": 10
+  }
+ ],
+ "styles": {
+  "sig": {},
+  "hops": "arc"
+ },
+ "focus": []
+}
