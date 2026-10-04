@@ -51,7 +51,7 @@ code { font: 500 0.92em var(--mono); background: var(--panel); border: 1px solid
 .bar .wrap { display: flex; align-items: center; gap: 18px; height: 52px; }
 .mark { font: 600 18px var(--cond); letter-spacing: 0.16em; text-decoration: none; color: var(--ink); padding-right: 16px; border-right: 1px solid var(--rule); }
 .mark b { color: var(--accent); font-weight: 600; }
-.nav { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+.nav { display: flex; gap: 4px; flex: 1; min-width: 0; flex-wrap: wrap; }
 .nav a { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; color: var(--ink); padding: 6px 9px; border: 1px solid transparent; white-space: nowrap; }
 .nav a:hover { border-color: var(--rule); background: var(--paper); }
 .nav a.coffee { color: var(--muted); }
@@ -111,9 +111,16 @@ section { padding-block: 72px; border-top: 1px solid var(--rule); }
 .term .o { color: #7FC7A2; }
 .term .w { color: #E8B95C; }
 .term .u { color: #FAFAF7; }
-.engines { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.chip { font: 500 11px var(--mono); letter-spacing: 0.06em; border: 1px solid var(--rule); padding: 5px 9px; background: var(--paper); }
-.chip b { color: var(--accent-ink); font-weight: 600; }
+.engines { width: 100%; margin-top: 16px; border-collapse: collapse; border: 1.5px solid var(--ink); background: var(--paper); }
+.engines th, .engines td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); font: 400 12.5px var(--mono); }
+.engines thead th { font: 600 9px var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.engines tbody tr:last-child td { border-bottom: 0; }
+.engines td:first-child { font-weight: 600; color: var(--accent-ink); white-space: nowrap; }
+details.fold { margin-top: 24px; border: 1px solid var(--rule); background: var(--panel); }
+details.fold > summary { cursor: pointer; padding: 14px 22px; font: 600 12px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+details.fold > summary::marker { color: var(--accent); }
+details.fold .inner { padding: 0 22px 22px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 24px 40px; align-items: start; }
+@media (max-width: 860px) { details.fold .inner { grid-template-columns: 1fr; } }
 
 /* get started — two paths */
 .paths { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
@@ -188,10 +195,7 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
       <a href="#ai">AI builder</a>
       <a href="#start">Get started</a>
       <a href="#library">Library</a>
-      <a href="#status">Status</a>
-      <a href="../changelog.html">What’s new</a>
-      <a href="../versions.html">Versions</a>
-      <a href="https://buymeacoffee.com/mattvillis" target="_blank" rel="noreferrer" class="coffee" title="Enjoying SignalFlow? Buy me a coffee">☕ Coffee</a>
+      <a href="#status">Roadmap</a>
     </nav>
     <a class="btn primary small" href="https://mattvillis.github.io/signalflow/">Open app</a>
   </div>
@@ -201,9 +205,10 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
   <div class="hero wrap">
     <div class="grid">
       <div>
-        <div class="eyebrow">AV signal-flow schematics · v1.0</div>
+        <div class="eyebrow">AV signal-flow schematics · v1.5.0</div>
         <h1>Draw the <em>signal path</em>, not the boxes.</h1>
-        <p class="lede">Drop devices from a symbol library, click port to port, and SignalFlow draws the cable — spaced, colour-coded by signal, VLAN-aware, and ready to export. Built by a disguise operator for show days, not for CAD days.</p>
+        <p class="lede">Drop devices from a symbol library, click port to port, and SignalFlow draws the cable — spaced, colour-coded and VLAN-aware.</p>
+        <p class="lede" style="margin-top:10px">Built by a disguise (d3) operator for show days, not CAD days.</p>
         <div class="cta">
           <a class="btn primary" href="https://mattvillis.github.io/signalflow/">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h9M9 4l4 4-4 4"/></svg>
@@ -214,17 +219,17 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
             Download for local use
           </a>
         </div>
-        <p class="fine">Nothing to install for the browser version. The download is a single HTML file (<b>≈ 95 KB</b>) plus the optional AI bridge — same app, runs from your desktop, works offline.</p>
+        <p class="fine">Browser: nothing to install. Download: one file (<b>466 KB</b>), works offline.</p>
       </div>
     </div>
 
     <figure class="sheet" style="margin-bottom:0">
-      <img src="app.png" width="3000" height="1615" alt="SignalFlow with a demo sheet open: a symbol library on the left, a media server, matrix, fibre extenders, a projector and a network switch wired up on the drafting grid, a signal legend and a title block in the corners." loading="eager">
+      <img src="app.png" width="3000" height="1640" alt="SignalFlow with an AV-over-IP stage sheet open: a symbol library down the left, a media server feeding two encoders into an 8-port switch and on to two decoders and two projectors, a Dante node at the bottom, cables coloured by VLAN, and a legend and filled-in title block in the corners." loading="eager">
       <figcaption class="tb">
-        <div><span class="k">Project</span><span class="v">Demo sheet</span></div>
+        <div><span class="k">Project</span><span class="v">AVOIP stage (example)</span></div>
         <div><span class="k">Drawn by</span><span class="v">SignalFlow</span></div>
         <div><span class="k">Sheet</span><span class="v">1 / 1</span></div>
-        <div><span class="k">Rev</span><span class="v">1.0</span></div>
+        <div><span class="k">Version</span><span class="v">1.5.0</span></div>
       </figcaption>
     </figure>
   </div>
@@ -236,33 +241,37 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
           <div class="eyebrow">Note 1 · What it does</div>
           <h2>The legend is the feature list.</h2>
         </div>
-        <p class="lede">Every line style below is a real one from the drawing. SignalFlow's whole job is to make the conventions you already use on paper happen automatically on screen.</p>
+        <p class="lede">Every line below is drawn the way SignalFlow draws it on the sheet. Its whole job is to make the conventions you already use on paper happen by themselves on screen.</p>
       </div>
 
       <div class="legend">
         <div class="row">
-          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#1A1A18" stroke-width="2"/></svg><span class="k" style="color:#1A1A18">Video</span></div>
+          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#1A1A18" stroke-width="2"/></svg><span class="k" style="color:#1A1A18">Symbols</span></div>
           <div class="tx"><h3>Symbols that know their ports</h3><p>Every port carries a signal type and a connector — HDMI, 12G SDI, SFP28, XLR, powerCON, IEC C14. Numbered runs are grouped (24 × PoE+ is one entry), the link popover warns when the two ends don't match, and each placed device can override its ports without touching the library.</p></div>
         </div>
         <div class="row">
-          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#2E7D46" stroke-width="2" stroke-dasharray="6 4"/></svg><span class="k" style="color:#2E7D46">Network</span></div>
+          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#2E7D46" stroke-width="2" stroke-dasharray="6 4"/></svg><span class="k" style="color:#2E7D46">VLANs</span></div>
           <div class="tx"><h3>VLAN registry</h3><p>Define a VLAN once — number, name, colour — and pick it from any network port. Ports, links and the legend take the colour, so the control net and the media net read apart at a glance. Ports can carry an IP too.</p></div>
         </div>
         <div class="row">
-          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#C77D1E" stroke-width="2"/></svg><span class="k" style="color:#C77D1E">Fibre</span></div>
+          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#C77D1E" stroke-width="2"/></svg><span class="k" style="color:#C77D1E">Routing</span></div>
           <div class="tx"><h3>Auto-routing that stays legible</h3><p>Links are routed as elbows around the symbols. Cables that share a channel are spaced 5 px apart and ordered to cross each other as little as possible, so a 24-port fan-out reads as a bundle, not a smear. Take over with routed mode and waypoints when you want to.</p></div>
         </div>
         <div class="row">
-          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#0E7490" stroke-width="2" stroke-dasharray="9 3 2 3"/></svg><span class="k" style="color:#0E7490">Audio / Dante</span></div>
+          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#0E7490" stroke-width="2" stroke-dasharray="9 3 2 3"/></svg><span class="k" style="color:#0E7490">Sheets</span></div>
           <div class="tx"><h3>Sheets and off-page flags</h3><p>Split a big show across sheets that share one library and one VLAN registry. A flag link turns a long run into a pair of pennants naming the far end — the drawing-office convention, done for you.</p></div>
         </div>
         <div class="row">
-          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#8A8A82" stroke-width="2" stroke-dasharray="2 4"/></svg><span class="k" style="color:#8A8A82">Control</span></div>
+          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#8A8A82" stroke-width="2" stroke-dasharray="2 4"/></svg><span class="k" style="color:#8A8A82">Paper</span></div>
           <div class="tx"><h3>Zones, notes, title block</h3><p>Box up a rack or a position as a zone, drop notes on the paper, and let the title block fill itself in from the project. Sixty steps of undo across everything.</p></div>
         </div>
         <div class="row">
-          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#B3403A" stroke-width="2" stroke-dasharray="12 4"/></svg><span class="k" style="color:#B3403A">Power</span></div>
-          <div class="tx"><h3>Export that prints, files that diff</h3><p>One click exports the sheet as SVG with its legend and title block. Projects are plain <code>.signalflow.json</code> — keep them in version control, diff them between revisions, hand them to the next operator.</p></div>
+          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#0E7490" stroke-width="2"/><line x1="0" y1="7" x2="120" y2="7" stroke="#0E7490" stroke-width="2" stroke-dasharray="2 6"/></svg><span class="k" style="color:#0E7490">Lists</span></div>
+          <div class="tx"><h3>The drawing is also the paperwork</h3><p>Equipment, cable and switch-port lists come straight off the sheet — cables numbered C001 upward across the whole project, spare switch ports included, as CSV or one printable page. Ghost views fade everything but one signal, so you can hand the LX crew a power sheet and the network engineer a VLAN sheet from the same drawing.</p></div>
+        </div>
+        <div class="row">
+          <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#B3403A" stroke-width="2" stroke-dasharray="12 4"/></svg><span class="k" style="color:#B3403A">Output</span></div>
+          <div class="tx"><h3>Export that prints, files that diff</h3><p>Print or save a PDF at real paper size — A4, A3 or A2 — with the legend and title block sized to the page, or write the sheet out as SVG. Drag the page frame on the drawing to choose what lands on the paper. Projects are plain <code>.signalflow.json</code>: keep them in version control, diff them between revisions, hand them to the next operator.</p></div>
         </div>
       </div>
     </div>
@@ -287,15 +296,18 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
           <div class="term" aria-label="Example research result"><span class="c">// research · NETGEAR M4250-26G4F-PoE+</span><br>
 <span class="o">✓</span> POE+ 1G <span class="u">×24</span> · 1G <span class="u">×2</span> · SFP <span class="u">×4</span><br>
 <span class="o">✓</span> OOB MGMT · CONSOLE RJ45 · CONSOLE USB-C · USB-A · AC IN C14<br>
-<span class="c">   source  netgear.com/…/gsm4230p/</span><br>
+<span class="c">   source  netgear.com/…/gsm4230p/ (GSM4230P)</span><br>
 <span class="c">   quote   "24 x 1G PoE+, 2 x 1G, 4 x SFP"</span><br>
-<span class="w">   evidence ok · no banner</span></div>
-          <div class="engines">
-            <span class="chip"><b>Bridge</b> · your Claude Code login, local</span>
-            <span class="chip"><b>Claude API</b> · your own key</span>
-            <span class="chip"><b>Any agent</b> · copy the prompt, paste the JSON</span>
-          </div>
-          <p class="muted" style="margin-top:14px;font-size:14px">The bridge is optional and runs only on your machine. If a device's port counts can't be found on a readable page, the builder says so instead of guessing — a wrong symbol is worse than no symbol.</p>
+<span class="o">   every bank count found on the page</span></div>
+          <table class="engines">
+            <thead><tr><th>Engine</th><th>What you need</th><th>What it costs</th></tr></thead>
+            <tbody>
+              <tr><td>Any AI agent</td><td>An agent you already use</td><td>Nothing extra</td></tr>
+              <tr><td>Claude API</td><td>Your own API key</td><td>Per request, billed to you</td></tr>
+              <tr><td>Local bridge</td><td>Node + Claude Code, signed in</td><td>Your existing subscription</td></tr>
+            </tbody>
+          </table>
+          <p class="muted" style="margin-top:14px;font-size:14px">If a device's port counts can't be found on a readable page, the builder says so instead of guessing — a wrong symbol is worse than no symbol.</p>
         </div>
       </div>
     </div>
@@ -327,13 +339,15 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
             <li>Identical app, runs from a file, no network needed for drawing.</li>
             <li>The zip also holds the AI bridge and its launchers, for when you want research.</li>
           </ul>
-          <div class="pf"><a class="btn" href="https://github.com/MattVillis/signalflow/releases/latest/download/SignalFlow-local.zip">Download SignalFlow-local.zip</a><span class="muted" style="font:400 12px var(--mono)">≈ 95 KB</span></div>
+          <div class="pf"><a class="btn" href="https://github.com/MattVillis/signalflow/releases/latest/download/SignalFlow-local.zip">Download SignalFlow-local.zip</a><span class="muted" style="font:400 12px var(--mono)">signalflow.html · 466 KB</span></div>
         </div>
       </div>
-      <div class="bridge">
+      <details class="fold">
+        <summary>Want AI research? Three steps, once per machine — optional</summary>
+        <div class="inner">
         <div>
           <div class="eyebrow">Optional · AI research bridge</div>
-          <h3 style="margin-top:8px">Three steps, once per machine</h3>
+          <h3 style="margin-top:8px">Only for the local-bridge engine</h3>
           <p class="muted" style="margin-top:8px;font-size:14px">Research runs through a small local bridge on your own Claude Code login, so nothing is metered to a shared key. Online users grab <a href="https://github.com/MattVillis/signalflow/releases/latest/download/SignalFlow-bridge.zip">SignalFlow-bridge.zip</a>; the local download already includes it.</p>
         </div>
         <ol>
@@ -341,7 +355,8 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
           <li>Install Claude Code and sign in: <code>npm install -g @anthropic-ai/claude-code</code> then <code>claude login</code>.</li>
           <li>Double-click <code>SignalFlow.bat</code> (Windows) or <code>signalflow.command</code> (macOS). It starts the bridge and opens the app; the AI builder switches to the bridge engine by itself. Stuck? <code>node sf-bridge.mjs test</code> tells you why.</li>
         </ol>
-      </div>
+        </div>
+      </details>
     </div>
   </section>
 
@@ -368,21 +383,21 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
     <div class="wrap">
       <div class="head">
         <div class="note">
-          <div class="eyebrow">Note 5 · Status</div>
-          <h2>Version 1.0. <span class="stamp">Rev 1.0</span></h2>
+          <div class="eyebrow">Note 5 · Roadmap</div>
+          <h2>Where it is going.</h2>
         </div>
-        <p class="lede">Out of beta and drawing real shows. Releases follow plain version numbers: a patch fixes bugs, a minor version adds features, a major version would only change the file format. Your bug reports still shape what gets built next.</p>
+        <p class="lede">Out of beta and drawing real shows. Releases follow plain version numbers: a patch fixes bugs, a minor version adds features, a major version would only change the file format. Everything that has shipped so far is in the <a href="../changelog.html">release notes</a> — your bug reports shape what comes next.</p>
       </div>
       <div class="beta">
         <div>
-          <div class="eyebrow" style="margin-bottom:12px">Working today</div>
+          <div class="eyebrow" style="margin-bottom:12px">Recently shipped</div>
           <ul class="list">
-            <li>Symbol library with per-instance overrides; custom symbols kept per machine, import/export as a file.</li>
-            <li>Auto, routed and flag links; spacing and crossing minimisation; VLAN colouring; zones and notes.</li>
-            <li>Multi-sheet projects with off-page references, 60-step undo, SVG and PDF export at real paper sizes, plain-JSON project files (v1–v3 all open).</li>
-            <li>Equipment, cable and switch-port call lists with cable numbers; ghost views that filter a sheet down to one signal.</li>
-            <li>AI symbol builder with evidence checking, three engines, background jobs.</li>
+            <li>Switch ports that can be trunks, carry several tagged VLANs, and join a LAG — through the patch sheet and the cable list.</li>
+            <li>Breakout DACs: one 100G port fanning out to four 25G or 10G ports, ordered as one cable.</li>
+            <li>A page frame you drag on the drawing to choose what prints, at whatever scale suits.</li>
+            <li>Every release stays openable at its own address, so a bad build is never a dead end.</li>
           </ul>
+          <p class="muted" style="margin-top:14px;font-size:14px"><a href="../changelog.html">All release notes ↗</a></p>
         </div>
         <div>
           <div class="eyebrow" style="margin-bottom:12px">On the list</div>
@@ -407,11 +422,11 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
       <div><span class="k">Drawn by</span><span class="v">Matt Villis · Frequency OÜ</span></div>
       <div><span class="k">App</span><span class="v"><a href="https://mattvillis.github.io/signalflow/">Open ↗</a></span></div>
       <div><span class="k">What’s new</span><span class="v"><a href="../changelog.html">Release notes ↗</a></span></div>
-      <div><span class="k">Versions</span><span class="v"><a href="../versions.html">Earlier versions ↗</a></span></div>
+      <div><span class="k">Versions</span><span class="v"><a href="../versions.html">Earlier&nbsp;versions&nbsp;↗</a></span></div>
       <div><span class="k">Source of truth</span><span class="v"><a href="https://github.com/MattVillis/signalflow">GitHub ↗</a></span></div>
-      <div><span class="k">Support</span><span class="v"><a href="https://buymeacoffee.com/mattvillis" target="_blank" rel="noreferrer">☕ Buy me a coffee ↗</a></span></div>
+      <div><span class="k">Support</span><span class="v"><a href="https://buymeacoffee.com/mattvillis" target="_blank" rel="noreferrer">Buy me a coffee ↗</a></span></div>
     </div>
-    <p class="fine-print">SignalFlow runs entirely in your browser. Project files never leave your machine unless you send them. The AI builder contacts only the engine you choose. Claude and Claude Code are products of Anthropic; device names belong to their manufacturers.</p>
+    <p class="fine-print">Built for laptop and desktop browsers — a schematic needs the room. SignalFlow runs entirely in your browser. Project files never leave your machine unless you send them. The AI builder contacts only the engine you choose. Claude and Claude Code are products of Anthropic; device names belong to their manufacturers.</p>
   </div>
 </footer>
 
