@@ -97,6 +97,19 @@ section { padding-block: 72px; border-top: 1px solid var(--rule); }
 .row .tx { padding: 20px 22px; display: grid; gap: 6px; }
 .row .tx p { max-width: 68ch; color: #3A3A36; }
 
+/* the full feature list */
+.all { margin-top: 48px; scroll-margin-top: 80px; }
+.all > .eyebrow { margin-bottom: 14px; }
+.feat { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1.5px solid var(--ink); background: var(--paper); }
+.feat > div { padding: 18px 18px 20px; border-right: 1px solid var(--rule); display: grid; gap: 10px; align-content: start; }
+.feat > div:last-child { border-right: 0; }
+.feat .k { font: 600 10px var(--mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-ink); }
+.feat b { font: 600 18px var(--cond); text-transform: uppercase; letter-spacing: 0.04em; }
+.feat ul { margin: 0; padding: 0 0 0 16px; display: grid; gap: 7px; color: #3A3A36; font-size: 14.5px; }
+.feat ul li::marker { color: var(--muted); }
+@media (max-width: 1020px) { .feat { grid-template-columns: 1fr 1fr; } .feat > div:nth-child(2) { border-right: 0; } .feat > div:nth-child(-n+2) { border-bottom: 1px solid var(--rule); } }
+@media (max-width: 560px) { .feat { grid-template-columns: 1fr; } .feat > div { border-right: 0; border-bottom: 1px solid var(--rule); } .feat > div:last-child { border-bottom: 0; } }
+
 /* AI builder */
 .ai { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
 .steps { counter-reset: s; display: grid; gap: 0; border: 1.5px solid var(--ink); background: var(--paper); }
@@ -246,31 +259,73 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
       <div class="legend">
         <div class="row">
           <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#1A1A18" stroke-width="2"/></svg><span class="k" style="color:#1A1A18">Symbols</span></div>
-          <div class="tx"><h3>Symbols that know their ports</h3><p>Every port carries a signal type and a connector — HDMI, 12G SDI, SFP28, XLR, powerCON, IEC C14. Numbered runs are grouped (24 × PoE+ is one entry), the link popover warns when the two ends don't match, and each placed device can override its ports without touching the library.</p></div>
+          <div class="tx"><h3>Symbols that know their ports</h3><p>Nearly 190 devices built in, taken from the manufacturers' own spec sheets: media servers, switchers, LED processors, routers, extenders, openGear frames, Dante and more. Every port carries a signal and a connector, so SignalFlow refuses a cable that cannot exist and tells you which adapter the awkward ones need. Modular chassis take their real cards, and any placed device can be edited, collapsed to its patched ports, swapped for another model with its cables kept, or put back to the library version.</p></div>
         </div>
         <div class="row">
           <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#2E7D46" stroke-width="2" stroke-dasharray="6 4"/></svg><span class="k" style="color:#2E7D46">VLANs</span></div>
-          <div class="tx"><h3>VLAN registry</h3><p>Define a VLAN once — number, name, colour — and pick it from any network port. Ports, links and the legend take the colour, so the control net and the media net read apart at a glance. Ports can carry an IP too.</p></div>
+          <div class="tx"><h3>VLANs, trunks and addresses</h3><p>Define a VLAN once (number, name, colour, subnet) and the ports, cables and legend take its colour. Ports can be access or trunk, carry tagged VLANs and join a LAG. Patch a Dante box set to VLAN 20 into a switch and the switch port becomes VLAN 20; give the VLAN a subnet and the box gets the next free address. Bring the plan in or take it out as a spreadsheet.</p></div>
         </div>
         <div class="row">
           <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#C77D1E" stroke-width="2"/></svg><span class="k" style="color:#C77D1E">Routing</span></div>
-          <div class="tx"><h3>Auto-routing that stays legible</h3><p>Links are routed as elbows around the symbols. Cables that share a channel are spaced 5 px apart and ordered to cross each other as little as possible, so a 24-port fan-out reads as a bundle, not a smear. Take over with routed mode and waypoints when you want to.</p></div>
+          <div class="tx"><h3>Auto-routing that stays legible</h3><p>Click port to port and the cable is drawn. Cables that share a channel are spaced 5 px apart and ordered to cross each other as little as possible, so a 24-port fan-out reads as a bundle, not a smear. Double-click to add a bend, drag an end to re-patch, and choose arcs or gaps where lines cross.</p></div>
         </div>
         <div class="row">
           <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#0E7490" stroke-width="2" stroke-dasharray="9 3 2 3"/></svg><span class="k" style="color:#0E7490">Sheets</span></div>
-          <div class="tx"><h3>Sheets and off-page flags</h3><p>Split a big show across sheets that share one library and one VLAN registry. A flag link turns a long run into a pair of pennants naming the far end — the drawing-office convention, done for you.</p></div>
+          <div class="tx"><h3>Sheets and off-page flags</h3><p>Split a big show across sheets that share one library and one VLAN registry. A cable can run from one sheet to another: each end gets a flag naming the far sheet, device and port, and double-clicking a flag takes you there. Ghost views fade everything but one signal, so the same drawing gives a video sheet, a network sheet or a power sheet.</p></div>
         </div>
         <div class="row">
           <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#8A8A82" stroke-width="2" stroke-dasharray="2 4"/></svg><span class="k" style="color:#8A8A82">Paper</span></div>
-          <div class="tx"><h3>Zones, notes, title block</h3><p>Box up a rack or a position as a zone, drop notes on the paper, and let the title block fill itself in from the project. Sixty steps of undo across everything.</p></div>
+          <div class="tx"><h3>Zones, notes, title block</h3><p>Box up a rack or a position as a zone, drop notes on the paper, and lay out the title block with the client's logo. Sixty steps of undo across everything, auto-save in the browser, and Ctrl+F finds any device, port, IP address or cable number.</p></div>
         </div>
         <div class="row">
           <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#0E7490" stroke-width="2"/><line x1="0" y1="7" x2="120" y2="7" stroke="#0E7490" stroke-width="2" stroke-dasharray="2 6"/></svg><span class="k" style="color:#0E7490">Lists</span></div>
-          <div class="tx"><h3>The drawing is also the paperwork</h3><p>Equipment, cable and switch-port lists come straight off the sheet — cables numbered C001 upward across the whole project, spare switch ports included, as CSV or one printable page. Ghost views fade everything but one signal, so you can hand the LX crew a power sheet and the network engineer a VLAN sheet from the same drawing.</p></div>
+          <div class="tx"><h3>The drawing is also the paperwork</h3><p>Equipment, cable and switch-port lists come straight off the drawing, as CSV or one printable page. Each cable keeps its number for good, so labels you have already printed stay right when the drawing changes. The switch-port sheet lists spare ports too, and SignalFlow writes the switch configuration for NETGEAR M4250 switches, with a port map first so it can be checked before it is pasted.</p></div>
         </div>
         <div class="row">
           <div class="sw"><svg viewBox="0 0 120 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="120" y2="7" stroke="#B3403A" stroke-width="2" stroke-dasharray="12 4"/></svg><span class="k" style="color:#B3403A">Output</span></div>
-          <div class="tx"><h3>Export that prints, files that diff</h3><p>Print or save a PDF at real paper size — A4, A3 or A2 — with the legend and title block sized to the page, or write the sheet out as SVG. Drag the page frame on the drawing to choose what lands on the paper. Projects are plain <code>.signalflow.json</code>: keep them in version control, diff them between revisions, hand them to the next operator.</p></div>
+          <div class="tx"><h3>Export that prints, files that diff</h3><p>Print or save a PDF at real paper size (A4, A3 or A2) with the legend and title block sized to the page, or save the sheet as SVG, all of them filtered to one signal if you like. Drag the page frame on the drawing to choose what lands on the paper. Projects are plain <code>.signalflow.json</code> files, saved straight back to the same file in Chrome and Edge: keep them in version control, compare revisions, hand them to the next operator.</p></div>
+        </div>
+      </div>
+
+      <div class="all" id="all-features">
+        <div class="eyebrow">The full list · v1.14.0</div>
+        <div class="feat">
+          <div><span class="k">On the sheet</span><b>Drawing</b><ul>
+            <li>Click port to port; cables route themselves, evenly spaced, with as few crossings as possible</li>
+            <li>Routed mode with waypoints; double-click to add a bend; drag an end to re-patch</li>
+            <li>Arcs or gaps where lines cross</li>
+            <li>Several sheets, with off-page flags that jump to the far end</li>
+            <li>Zones, notes, page frame, title block with a client logo</li>
+            <li>Collapse a device to the ports in use</li>
+            <li>Ghost views: one signal at full strength (<code>Alt+1…6</code>), followed through fibre and AV-over-IP</li>
+            <li>Find (<code>Ctrl+F</code>) a device, port, IP or cable number</li>
+            <li>Link several devices at once with Link…</li>
+          </ul></div>
+          <div><span class="k">The kit</span><b>Symbols</b><ul>
+            <li>Nearly 190 built in, from the manufacturers' spec sheets: disguise, Barco, Lightware, Blackmagic, Brompton, Megapixel, NovaStar, PIXERA, Pixelhue, Analog Way, AJA, Ross, Audinate, Leader and more</li>
+            <li>Modular chassis with real cards, and saved card setups</li>
+            <li>Every port has a signal and a connector: impossible cables are refused, adapters flagged, breakout DACs and copper SFP modules understood</li>
+            <li>Edit one placed device, or put it back to the library version</li>
+            <li>Swap one device, or several, for another model and keep the cables</li>
+            <li>AI builder: type a model number or drop in a rear-panel drawing</li>
+            <li>Shared library that syncs to everyone, with symbol submissions</li>
+          </ul></div>
+          <div><span class="k">The network</span><b>VLANs &amp; IP</b><ul>
+            <li>VLAN registry: name, colour, subnet; save your house scheme as the default</li>
+            <li>Import and export VLAN lists as a spreadsheet (CSV) or a SignalFlow file</li>
+            <li>Access and trunk ports, tagged VLANs, LAGs</li>
+            <li>Switch ports take the VLAN of the device patched in; Fill switch ports does a whole drawing at once</li>
+            <li>Automatic IP addresses from a VLAN's subnet, never duplicated</li>
+            <li>Switch configuration written for NETGEAR M4250, with a port map</li>
+          </ul></div>
+          <div><span class="k">The output</span><b>Paperwork &amp; files</b><ul>
+            <li>Equipment, cable and switch-port lists, as CSV or a printable page</li>
+            <li>Cable numbers that stay put (C001…), with Renumber when you want a clean set</li>
+            <li>Print / PDF at A4, A3 or A2; SVG export; either filtered to one signal</li>
+            <li>Save to the same file again (Chrome, Edge), auto-save, 60 steps of undo</li>
+            <li>Plain <code>.signalflow.json</code> files</li>
+            <li>Runs in the browser or offline from one file; every version stays openable</li>
+          </ul></div>
         </div>
       </div>
     </div>
@@ -391,19 +446,19 @@ footer { border-top: 1.5px solid var(--ink); background: var(--panel); }
         <div>
           <div class="eyebrow" style="margin-bottom:12px">Recently shipped</div>
           <ul class="list">
-            <li>Switch ports that can be trunks, carry several tagged VLANs, and join a LAG — through the patch sheet and the cable list.</li>
-            <li>Breakout DACs: one 100G port fanning out to four 25G or 10G ports, ordered as one cable.</li>
-            <li>A page frame you drag on the drawing to choose what prints, at whatever scale suits.</li>
-            <li>Every release stays openable at its own address, so a bad build is never a dead end.</li>
+            <li>Switch ports take the VLAN of whatever is patched into them, and one button fills in a whole drawing.</li>
+            <li>Cable numbers that stay put, so printed labels survive the next revision.</li>
+            <li>Replace several devices at once, or put a hand-edited device back to the library version.</li>
+            <li>VLAN plans in and out as a spreadsheet, and switch configuration written for NETGEAR M4250.</li>
+            <li>Save straight back to the file you opened, in Chrome and Edge.</li>
           </ul>
           <p class="muted" style="margin-top:14px;font-size:14px"><a href="../changelog.html">All release notes ↗</a></p>
         </div>
         <div>
           <div class="eyebrow" style="margin-bottom:12px">On the list</div>
           <ul class="list todo">
-            <li>Device-native port numbering (25–26 for the 1G pair on a 24+2 switch).</li>
-            <li>Revert-instance-to-library, zone selects contents, VLAN registry import/export.</li>
-            <li>An OpenAI-compatible local engine (Ollama) for the builder.</li>
+            <li>Moving a zone takes what is inside it along.</li>
+            <li>An OpenAI-compatible local engine (Ollama) for the AI builder.</li>
           </ul>
           <div class="cta" style="margin-top:22px">
             <a class="btn" href="https://github.com/MattVillis/signalflow/issues/new">Report a bug or ask for a feature</a>
