@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Symbol Desk</title>
+<!--
+  SignalFlow symbol desk: the maintainer's queue for shared-library submissions.
+  Lives at an unlinked path on the deploy site (hidden, not secret: the GitHub token is the lock).
+  Approve = add the `approved` label, which runs the symbols repo's publish workflow (validate, upsert
+  into library.json, comment, close). Reject = close as not planned, with an optional reason.
+  The token is a fine-grained PAT on MattVillis/signalflow-symbols with Issues: read and write,
+  kept in this browser's localStorage only; it is sent to api.github.com and nowhere else.
+  Everything a submitter controls (titles, bodies, symbol and port names) is escaped before use.
+  Source: D:/signalflow/admin/symbol-desk.html; copied into the site repo by hand (build.mjs never touches it).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #FAFAF7; --ink: #1A1A18; --panel: #F1F0EB; --rule: #C9C8BF; --muted: #6B6A63;
+  --accent: #0E7490; --ok: #2E7D46; --bad: #B3403A; --warn: #B07C22; --gridm: #ECECE6; --gridM: #DDDDD4;
+  --card: #FFFFFF;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace; --cond: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #161614; --ink: #ECEBE4; --panel: #1F1F1C; --rule: #3A3A35; --muted: #9A998F;
+    --accent: #3FB3CF; --ok: #5BB377; --bad: #E0756E; --warn: #D9A54A; --gridm: #1C1C19; --gridM: #23231F; --card: #1B1B19;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #161614; --ink: #ECEBE4; --panel: #1F1F1C; --rule: #3A3A35; --muted: #9A998F;
+  --accent: #3FB3CF; --ok: #5BB377; --bad: #E0756E; --warn: #D9A54A; --gridm: #1C1C19; --gridM: #23231F; --card: #1B1B19;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper); color: var(--ink); font: 400 13px/1.5 var(--mono);
+  background-image: linear-gradient(var(--gridM) 1px, transparent 1px), linear-gradient(90deg, var(--gridM) 1px, transparent 1px),
+    linear-gradient(var(--gridm) 1px, transparent 1px), linear-gradient(90deg, var(--gridm) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 10px 10px, 10px 10px;
+  min-height: 100vh;
+}
+.wrap { max-width: 980px; margin: 0 auto; padding: 22px 16px 60px; }
+header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-bottom: 1.4px solid var(--ink); padding-bottom: 10px; }
+.logo { font: 600 22px var(--cond); letter-spacing: .14em; }
+.logo b { color: var(--accent); font-weight: 600; }
+.sub { font: 600 10px var(--mono); letter-spacing: .18em; color: var(--muted); }
+.who { margin-left: auto; font-size: 11px; color: var(--muted); display: flex; gap: 10px; align-items: center; }
+button, .btn {
+  font: 600 10.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+  border: 1.2px solid var(--ink); background: var(--card); color: var(--ink); padding: 7px 12px; border-radius: 0; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+button:hover:not(:disabled), .btn:hover { background: var(--panel); }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: var(--ink); color: var(--paper); }
+button.primary:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); }
+button.ok { border-color: var(--ok); color: var(--ok); }
+button.ok.primary { background: var(--ok); color: #fff; }
+button.bad { border-color: var(--bad); color: var(--bad); }
+button.link { border: none; background: none; padding: 2px 0; color: var(--muted); text-decoration: underline; letter-spacing: .04em; text-transform: none; font-weight: 500; }
+input, textarea {
+  font: 400 12px var(--mono); color: var(--ink); background: var(--card); border: 1.2px solid var(--rule); padding: 8px 10px; width: 100%; border-radius: 0;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+.tabs { display: flex; gap: 0; margin: 18px 0 14px; flex-wrap: wrap; }
+.tabs button { border-right-width: 0; }
+.tabs button:last-child { border-right-width: 1.2px; }
+.tabs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.count { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 2px; background: var(--accent); color: #fff; font-size: 10px; text-align: center; }
+.tabs button[aria-pressed="true"] .count { background: var(--paper); color: var(--ink); }
+.panel { background: var(--card); border: 1.2px solid var(--ink); padding: 18px; }
+.note { font-size: 11.5px; color: var(--muted); }
+.note a { color: var(--accent); }
+.empty { text-align: center; padding: 50px 16px; color: var(--muted); border: 1.2px dashed var(--rule); background: var(--card); }
+.empty .big { font: 600 22px var(--cond); letter-spacing: .1em; color: var(--ink); margin-bottom: 4px; }
+.card { background: var(--card); border: 1.2px solid var(--ink); margin-bottom: 16px; }
+.card-h { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
+.card-h .t { font: 600 18px var(--cond); letter-spacing: .06em; line-height: 1.15; }
+.card-h .meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.card-h .meta a { color: var(--muted); }
+.chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.chip { font: 600 9.5px var(--mono); letter-spacing: .12em; padding: 3px 7px; border: 1.2px solid currentColor; white-space: nowrap; }
+.chip.ok { color: var(--ok); } .chip.bad { color: var(--bad); } .chip.warn { color: var(--warn); } .chip.info { color: var(--accent); } .chip.mute { color: var(--muted); }
+.card-b { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; }
+.prev { padding: 14px; border-right: 1px solid var(--rule); background: var(--paper); display: flex; align-items: flex-start; justify-content: center; overflow: auto; max-height: 520px; }
+.prev svg { max-width: 100%; height: auto; }
+.facts { padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.facts dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 0; font-size: 11.5px; }
+.facts dt { color: var(--muted); font-size: 9.5px; letter-spacing: .14em; padding-top: 2px; }
+.facts dd { margin: 0; overflow-wrap: anywhere; }
+.msgs { display: flex; flex-direction: column; gap: 6px; }
+.msg { font-size: 11.5px; padding: 7px 9px; border-left: 3px solid var(--rule); background: var(--panel); overflow-wrap: anywhere; }
+.msg.ok { border-color: var(--ok); } .msg.bad { border-color: var(--bad); } .msg.warn { border-color: var(--warn); }
+details summary { cursor: pointer; font: 600 10px var(--mono); letter-spacing: .14em; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 11px; margin-top: 6px; }
+th { text-align: left; font: 600 9px var(--mono); letter-spacing: .12em; color: var(--muted); border-bottom: 1px solid var(--ink); padding: 3px 6px 3px 0; }
+td { border-bottom: 1px solid var(--rule); padding: 3px 6px 3px 0; }
+pre { font: 400 10.5px var(--mono); background: var(--panel); padding: 8px; overflow: auto; max-height: 220px; margin: 6px 0 0; white-space: pre-wrap; word-break: break-all; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 14px; border-top: 1px solid var(--rule); align-items: center; background: var(--panel); }
+.actions .grow { flex: 1; }
+.reject { padding: 12px 14px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 8px; background: var(--panel); }
+.status { font-size: 11.5px; font-weight: 600; }
+.status.ok { color: var(--ok); } .status.bad { color: var(--bad); } .status.busy { color: var(--accent); }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.list { background: var(--card); border: 1.2px solid var(--ink); }
+.li { display: flex; gap: 10px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--rule); flex-wrap: wrap; font-size: 12px; }
+.li:last-child { border-bottom: none; }
+.li .n { font: 600 15px var(--cond); letter-spacing: .05em; }
+.li .m { color: var(--muted); font-size: 11px; }
+.li .r { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.err { color: var(--bad); font-size: 12px; margin-top: 8px; }
+.spin { display: inline-block; width: 10px; height: 10px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: s .8s linear infinite; }
+@keyframes s { to { transform: rotate(360deg); } }
+footer { margin-top: 28px; font-size: 10.5px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+footer a { color: var(--muted); }
+@media (max-width: 720px) {
+  .card-b { grid-template-columns: 1fr; }
+  .prev { border-right: none; border-bottom: 1px solid var(--rule); max-height: 380px; }
+  .chips { margin-left: 0; justify-content: flex-start; width: 100%; }
+  .who { margin-left: 0; width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">SIGNAL<b>FLOW</b></div>
+    <div class="sub">SYMBOL DESK</div>
+    <div class="who" id="who"></div>
+  </header>
+  <main id="app"></main>
+  <footer>
+    <a href="https://github.com/MattVillis/signalflow-symbols/issues" target="_blank" rel="noopener">Symbol issues on GitHub</a>
+    <a href="https://github.com/MattVillis/signalflow-symbols/blob/main/library.json" target="_blank" rel="noopener">library.json</a>
+    <a href="https://github.com/MattVillis/signalflow-symbols/actions" target="_blank" rel="noopener">Workflow runs</a>
+    <a href="https://mattvillis.github.io/signalflow/" target="_blank" rel="noopener">SignalFlow</a>
+  </footer>
+</div>
+<script>
+(() => {
+  const OWNER = "MattVillis", REPO = "signalflow-symbols", API = "https://api.github.com";
+  const RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/`;
+  const MARK = "Symbol submission from SignalFlow";
+  const KEY = "sf_desk_token";
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const store = { get: () => { try { return localStorage.getItem(KEY) || ""; } catch { return ""; } }, set: v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} } };
+  const ago = iso => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 90) return "just now"; if (s < 5400) return Math.round(s / 60) + " min ago"; if (s < 129600) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " days ago"; };
+
+  let token = store.get(), me = null, lib = null, L = null, tab = "queue";
+  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {} };
+
+  async function gh(path, opt = {}) {
+    const r = await fetch(API + path, { ...opt, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...(opt.body ? { "Content-Type": "application/json" } : {}) } });
+    if (r.status === 204) return null;
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(j.message || `GitHub said ${r.status}`); e.status = r.status; throw e; }
+    return j;
+  }
+  // the repo's own validator (scripts/symbol.js, CommonJS) so this page judges exactly as the workflows do
+  async function loadValidator() {
+    const src = await (await fetch(RAW + "scripts/symbol.js", { cache: "no-store" })).text();
+    const module = { exports: {} };
+    new Function("module", "exports", src)(module, module.exports);
+    return module.exports;
+  }
+  async function loadLibrary() {
+    const r = await fetch(RAW + "library.json?x=" + Date.now(), { cache: "no-store" });
+    return (await r.json()).library || [];
+  }
+  const isSubmission = i => !i.pull_request && (/^\[symbol\]/i.test(i.title) || (i.body || "").includes(MARK) || i.labels.some(l => l.name === "symbol"));
+
+  function analyse(issue) {
+    const a = { issue, sym: null, errs: [], parseErr: null, labels: issue.labels.map(l => l.name) };
+    try { const raw = L.parseSubmission(issue.body); a.errs = L.validate(raw); if (!a.errs.length) a.sym = L.normalise(raw); else a.raw = raw; }
+    catch (e) { a.parseErr = e.message; }
+    const s = a.sym || a.raw;
+    if (s && lib) {
+      a.sameId = lib.find(d => d.id === s.id);
+      a.sameName = lib.find(d => d.id !== s.id && String(d.name).toUpperCase() === String(s.name || "").toUpperCase());
+    }
+    return a;
+  }
+
+  /* ---------- symbol preview: the app's own layout (HEADER 24, ROW 16, PADV 9, GAP 8, GROUP 12) ---------- */
+  const SIGC = { video: "#1A1A18", fiber: "#C77D1E", network: "#2E7D46", audio: "#0E7490", control: "#8A8A82", power: "#B3403A" };
+  function expand(sym) {
+    if (!sym.slots?.length || !sym.cards?.length) return sym.ports;
+    const out = [];
+    sym.slots.forEach(sl => {
+      const card = sym.cards.find(c => c.id === sl.card); if (!card) return;
+      card.ports.forEach(p => out.push({ ...p, group: `${sl.label} · ${card.name}` }));
+    });
+    return [...out, ...sym.ports];
+  }
+  function glyph(x, y, p) {
+    const c = SIGC[p.signal] || "#1A1A18", fill = p.dir !== "in" ? c : "#fff", a = `stroke="${c}" stroke-width="1.2" fill="${fill}"`;
+    let s;
+    if (p.signal === "network") s = `<path d="M${x},${y - 4} L${x + 4},${y} L${x},${y + 4} L${x - 4},${y} Z" ${a}/>`;
+    else if (p.signal === "fiber") s = `<path d="M${x - 4},${y + 3.5} L${x + 4},${y + 3.5} L${x},${y - 4} Z" ${a}/>`;
+    else if (p.signal === "audio" || p.signal === "control" || /SDI|BNC/.test(p.conn || "")) s = `<circle cx="${x}" cy="${y}" r="3.6" ${a}/>`;
+    else s = `<rect x="${x - 3.5}" y="${y - 3.5}" width="7" height="7" ${a}/>`;
+    return s + (p.dir === "bi" ? `<circle cx="${x}" cy="${y}" r="1.2" fill="#fff"/>` : "");
+  }
+  function preview(sym) {
+    const HEADER = 24, ROW = 16, PADV = 9, GAP = 8, GROUP = 12, W = sym.width || 170;
+    const ports = expand(sym), pos = [], heads = [], bands = [];
+    const clash = y => bands.some(b => y < b[1] && y + GROUP > b[0]);
+    const place = (side, x) => {
+      let y = HEADER + PADV, prev = null;
+      ports.forEach((p, i) => {
+        if (p.side !== side) return;
+        if (p.group && p.group !== prev) { while (clash(y)) y += GROUP; bands.push([y, y + GROUP]); heads.push({ side, y: y + GROUP / 2, text: p.group }); y += GROUP; }
+        prev = p.group || null;
+        if (p.gap) y += GAP;
+        pos[i] = { x, y: y + ROW / 2, side }; y += ROW;
+      });
+      return y;
+    };
+    const h = Math.max(place("left", 0), place("right", W), HEADER + PADV + ROW) + PADV;
+    const lab = (x, y, side, t, f) => `<text x="${side === "left" ? x + 9 : x - 9}" y="${y + 3}" text-anchor="${side === "left" ? "start" : "end"}" style="font:${f}">${esc(t)}</text>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -10 ${W + 100} ${h + 20}" width="${(W + 100) * 1.6}" role="img" aria-label="${esc(sym.name)}">
+      <rect x="0" y="0" width="${W}" height="${h}" fill="#fff" stroke="#1A1A18" stroke-width="1.2"/>
+      <line x1="0" y1="${HEADER}" x2="${W}" y2="${HEADER}" stroke="#1A1A18" stroke-width="0.8"/>
+      <text x="${W / 2}" y="${HEADER / 2 + 4}" text-anchor="middle" style="font:600 11px var(--cond);letter-spacing:.06em;fill:#1A1A18">${esc(sym.name)}</text>
+      ${heads.map(g => lab(g.side === "left" ? 0 : W, g.y - 0.8, g.side, g.text, "600 6.5px var(--mono);fill:#6B6A63;letter-spacing:.08em")).join("")}
+      ${ports.map((p, i) => pos[i] ? lab(pos[i].x, pos[i].y, pos[i].side, p.label, "500 8.5px var(--mono);fill:#1A1A18") + glyph(pos[i].x, pos[i].y, p) : "").join("")}
+    </svg>`;
+  }
+
+  /* ---------- views ---------- */
+  function renderWho() {
+    $("#who").innerHTML = me ? `<span>signed in as <b>${esc(me.login)}</b></span><button class="link" id="signout">Forget token</button>` : "";
+    const so = $("#signout"); if (so) so.onclick = () => { store.set(""); token = ""; me = null; render(); };
+  }
+  function renderLogin(err) {
+    $("#app").innerHTML = `<div class="panel" style="margin-top:20px;max-width:620px">
+      <div style="font:600 20px var(--cond);letter-spacing:.08em;margin-bottom:6px">CONNECT TO GITHUB</div>
+      <p class="note" style="margin:0 0 12px">This page approves and rejects symbol submissions on <b>${OWNER}/${REPO}</b> for you. It needs a GitHub token that can edit issues on that repo, and nothing else.</p>
+      <ol class="note" style="margin:0 0 14px;padding-left:18px">
+        <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token</a>.</li>
+        <li>Name it "Symbol desk". Set an expiry you're happy with.</li>
+        <li>Repository access: <b>Only select repositories</b> → <b>${REPO}</b>.</li>
+        <li>Permissions → Repository → <b>Issues: Read and write</b>. Leave everything else as it is.</li>
+        <li>Generate, copy it, paste it below.</li>
+      </ol>
+      <form id="login" class="row" autocomplete="off">
+        <input id="tok" type="password" placeholder="github_pat_…" style="flex:1;min-width:220px" aria-label="GitHub token">
+        <button class="primary" type="submit">Connect</button>
+      </form>
+      <p class="note" style="margin:10px 0 0">The token stays in this browser only and is sent to api.github.com, nowhere else. Use "Forget token" (top right) on a shared computer.</p>
+      ${err ? `<div class="err">${esc(err)}</div>` : ""}
+    </div>`;
+    $("#login").onsubmit = async e => { e.preventDefault(); token = $("#tok").value.trim(); if (!token) return; await boot(); };
+  }
+  function tabsHtml() {
+    const t = (k, label, n) => `<button data-tab="${k}" aria-pressed="${tab === k}">${label}${n != null ? ` <span class="count">${n}</span>` : ""}</button>`;
+    return `<div class="tabs">${t("queue", "Waiting", state.queue.length)}${t("done", "Recently decided")}${t("lib", "Shared library", lib?.length ?? 0)}<button id="refresh" style="margin-left:auto;border-right-width:1.2px" title="Check GitHub again">↻ Refresh</button></div>`;
+  }
+  function chipsFor(a) {
+    const c = [];
+    if (a.parseErr) c.push(`<span class="chip bad">CAN'T READ</span>`);
+    else if (a.errs.length) c.push(`<span class="chip bad">INVALID</span>`);
+    else c.push(`<span class="chip ok">VALID</span>`);
+    if (a.sameId) c.push(`<span class="chip info">UPDATE · REV ${esc(a.sameId.rev)} → ${esc((a.sym || a.raw)?.rev)}</span>`);
+    else if (a.sym) c.push(`<span class="chip info">NEW</span>`);
+    if (a.sameName) c.push(`<span class="chip warn">NAME TAKEN</span>`);
+    if (!a.labels.includes("symbol") && !a.labels.includes("invalid")) c.push(`<span class="chip mute">NOT CHECKED BY BOT</span>`);
+    return c.join("");
+  }
+  function cardHtml(a) {
+    const i = a.issue, s = a.sym || a.raw, n = i.number, st = state.status[n];
+    const ports = s ? expand(s) : [];
+    const msgs = [];
+    if (a.parseErr) msgs.push(`<div class="msg bad">The JSON in this issue can't be read: ${esc(a.parseErr)}. Ask the submitter to fix it, or reject.</div>`);
+    a.errs.forEach(e => msgs.push(`<div class="msg bad">${esc(e)}</div>`));
+    if (a.sameId) msgs.push(`<div class="msg">Approving <b>replaces</b> the shared <b>${esc(a.sameId.name)}</b> (rev ${esc(a.sameId.rev)}). Apps that use it get the new version unless it is placed in an open drawing.</div>`);
+    if (a.sameName) msgs.push(`<div class="msg warn">A different shared symbol is already called <b>${esc(a.sameName.name)}</b>. Approving adds a second one with the same name.</div>`);
+    if (s && !a.errs.length && !a.parseErr && !a.sameName) msgs.push(`<div class="msg ok">Passes the same checks the publish workflow runs.</div>`);
+    const counts = {}; ports.forEach(p => counts[p.signal] = (counts[p.signal] || 0) + 1);
+    const canApprove = !!a.sym && !st?.busy && !st?.done;
+    return `<article class="card" id="i${n}">
+      <div class="card-h">
+        <div style="min-width:0">
+          <div class="t">${esc(s?.name || i.title.replace(/^\[symbol\]\s*/i, ""))}</div>
+          <div class="meta">#${n} · from <a href="${esc(i.user.html_url)}" target="_blank" rel="noopener">${esc(i.user.login)}</a> · ${ago(i.created_at)} · <a href="${esc(i.html_url)}" target="_blank" rel="noopener">open on GitHub ↗</a></div>
+        </div>
+        <div class="chips">${chipsFor(a)}</div>
+      </div>
+      <div class="card-b">
+        <div class="prev">${s && ports.length ? preview(s) : `<div class="note" style="padding:30px 0">No preview</div>`}</div>
+        <div class="facts">
+          ${s ? `<dl>
+            <dt>CATEGORY</dt><dd>${esc(s.category)}</dd>
+            <dt>PORTS</dt><dd>${ports.length} · ${Object.entries(counts).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>
+            ${s.slots?.length ? `<dt>MODULAR</dt><dd>${s.slots.length} slots · ${s.cards.length} cards</dd>` : ""}
+            <dt>WIDTH</dt><dd>${esc(s.width)}</dd>
+            <dt>ID</dt><dd>${esc(s.id)} · rev ${esc(s.rev)}</dd>
+          </dl>` : ""}
+          <div class="msgs">${msgs.join("")}</div>
+          ${s ? `<details><summary>PORT LIST</summary><table><thead><tr><th>PORT</th><th>SIDE</th><th>DIR</th><th>SIGNAL</th><th>CONN</th></tr></thead><tbody>
+            ${ports.map(p => `<tr><td>${esc(p.group ? p.group + " · " : "")}${esc(p.label)}</td><td>${esc(p.side)}</td><td>${esc(p.dir)}</td><td>${esc(p.signal)}</td><td>${esc(p.conn || "—")}</td></tr>`).join("")}
+          </tbody></table></details>` : ""}
+          <details><summary>ISSUE TEXT</summary><pre>${esc(i.body || "")}</pre></details>
+        </div>
+      </div>
+      ${state.rejecting[n] ? `<div class="reject">
+          <label class="note" for="why${n}">Reason (optional, posted on the issue so the submitter knows what to fix)</label>
+          <textarea id="why${n}" rows="3" placeholder="e.g. Port 25-28 are SFP, not RJ45. Fix and resubmit and I'll approve it."></textarea>
+          <div class="row"><button class="bad primary" data-act="reject-go" data-n="${n}" style="background:var(--bad);color:#fff;border-color:var(--bad)">Close as rejected</button><button data-act="reject-cancel" data-n="${n}">Cancel</button></div>
+        </div>` : `<div class="actions">
+          <button class="ok primary" data-act="approve" data-n="${n}" ${canApprove ? "" : "disabled"} title="${a.sym ? "Adds the approved label: the publish workflow puts it in library.json and closes the issue" : "Only a valid submission can be approved"}">✓ Approve + publish</button>
+          <button class="bad" data-act="reject" data-n="${n}" ${st?.busy || st?.done ? "disabled" : ""}>✕ Reject…</button>
+          <span class="grow"></span>
+          ${st ? `<span class="status ${st.kind}">${st.kind === "busy" ? '<span class="spin"></span> ' : ""}${esc(st.text)}</span>` : ""}
+        </div>`}
+    </article>`;
+  }
+  function render() {
+    renderWho();
+    if (!token) return renderLogin();
+    if (!L) { $("#app").innerHTML = `<div class="empty"><span class="spin"></span> Loading…</div>`; return; }
+    let body = "";
+    if (tab === "queue") {
+      body = state.queue.length ? state.queue.map(cardHtml).join("")
+        : `<div class="empty"><div class="big">NOTHING WAITING</div>No open symbol submissions. New ones also email you, since you're watching the repo.</div>`;
+    } else if (tab === "done") {
+      body = state.done.length ? `<div class="list">${state.done.map(i => {
+        const approved = i.labels.some(l => l.name === "approved");
+        return `<div class="li"><span class="chip ${approved ? "ok" : "mute"}">${approved ? "PUBLISHED" : "REJECTED"}</span>
+          <span class="n">${esc(i.title.replace(/^\[symbol\]\s*/i, ""))}</span><span class="m">#${i.number} · ${esc(i.user.login)} · ${ago(i.closed_at)}</span>
+          <span class="r"><a class="btn" href="${esc(i.html_url)}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
+      }).join("")}</div>` : `<div class="empty">Nothing decided yet.</div>`;
+    } else {
+      body = lib?.length ? `<div class="list">${lib.map(d => `<div class="li"><span class="n">${esc(d.name)}</span>
+        <span class="m">${esc(d.category)} · ${expand(d).length} ports · rev ${esc(d.rev)}</span></div>`).join("")}</div>
+        <p class="note">To change or remove one of these, edit library.json in the repo. Every app picks up changes on its next sync (within 30 minutes).</p>`
+        : `<div class="empty">The shared library is empty.</div>`;
+    }
+    $("#app").innerHTML = tabsHtml() + body;
+  }
+
+  /* ---------- actions ---------- */
+  async function refresh() {
+    [lib, L] = await Promise.all([loadLibrary(), L || loadValidator()]);
+    const open = await gh(`/repos/${OWNER}/${REPO}/issues?state=open&per_page=100&sort=created&direction=asc`);
+    state.queue = open.filter(isSubmission).map(analyse);
+    const closed = await gh(`/repos/${OWNER}/${REPO}/issues?state=closed&per_page=30&sort=updated&direction=desc`);
+    state.done = closed.filter(isSubmission);
+  }
+  async function boot() {
+    $("#app").innerHTML = `<div class="empty"><span class="spin"></span> Connecting…</div>`;
+    try {
+      me = await gh("/user");
+      const perm = await gh(`/repos/${OWNER}/${REPO}`).catch(() => null);
+      if (!perm) throw new Error(`This token can't see ${OWNER}/${REPO}. Give it access to that repository.`);
+      store.set(token);
+      await refresh();
+      render();
+    } catch (e) {
+      me = null; L = null;
+      if (e.status === 401) { store.set(""); token = ""; renderWho(); return renderLogin("GitHub didn't accept that token. Check it was copied in full and hasn't expired."); }
+      store.set(""); token = ""; renderWho(); renderLogin(e.message);
+    }
+  }
+  const setStatus = (n, kind, text, extra = {}) => { state.status[n] = { kind, text, busy: kind === "busy", ...extra }; render(); };
+
+  async function approve(n) {
+    setStatus(n, "busy", "Adding the approved label…");
+    try {
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/labels`, { method: "POST", body: JSON.stringify({ labels: ["approved"] }) });
+      setStatus(n, "busy", "Publishing… (the workflow takes about 30 s)");
+      const t0 = Date.now();
+      while (Date.now() - t0 < 180000) {
+        await new Promise(r => setTimeout(r, 5000));
+        const [iss, comments] = await Promise.all([gh(`/repos/${OWNER}/${REPO}/issues/${n}`), gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments?per_page=100`)]);
+        const fail = comments.find(c => /Not published/.test(c.body) && new Date(c.created_at) >= new Date(t0 - 5000));
+        if (fail) { setStatus(n, "bad", "The workflow refused it: " + fail.body.replace(/^.*?:\s*/, "").slice(0, 200)); return; }
+        if (iss.state === "closed") {
+          setStatus(n, "ok", "✓ Published to library.json · apps get it within 30 min", { done: true });
+          setTimeout(async () => { delete state.status[n]; await refresh(); render(); }, 4000);
+          return;
+        }
+      }
+      setStatus(n, "bad", "Still not published after 3 minutes. Check the workflow runs (link at the bottom).");
+    } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
+  }
+  async function reject(n) {
+    const why = ($(`#why${n}`)?.value || "").trim();
+    state.rejecting[n] = false;
+    setStatus(n, "busy", "Closing…");
+    try {
+      if (why) await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments`, { method: "POST", body: JSON.stringify({ body: `Not added to the shared library this time.\n\n${why}` }) });
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ state: "closed", state_reason: "not_planned" }) });
+      setStatus(n, "ok", "Rejected and closed", { done: true });
+      setTimeout(async () => { delete state.status[n]; await refresh(); render(); }, 2500);
+    } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
+  }
+  document.addEventListener("click", async e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.tab) { tab = b.dataset.tab; render(); return; }
+    if (b.id === "refresh") { b.disabled = true; b.innerHTML = '<span class="spin"></span> Refresh'; try { await refresh(); } catch (err) { alert(err.message); } render(); return; }
+    const n = +b.dataset.n;
+    if (b.dataset.act === "approve") approve(n);
+    if (b.dataset.act === "reject") { state.rejecting[n] = true; render(); $(`#why${n}`)?.focus(); }
+    if (b.dataset.act === "reject-cancel") { state.rejecting[n] = false; render(); }
+    if (b.dataset.act === "reject-go") reject(n);
+  });
+  // a quiet re-check while the tab is open, so a new submission shows up on its own
+  setInterval(async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean)) { try { await refresh(); render(); } catch {} } }, 120000);
+
+  if (token) boot(); else render();
+})();
+</script>
+</body>
+</html>
