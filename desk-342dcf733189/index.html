@@ -210,11 +210,11 @@ footer a { color: var(--muted); }
   const store = { get: () => { try { return localStorage.getItem(KEY) || ""; } catch { return ""; } }, set: v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} } };
   const ago = iso => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 90) return "just now"; if (s < 5400) return Math.round(s / 60) + " min ago"; if (s < 129600) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " days ago"; };
 
-  let token = store.get(), me = null, lib = null, L = null, tab = "queue";
-  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {} };
+  let token = store.get(), me = null, lib = null, L = null, tab = "queue", builtins = null;
+  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {} };
 
   async function gh(path, opt = {}) {
-    const r = await fetch(API + path, { ...opt, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...(opt.body ? { "Content-Type": "application/json" } : {}) } });
+    const r = await fetch(API + path, { cache: "no-store", ...opt, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...(opt.body ? { "Content-Type": "application/json" } : {}) } });
     if (r.status === 204) return null;
     const j = await r.json().catch(() => ({}));
     if (!r.ok) { const e = new Error(j.message || `GitHub said ${r.status}`); e.status = r.status; throw e; }
@@ -226,6 +226,11 @@ footer a { color: var(--muted); }
     const module = { exports: {} };
     new Function("module", "exports", src)(module, module.exports);
     return module.exports;
+  }
+  // the app's built-in symbols: build.mjs --deploy writes /signalflow/builtins.json, one level up from the desk
+  async function loadBuiltins() {
+    try { const r = await fetch(new URL("../builtins.json", location.href) + "?x=" + Date.now(), { cache: "no-store" }); if (!r.ok) return null; return (await r.json()).symbols || null; }
+    catch { return null; }
   }
   async function loadLibrary() {
     const r = await fetch(RAW + "library.json?x=" + Date.now(), { cache: "no-store" });
@@ -241,9 +246,66 @@ footer a { color: var(--muted); }
     a.warns = s ? catalogueWarnings(s) : [];
     if (s && lib) {
       a.sameId = lib.find(d => d.id === s.id);
-      a.sameName = lib.find(d => d.id !== s.id && String(d.name).toUpperCase() === String(s.name || "").toUpperCase());
     }
     return a;
+  }
+
+  /* ---------- duplicate check ----------
+     Names compared with case and punctuation stripped. EXACT = the same name once stripped. CLOSE = one name
+     contains the other (6+ characters), they share a model number (a token with a digit, 5+ characters once
+     stripped, so "8X8" or "12G" alone never match), most of the shorter name's words appear in the other (a word
+     cut short by the 36-character name limit still counts: BIDIRECTI ~ BIDIRECTIONAL), or they are a typo apart
+     (1-2 characters; wider than that flagged M4350-24X4V against M4250-26G4F, which are different boxes). Compared with
+     the built-ins, the shared library (a symbol with the SAME id is an update, not a duplicate) and the other
+     waiting submissions, since two people may send the same box. */
+  const norm = v => String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const words = v => String(v || "").toUpperCase().split(/[^A-Z0-9]+/).filter(w => w.length >= 3);
+  const wordHit = (w, list) => list.some(x => x === w || (Math.min(w.length, x.length) >= 5 && (x.startsWith(w) || w.startsWith(x))));
+  const models = v => String(v || "").toUpperCase().split(/[\s/]+/).map(norm).filter(t => t.length >= 5 && /\d/.test(t));
+  function lev(a, b) {
+    if (a === b) return 0; if (!a.length) return b.length; if (!b.length) return a.length;
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i];
+      for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+  function findDupes(sym, selfNumber) {
+    if (!sym?.name) return { exact: [], close: [] };
+    const me = norm(sym.name), myModels = new Set(models(sym.name));
+    const pool = [
+      ...(builtins || []).map(b => ({ where: "built-in", name: b.name, ports: b.ports })),
+      ...(lib || []).filter(d => d.id !== sym.id).map(d => ({ where: "shared library", name: d.name, ports: expand(d).length })),
+      ...state.queue.filter(a => a.issue.number !== selfNumber && (a.sym || a.raw)?.name).map(a => ({ where: `waiting #${a.issue.number}`, name: (a.sym || a.raw).name, ports: expand(a.sym || a.raw).length || 0 })),
+    ];
+    const exact = [], close = [];
+    pool.forEach(c => {
+      const them = norm(c.name); if (!them || !me) return;
+      if (them === me) { exact.push(c); return; }
+      const short = Math.min(me.length, them.length);
+      let score = 0, why = "";
+      if (short >= 6 && (me.includes(them) || them.includes(me))) { score = 3; why = "one name contains the other"; }
+      else if (models(c.name).some(t => myModels.has(t))) { score = 2; why = "same model number"; }
+      else {
+        const wa = words(sym.name), wb = words(c.name), [sm, lg] = wa.length <= wb.length ? [wa, wb] : [wb, wa];
+        const hits = sm.filter(w => wordHit(w, lg)).length;
+        const d = lev(me, them);
+        if (sm.length >= 3 && hits >= 3 && hits / sm.length >= 0.75) { score = 2; why = `${hits} of ${sm.length} words match`; }
+        else if (short >= 8 && d <= 2) { score = 1; why = `${d} character${d > 1 ? "s" : ""} apart`; }
+      }
+      if (score) close.push({ ...c, score, why });
+    });
+    close.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+    return { exact, close: close.slice(0, 4) };
+  }
+  const dupeLine = c => `${c.where}: <b>${esc(c.name)}</b> (${c.ports} port${c.ports === 1 ? "" : "s"}${c.why ? `, ${esc(c.why)}` : ""})`;
+  function dupeMsgs(d, portsHere) {
+    const m = [];
+    if (d.exact.length) m.push(`<div class="msg bad"><b>Already exists.</b> ${d.exact.map(dupeLine).join("; ")}. This one has ${portsHere} ports. Approving adds a second symbol with the same name.</div>`);
+    if (d.close.length) m.push(`<div class="msg warn"><b>Possible duplicate.</b> ${d.close.map(dupeLine).join("; ")}.</div>`);
+    return m;
   }
 
   /* ---------- symbol preview: the app's own layout (HEADER 24, ROW 16, PADV 9, GAP 8, GROUP 12) ---------- */
@@ -321,14 +383,15 @@ footer a { color: var(--muted); }
     const t = (k, label, n) => `<button data-tab="${k}" aria-pressed="${tab === k}">${label}${n != null ? ` <span class="count">${n}</span>` : ""}</button>`;
     return `<div class="tabs">${t("queue", "Waiting", state.queue.length)}${t("done", "Recently decided")}${t("lib", "Shared library", lib?.length ?? 0)}<button id="refresh" style="margin-left:auto;border-right-width:1.2px" title="Check GitHub again">↻ Refresh</button></div>`;
   }
-  function chipsFor(a) {
+  function chipsFor(a, d) {
     const c = [];
     if (a.parseErr) c.push(`<span class="chip bad">CAN'T READ</span>`);
     else if (a.errs.length) c.push(`<span class="chip bad">INVALID</span>`);
     else c.push(`<span class="chip ok">VALID</span>`);
     if (a.sameId) c.push(`<span class="chip info">UPDATE · REV ${esc(a.sameId.rev)} → ${esc((a.sym || a.raw)?.rev)}</span>`);
     else if (a.sym) c.push(`<span class="chip info">NEW</span>`);
-    if (a.sameName) c.push(`<span class="chip warn">NAME TAKEN</span>`);
+    if (d?.exact.length) c.push(`<span class="chip bad">DUPLICATE</span>`);
+    else if (d?.close.length) c.push(`<span class="chip warn">SIMILAR</span>`);
     if (!a.labels.includes("symbol") && !a.labels.includes("invalid")) c.push(`<span class="chip mute">NOT CHECKED BY BOT</span>`);
     return c.join("");
   }
@@ -336,13 +399,13 @@ footer a { color: var(--muted); }
     if (state.edit[a.issue.number]) return editCardHtml(a);
     const i = a.issue, s = a.sym || a.raw, n = i.number, st = state.status[n];
     const ports = s ? expand(s) : [];
-    const msgs = [];
+    const dupes = s ? findDupes(s, n) : { exact: [], close: [] };
+    const msgs = [...dupeMsgs(dupes, ports.length)];
     if (a.parseErr) msgs.push(`<div class="msg bad">The JSON in this issue can't be read: ${esc(a.parseErr)}. Ask the submitter to fix it, or reject.</div>`);
     a.errs.forEach(e => msgs.push(`<div class="msg bad">${esc(e)}</div>`));
     if (a.sameId) msgs.push(`<div class="msg">Approving <b>replaces</b> the shared <b>${esc(a.sameId.name)}</b> (rev ${esc(a.sameId.rev)}). Apps that use it get the new version unless it is placed in an open drawing.</div>`);
     a.warns.forEach(w => msgs.push(`<div class="msg warn">${esc(w)}</div>`));
-    if (a.sameName) msgs.push(`<div class="msg warn">A different shared symbol is already called <b>${esc(a.sameName.name)}</b>. Approving adds a second one with the same name.</div>`);
-    if (s && !a.errs.length && !a.parseErr && !a.sameName && !a.warns.length) msgs.push(`<div class="msg ok">Passes the same checks the publish workflow runs.</div>`);
+    if (s && !a.errs.length && !a.parseErr && !dupes.exact.length && !dupes.close.length && !a.warns.length) msgs.push(`<div class="msg ok">Passes the same checks the publish workflow runs.</div>`);
     const counts = {}; ports.forEach(p => counts[p.signal] = (counts[p.signal] || 0) + 1);
     const canApprove = !!a.sym && !st?.busy && !st?.done;
     return `<article class="card" id="i${n}">
@@ -351,7 +414,7 @@ footer a { color: var(--muted); }
           <div class="t">${esc(s?.name || i.title.replace(/^\[symbol\]\s*/i, ""))}</div>
           <div class="meta">#${n} · from <a href="${esc(i.user.html_url)}" target="_blank" rel="noopener">${esc(i.user.login)}</a> · ${ago(i.created_at)} · <a href="${esc(i.html_url)}" target="_blank" rel="noopener">open on GitHub ↗</a></div>
         </div>
-        <div class="chips">${chipsFor(a)}</div>
+        <div class="chips">${chipsFor(a, dupes)}</div>
       </div>
       <div class="card-b">
         <div class="prev">${s && ports.length ? preview(s) : `<div class="note" style="padding:30px 0">No preview</div>`}</div>
@@ -422,7 +485,7 @@ footer a { color: var(--muted); }
   }
   function editIssues(sym) { const e = L.validate(sym); return { errs: e, warns: catalogueWarnings(sym) }; }
   function editMsgs(n) {
-    const ed = state.edit[n], v = editIssues(ed.sym), m = [];
+    const ed = state.edit[n], v = editIssues(ed.sym), m = [...dupeMsgs(findDupes(ed.sym, n), expand(ed.sym).length)];
     v.errs.forEach(e => m.push(`<div class="msg bad">${esc(e)}</div>`));
     v.warns.forEach(w => m.push(`<div class="msg warn">${esc(w)}</div>`));
     const d = diffSym(ed.orig, ed.sym);
@@ -546,7 +609,9 @@ footer a { color: var(--muted); }
       const T3 = "\x60\x60\x60";
       const body = `${MARK}.\n\n${T3}json\n${JSON.stringify(ed.sym)}\n${T3}\n\n_Edited by @${me.login} before approval._\n\n` +
         (prior ? prior[0] : `<details><summary>Original submission</summary>\n\n${T3}text\n${origJson}\n${T3}\n</details>`) + "\n";
-      await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ body }) });
+      // GitHub's issue LIST can serve the old body for a minute after an edit, so the issue the PATCH returns
+      // is kept and used until the list's updated_at catches up (a saved edit used to vanish on refresh)
+      state.saved[n] = await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ body }) });
       await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments`, { method: "POST", body: JSON.stringify({ body: `✎ Edited before approval:\n\n${changes.map(c => "- " + c).join("\n")}\n\nThe original is kept at the bottom of the issue.` }) });
       delete state.edit[n];
       setStatus(n, "ok", "Saved. The checker re-runs on GitHub; approve when you're happy.");
@@ -562,8 +627,9 @@ footer a { color: var(--muted); }
     if (!L) { $("#app").innerHTML = `<div class="empty"><span class="spin"></span> Loading…</div>`; return; }
     let body = "";
     if (tab === "queue") {
-      body = state.queue.length ? state.queue.map(cardHtml).join("")
-        : `<div class="empty"><div class="big">NOTHING WAITING</div>No open symbol submissions. New ones also email you, since you're watching the repo.</div>`;
+      const bnote = builtins ? "" : `<div class="msg warn" style="margin-bottom:12px">The built-in symbol list (builtins.json) couldn't be loaded, so duplicates of built-ins aren't checked. It's published with every app deploy.</div>`;
+      body = bnote + (state.queue.length ? state.queue.map(cardHtml).join("")
+        : `<div class="empty"><div class="big">NOTHING WAITING</div>No open symbol submissions. New ones also email you, since you're watching the repo.</div>`);
     } else if (tab === "done") {
       body = state.done.length ? `<div class="list">${state.done.map(i => {
         const approved = i.labels.some(l => l.name === "approved");
@@ -582,9 +648,12 @@ footer a { color: var(--muted); }
 
   /* ---------- actions ---------- */
   async function refresh() {
-    [lib, L] = await Promise.all([loadLibrary(), L || loadValidator()]);
+    [lib, L, builtins] = await Promise.all([loadLibrary(), L || loadValidator(), builtins ? Promise.resolve(builtins) : loadBuiltins()]);
     const open = await gh(`/repos/${OWNER}/${REPO}/issues?state=open&per_page=100&sort=created&direction=asc`);
-    state.queue = open.filter(isSubmission).map(analyse);
+    const issues = open.map(i => { const sv = state.saved[i.number]; if (!sv) return i;
+      if (new Date(i.updated_at) >= new Date(sv.updated_at) && i.body === sv.body) { delete state.saved[i.number]; return i; }
+      return { ...i, body: sv.body, title: sv.title, updated_at: sv.updated_at }; });
+    state.queue = issues.filter(isSubmission).map(analyse);
     const closed = await gh(`/repos/${OWNER}/${REPO}/issues?state=closed&per_page=30&sort=updated&direction=desc`);
     state.done = closed.filter(isSubmission);
   }
