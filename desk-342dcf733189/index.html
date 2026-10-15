@@ -43,7 +43,8 @@ body {
   background-size: 100px 100px, 100px 100px, 10px 10px, 10px 10px;
   min-height: 100vh;
 }
-.wrap { max-width: 980px; margin: 0 auto; padding: 22px 16px 60px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 22px 16px 60px; }
+body.editing .wrap { max-width: 1760px; }
 header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-bottom: 1.4px solid var(--ink); padding-bottom: 10px; }
 .logo { font: 600 22px var(--cond); letter-spacing: .14em; }
 .logo b { color: var(--accent); font-weight: 600; }
@@ -85,7 +86,7 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); }
 .chip { font: 600 9.5px var(--mono); letter-spacing: .12em; padding: 3px 7px; border: 1.2px solid currentColor; white-space: nowrap; }
 .chip.ok { color: var(--ok); } .chip.bad { color: var(--bad); } .chip.warn { color: var(--warn); } .chip.info { color: var(--accent); } .chip.mute { color: var(--muted); }
 .card-b { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; }
-.prev { padding: 14px; border-right: 1px solid var(--rule); background: var(--paper); display: flex; align-items: flex-start; justify-content: center; overflow: auto; max-height: 520px; }
+.prev { padding: 14px; border-right: 1px solid var(--rule); background: var(--paper); display: flex; align-items: flex-start; justify-content: center; overflow: auto; max-height: 80vh; }
 .prev svg { max-width: 100%; height: auto; }
 .facts { padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .facts dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 0; font-size: 11.5px; }
@@ -120,24 +121,38 @@ pre { font: 400 10.5px var(--mono); background: var(--panel); padding: 8px; over
 .ed input, .ed select { padding: 5px 6px; font-size: 11px; }
 select { font: 400 11px var(--mono); color: var(--ink); background: var(--card); border: 1.2px solid var(--rule); padding: 5px 4px; border-radius: 0; min-width: 0; }
 select:focus { outline: none; border-color: var(--accent); }
-.ports { display: flex; flex-direction: column; gap: 3px; max-height: 420px; overflow: auto; padding-right: 2px; }
-.prow { display: grid; grid-template-columns: 16px 22px minmax(64px, 1fr) 66px 54px 88px 100px 22px; grid-template-areas: "mv gap lab side dir sig conn x"; gap: 3px; align-items: center; }
-.prow > :nth-child(1) { grid-area: mv; } .prow > :nth-child(2) { grid-area: gap; } .prow > :nth-child(3) { grid-area: lab; } .prow > :nth-child(4) { grid-area: side; }
-.prow > :nth-child(5) { grid-area: dir; } .prow > :nth-child(6) { grid-area: sig; } .prow > :nth-child(7) { grid-area: conn; } .prow > :nth-child(8) { grid-area: x; }
+.card-b.edit { grid-template-columns: minmax(240px, 28%) minmax(0, 1fr); align-items: start; }
+.card-b.edit .prev { position: sticky; top: 0; max-height: 100vh; align-self: start; }
+.sides { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.side h4 { margin: 0 0 4px; font: 600 10px var(--mono); letter-spacing: .16em; display: flex; align-items: center; gap: 8px; border-bottom: 1.2px solid var(--ink); padding-bottom: 4px; }
+.side h4 span { color: var(--muted); font-weight: 500; letter-spacing: .06em; }
+.side h4 button { margin-left: auto; padding: 3px 8px; font-size: 9.5px; }
+.ports { display: flex; flex-direction: column; gap: 3px; }
+.actions.sticky { position: sticky; bottom: 0; z-index: 3; box-shadow: 0 -6px 14px -10px rgba(0,0,0,.35); }
+@media (max-width: 1400px) { .sides { grid-template-columns: 1fr; } }
+.prow { display: grid; grid-template-columns: 16px 24px minmax(110px, 1fr) 58px 96px 112px 24px 24px; grid-template-areas: "mv gap lab dir sig conn flip x"; gap: 4px; align-items: center; }
+.prow > :nth-child(1) { grid-area: mv; } .prow > :nth-child(2) { grid-area: gap; } .prow > :nth-child(3) { grid-area: lab; } .prow > :nth-child(4) { grid-area: dir; }
+.prow > :nth-child(5) { grid-area: sig; } .prow > :nth-child(6) { grid-area: conn; } .prow > :nth-child(7) { grid-area: flip; } .prow > :nth-child(8) { grid-area: x; }
+.prow .flip { padding: 0; height: 26px; border: 1.2px solid var(--rule); background: var(--card); font-size: 12px; letter-spacing: 0; color: var(--muted); }
+.prow .flip:hover { color: var(--ink); border-color: var(--ink); }
+.ed input, .ed select { font-size: 12px; padding: 6px 6px; }
+.prow .mv button { font-size: 10px; line-height: 12px; }
 .prow.head { font: 600 8px var(--mono); letter-spacing: .12em; color: var(--muted); position: sticky; top: 0; background: var(--card); z-index: 1; padding-bottom: 2px; }
 .prow .mv { display: flex; flex-direction: column; }
 .prow .mv button, .prow .x, .prow .gap { padding: 0; border: none; background: none; font-size: 9px; line-height: 10px; color: var(--ink); letter-spacing: 0; }
 .prow .mv button:disabled { color: var(--rule); }
-.prow .gap { border: 1.2px solid var(--rule); height: 22px; font-size: 10px; color: var(--muted); }
+.prow .gap { border: 1.2px solid var(--rule); height: 26px; font-size: 10px; color: var(--muted); }
 .prow .gap.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.prow .x { font-size: 14px; color: var(--muted); height: 22px; }
+.prow .x { font-size: 16px; color: var(--muted); height: 26px; }
 .prow .x:hover { color: var(--bad); }
 .prow select.unk, .ed select.unk { border-color: var(--warn); color: var(--warn); }
 .prow input.chg, .prow select.chg { background: color-mix(in srgb, var(--accent) 10%, var(--card)); }
 footer { margin-top: 28px; font-size: 10.5px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
 footer a { color: var(--muted); }
 @media (max-width: 720px) {
-  .prow { grid-template-columns: 16px 26px repeat(4, minmax(0, 1fr)) 24px; grid-template-areas: "mv gap lab lab lab lab x" "mv side side dir sig conn conn"; padding-bottom: 5px; border-bottom: 1px solid var(--rule); }
+  .card-b.edit { grid-template-columns: 1fr; }
+  .card-b.edit .prev { position: static; max-height: 340px; }
+  .prow { grid-template-columns: 16px 26px repeat(3, minmax(0, 1fr)) 26px 26px; grid-template-areas: "mv gap lab lab lab flip x" "mv dir dir sig conn conn conn"; padding-bottom: 5px; border-bottom: 1px solid var(--rule); }
   .prow select { font-size: 10px; padding: 5px 0 5px 2px; }
   .prow.head { display: none; }
   .ed .top { grid-template-columns: 1fr 1fr; } .ed .top label:first-child { grid-column: 1 / -1; }
@@ -180,7 +195,7 @@ footer a { color: var(--muted); }
     power: ["POWERCON", "TRUE1", "IEC C13", "IEC C14", "IEC C19", "IEC C20", "DC", "XLR 4-PIN", "USB-C"],
   };
   const CATEGORIES = ["Servers", "Computers", "Processing", "LED", "Extenders", "KVM", "Display", "Cameras", "Network", "Audio", "Control", "Lighting", "Power", "Custom"];
-  const SIGNALS = Object.keys(CONN), NAME_MAX = 36, LABEL_MAX = 15;
+  const SIGNALS = Object.keys(CONN), NAME_MAX = 36, LABEL_MAX = 24;   // = the app's NAME_MAX / PORT_LABEL_MAX
   const clone = o => JSON.parse(JSON.stringify(o));
   // catalogue warnings: things the validator allows but the app would not draw as intended
   function catalogueWarnings(sym) {
@@ -373,23 +388,38 @@ footer a { color: var(--muted); }
      (parseSubmission takes the first json block), then the submitter's original folded away as a text block,
      plus a comment listing what changed. The validate workflow re-runs on the edit by itself. Port ids are
      kept, so an update to a shared symbol keeps the cables already drawn on it. */
-  const editRow = (p, i, n, len, orig) => {
+  // one port row; i = index in the full port array, up/down = the neighbouring port ON THE SAME SIDE (or -1)
+  const editRow = (p, i, n, up, down, orig) => {
     const o = orig && orig.ports.find(q => q.id === p.id);
     const ch = k => !o ? " chg" : (o[k] || "") !== (p[k] || "") ? " chg" : "";
     const sigOk = SIGNALS.includes(p.signal), conns = sigOk ? CONN[p.signal] : [];
     const connUnk = p.conn && !conns.includes(p.conn);
     const opt = (v, cur, lab) => `<option value="${esc(v)}" ${v === cur ? "selected" : ""}>${esc(lab ?? v)}</option>`;
+    const other = p.side === "right" ? "left" : "right";
     return `<div class="prow">
-      <span class="mv"><button data-e="up" data-n="${n}" data-i="${i}" ${i ? "" : "disabled"} title="Move up">▲</button><button data-e="down" data-n="${n}" data-i="${i}" ${i < len - 1 ? "" : "disabled"} title="Move down">▼</button></span>
+      <span class="mv"><button data-e="swap" data-n="${n}" data-i="${i}" data-j="${up}" ${up < 0 ? "disabled" : ""} title="Move up">▲</button><button data-e="swap" data-n="${n}" data-i="${i}" data-j="${down}" ${down < 0 ? "disabled" : ""} title="Move down">▼</button></span>
       <button class="gap${p.gap ? " on" : ""}" data-e="gap" data-n="${n}" data-i="${i}" title="${p.gap ? "Remove the gap above this port" : "Add a gap above this port"}">▔</button>
-      <input class="${ch("label").trim()}" data-e="label" data-n="${n}" data-i="${i}" value="${esc(p.label)}" maxlength="${LABEL_MAX}" aria-label="Port label">
-      <select class="${ch("side").trim()}" data-e="side" data-n="${n}" data-i="${i}">${["left", "right"].map(v => opt(v, p.side)).join("")}${["left", "right"].includes(p.side) ? "" : opt(p.side, p.side, p.side + " ?")}</select>
+      <input class="${ch("label").trim()}" data-e="label" data-n="${n}" data-i="${i}" value="${esc(p.label)}" maxlength="${LABEL_MAX}" aria-label="Port label" title="Up to ${LABEL_MAX} characters">
       <select class="${ch("dir").trim()}" data-e="dir" data-n="${n}" data-i="${i}">${["in", "out", "bi"].map(v => opt(v, p.dir)).join("")}${["in", "out", "bi"].includes(p.dir) ? "" : opt(p.dir, p.dir, p.dir + " ?")}</select>
       <select class="${(ch("signal") + (sigOk ? "" : " unk")).trim()}" data-e="signal" data-n="${n}" data-i="${i}">${SIGNALS.map(v => opt(v, p.signal)).join("")}${sigOk ? "" : opt(p.signal, p.signal, p.signal + " ?")}</select>
       <select class="${(ch("conn") + (connUnk ? " unk" : "")).trim()}" data-e="conn" data-n="${n}" data-i="${i}" ${connUnk ? 'title="Not in the app\'s catalogue for this signal"' : ""}>${opt("", p.conn || "", "— none —")}${conns.map(v => opt(v, p.conn)).join("")}${connUnk ? opt(p.conn, p.conn, p.conn + " ?") : ""}</select>
+      <button class="flip${ch("side")}" data-e="flip" data-n="${n}" data-i="${i}" title="Move to the ${other} side">⇄</button>
       <button class="x" data-e="del" data-n="${n}" data-i="${i}" title="Remove this port">×</button>
     </div>`;
   };
+  // the ports of one side in panel order, each with its same-side neighbours
+  function sideHtml(s, n, side, orig) {
+    const idx = s.ports.map((p, i) => p.side === side ? i : -1).filter(i => i >= 0);
+    // a port with a broken side (an invalid submission) is listed under LEFT so it can be fixed
+    if (side === "left") s.ports.forEach((p, i) => { if (p.side !== "left" && p.side !== "right") idx.push(i); });
+    return `<section class="side">
+      <h4>${side.toUpperCase()} <span>${idx.length} port${idx.length === 1 ? "" : "s"}</span><button data-e="add" data-n="${n}" data-side="${side}">+ Add port</button></h4>
+      <div class="ports">
+        <div class="prow head"><span></span><span>GAP</span><span>LABEL</span><span>DIR</span><span>SIGNAL</span><span>CONNECTOR</span><span></span><span></span></div>
+        ${idx.map((i, k) => editRow(s.ports[i], i, n, k ? idx[k - 1] : -1, k < idx.length - 1 ? idx[k + 1] : -1, orig)).join("") || `<div class="note">No ports on this side.</div>`}
+      </div>
+    </section>`;
+  }
   function editIssues(sym) { const e = L.validate(sym); return { errs: e, warns: catalogueWarnings(sym) }; }
   function editMsgs(n) {
     const ed = state.edit[n], v = editIssues(ed.sym), m = [];
@@ -410,7 +440,7 @@ footer a { color: var(--muted); }
           <div class="meta">#${n} · from ${esc(i.user.login)} · your changes replace the symbol in the issue; the original is kept there</div>
         </div>
       </div>
-      <div class="card-b">
+      <div class="card-b edit">
         <div class="prev" data-prev="${n}">${preview(s)}</div>
         <div class="facts ed">
           <div class="top">
@@ -419,15 +449,12 @@ footer a { color: var(--muted); }
             <label>WIDTH<input data-e="width" data-n="${n}" type="number" min="130" max="280" step="10" value="${esc(s.width)}"></label>
           </div>
           ${s.slots?.length ? `<div class="msg">This is a modular symbol. Its slots and cards aren't editable here; edit them in the issue on GitHub.</div>` : ""}
-          <div class="ports">
-            <div class="prow head"><span></span><span>GAP</span><span>LABEL</span><span>SIDE</span><span>DIR</span><span>SIGNAL</span><span>CONNECTOR</span><span></span></div>
-            ${s.ports.map((p, k) => editRow(p, k, n, s.ports.length, ed.orig)).join("")}
-          </div>
-          <div class="row"><button data-e="add" data-n="${n}">+ Add port</button><button class="link" data-e="revert" data-n="${n}">Undo all changes</button></div>
           <div class="msgs" data-msgs="${n}">${mm.html}</div>
+          <div class="sides">${sideHtml(s, n, "left", ed.orig)}${sideHtml(s, n, "right", ed.orig)}</div>
+          <div class="row"><button class="link" data-e="revert" data-n="${n}">Undo all changes</button></div>
         </div>
       </div>
-      <div class="actions">
+      <div class="actions sticky">
         <button class="primary" data-act="edit-save" data-n="${n}" ${mm.ok && !st?.busy ? "" : "disabled"}>Save changes to the submission</button>
         <button data-act="edit-cancel" data-n="${n}" ${st?.busy ? "disabled" : ""}>Cancel</button>
         <span class="grow"></span>
@@ -461,7 +488,9 @@ footer a { color: var(--muted); }
     card.querySelector('[data-act="edit-save"]').disabled = !mm.ok;
     card.querySelector(".t").textContent = "EDITING · " + ed.sym.name;
   }
+  const markEditing = () => document.body.classList.toggle("editing", Object.keys(state.edit).length > 0);
   function renderCard(n) {
+    markEditing();
     const a = state.queue.find(x => x.issue.number === n), el = document.getElementById("i" + n);
     if (a && el) el.outerHTML = cardHtml(a); else render();
   }
@@ -489,18 +518,20 @@ footer a { color: var(--muted); }
   function onEditClick(b) {
     const n = +b.dataset.n, i = +b.dataset.i, ed = state.edit[n]; if (!ed) return;
     const ps = ed.sym.ports, k = b.dataset.e;
-    if (k === "up" && i > 0) [ps[i - 1], ps[i]] = [ps[i], ps[i - 1]];
-    else if (k === "down" && i < ps.length - 1) [ps[i + 1], ps[i]] = [ps[i], ps[i + 1]];
+    const j = +b.dataset.j;
+    if (k === "swap" && j >= 0) [ps[i], ps[j]] = [ps[j], ps[i]];
+    else if (k === "flip") ps[i].side = ps[i].side === "right" ? "left" : "right";
     else if (k === "gap") { if (ps[i].gap) delete ps[i].gap; else ps[i].gap = true; }
     else if (k === "del") ps.splice(i, 1);
     else if (k === "add") {
       const used = new Set(ps.map(p => p.id)); let j = ps.length; while (used.has("p" + j)) j++;
-      const last = ps[ps.length - 1] || { side: "right", dir: "out", signal: "video" };
-      ps.push({ id: "p" + j, label: `PORT ${ps.length + 1}`, side: last.side, dir: last.dir, signal: last.signal, conn: last.conn || "" });
+      const side = b.dataset.side || "right", mine = ps.filter(p => p.side === side);
+      const last = mine[mine.length - 1] || (side === "left" ? { dir: "in", signal: "video" } : { dir: "out", signal: "video" });
+      ps.push({ id: "p" + j, label: `PORT ${ps.length + 1}`, side, dir: last.dir, signal: last.signal, conn: last.conn || "" });
     }
     else if (k === "revert") ed.sym = clone(ed.orig);
     renderCard(n);
-    if (k === "add") document.querySelector(`#i${n} .ports`)?.scrollTo(0, 1e6);
+    if (k === "add") { const rows = document.querySelectorAll(`#i${n} .side:${b.dataset.side === "left" ? "first" : "last"}-child .prow:not(.head)`); const r = rows[rows.length - 1]; r?.scrollIntoView({ block: "center" }); r?.querySelector("input")?.select(); }
   }
   async function saveEdit(n) {
     const a = state.queue.find(x => x.issue.number === n), ed = state.edit[n]; if (!a || !ed) return;
@@ -525,6 +556,7 @@ footer a { color: var(--muted); }
   }
 
   function render() {
+    markEditing();
     renderWho();
     if (!token) return renderLogin();
     if (!L) { $("#app").innerHTML = `<div class="empty"><span class="spin"></span> Loading…</div>`; return; }
