@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Symbol Desk</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1A1A18">
 <!--
   SignalFlow symbol desk: the maintainer's queue for shared-library submissions.
   Lives at an unlinked path on the deploy site (hidden, not secret: the GitHub token is the lock).
@@ -14,6 +18,9 @@
   kept in this browser's localStorage only; it is sent to api.github.com and nowhere else.
   Everything a submitter controls (titles, bodies, symbol and port names) is escaped before use.
   Source: D:/signalflow/admin/symbol-desk.html; copied into the site repo by hand (build.mjs never touches it).
+  Installable as a phone app (Chrome > Add to home screen): admin/desk-pwa/ holds manifest.webmanifest, sw.js and the
+  icons, copied next to index.html. "Pair phone" shows a QR of this page with #pair=<token>; the phone stores the
+  token and strips the hash, so it never has to be typed on a phone keyboard.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
@@ -150,6 +157,10 @@ select:focus { outline: none; border-color: var(--accent); }
 .prow input.chg, .prow select.chg { background: color-mix(in srgb, var(--accent) 10%, var(--card)); }
 footer { margin-top: 28px; font-size: 10.5px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
 footer a { color: var(--muted); }
+@media (display-mode: standalone) { #pairbtn { display: none; } }
+.pair { margin-top: 14px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.pair .qr { background: #fff; padding: 10px; line-height: 0; }
+.pair .qr img { width: 220px; height: 220px; image-rendering: pixelated; }
 @media (max-width: 720px) {
   .card-b.edit { grid-template-columns: 1fr; }
   .card-b.edit .prev { position: static; max-height: 340px; }
@@ -161,6 +172,12 @@ footer a { color: var(--muted); }
   .prev { border-right: none; border-bottom: 1px solid var(--rule); max-height: 380px; }
   .chips { margin-left: 0; justify-content: flex-start; width: 100%; }
   .who { margin-left: 0; width: 100%; }
+}
+@media (pointer: coarse) {
+  button:not(.prow button) { min-height: 36px; }
+  .prow { grid-template-columns: 30px 26px repeat(3, minmax(0, 1fr)) 30px 30px; }
+  .prow .mv button { font-size: 16px; line-height: 22px; }
+  .prow .x { font-size: 20px; }
 }
 </style>
 </head>
@@ -212,6 +229,11 @@ footer a { color: var(--muted); }
   const store = { get: () => { try { return localStorage.getItem(KEY) || ""; } catch { return ""; } }, set: v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} } };
   const ago = iso => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 90) return "just now"; if (s < 5400) return Math.round(s / 60) + " min ago"; if (s < 129600) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " days ago"; };
 
+  if (location.hash.startsWith("#pair=")) {
+    const t = decodeURIComponent(location.hash.slice(6)).trim();
+    history.replaceState(null, "", location.pathname + location.search);
+    if (t) store.set(t);
+  }
   let token = store.get(), me = null, lib = null, L = null, tab = "queue", builtins = null;
   const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {} };
 
@@ -369,8 +391,32 @@ footer a { color: var(--muted); }
 
   /* ---------- views ---------- */
   function renderWho() {
-    $("#who").innerHTML = me ? `<span>signed in as <b>${esc(me.login)}</b></span><button class="link" id="signout">Forget token</button>` : "";
+    $("#who").innerHTML = me ? `<span>signed in as <b>${esc(me.login)}</b></span><button class="link" id="pairbtn">Pair phone</button><button class="link" id="signout">Forget token</button>` : "";
     const so = $("#signout"); if (so) so.onclick = () => { store.set(""); token = ""; me = null; render(); };
+    const pb = $("#pairbtn"); if (pb) pb.onclick = showPair;
+  }
+  /* The phone opens this page with the token in the HASH: a fragment is never sent to a server, and the page
+     removes it on load. The QR is drawn locally (qrcode-generator, loaded on first use). */
+  let qrLib = null;
+  async function showPair() {
+    const old = $("#pairbox"); if (old) { old.remove(); return; }
+    const box = document.createElement("div"); box.id = "pairbox"; box.className = "panel";
+    box.innerHTML = `<div class="empty"><span class="spin"></span> Drawing the code…</div>`;
+    $("header").after(box);
+    try {
+      qrLib = qrLib || new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"; sc.onload = () => ok(window.qrcode); sc.onerror = () => { qrLib = null; no(new Error("Couldn't load the QR code library. Check the connection and try again.")); }; document.head.appendChild(sc); });
+      const qrcode = await qrLib;
+      const url = location.origin + location.pathname + "#pair=" + encodeURIComponent(token);
+      const q = qrcode(0, "M"); q.addData(url); q.make();
+      box.innerHTML = `<div style="font:600 18px var(--cond);letter-spacing:.08em">PAIR A PHONE</div>
+        <div class="pair"><div class="qr">${q.createImgTag(6, 0)}</div>
+        <ol class="note" style="margin:0;padding-left:18px;max-width:420px">
+          <li>Scan this with the phone's camera and open the link in <b>Chrome</b>. The desk opens signed in.</li>
+          <li>Chrome menu (⋮) → <b>Add to home screen</b> → <b>Install</b>. It then opens as its own app.</li>
+          <li>The code holds your token. Close it when you're done: <button class="link" id="pairclose">hide code</button></li>
+        </ol></div>`;
+      $("#pairclose").onclick = () => box.remove();
+    } catch (e) { box.innerHTML = `<div class="err">${esc(e.message)}</div>`; }
   }
   function renderLogin(err) {
     $("#app").innerHTML = `<div class="panel" style="margin-top:20px;max-width:620px">
@@ -792,7 +838,12 @@ footer a { color: var(--muted); }
   document.addEventListener("input", e => { const el = e.target.closest("[data-e]"); if (el) onEdit(el, true); });
   document.addEventListener("change", e => { const el = e.target.closest("[data-e]"); if (el && el.tagName === "SELECT") onEdit(el, false); });
   // a quiet re-check while the tab is open, so a new submission shows up on its own
-  setInterval(async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean) && !Object.values(state.fixing).some(Boolean) && !Object.keys(state.edit).length) { try { await refresh(); render(); } catch {} } }, 120000);
+  let lastQuiet = Date.now();
+  const quietRefresh = async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean) && !Object.values(state.fixing).some(Boolean) && !Object.keys(state.edit).length) { lastQuiet = Date.now(); try { await refresh(); render(); } catch {} } };
+  setInterval(quietRefresh, 120000);
+  // reopening the phone app resumes the old page, so check again when it comes back after a while
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - lastQuiet > 30000) quietRefresh(); });
+  if ("serviceWorker" in navigator && window.isSecureContext) navigator.serviceWorker.register("sw.js").catch(() => {});
 
   if (token) boot(); else render();
 })();
