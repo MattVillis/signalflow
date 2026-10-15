@@ -393,6 +393,7 @@ footer a { color: var(--muted); }
     if (d?.exact.length) c.push(`<span class="chip bad">DUPLICATE</span>`);
     else if (d?.close.length) c.push(`<span class="chip warn">SIMILAR</span>`);
     if (!a.labels.includes("symbol") && !a.labels.includes("invalid")) c.push(`<span class="chip mute">NOT CHECKED BY BOT</span>`);
+    if (a.labels.includes("approved")) c.push(`<span class="chip warn">APPROVED · NOT PUBLISHED</span>`);
     return c.join("");
   }
   function cardHtml(a) {
@@ -438,7 +439,7 @@ footer a { color: var(--muted); }
           <textarea id="why${n}" rows="3" placeholder="e.g. Port 25-28 are SFP, not RJ45. Fix and resubmit and I'll approve it."></textarea>
           <div class="row"><button class="bad primary" data-act="reject-go" data-n="${n}" style="background:var(--bad);color:#fff;border-color:var(--bad)">Close as rejected</button><button data-act="reject-cancel" data-n="${n}">Cancel</button></div>
         </div>` : `<div class="actions">
-          <button class="ok primary" data-act="approve" data-n="${n}" ${canApprove ? "" : "disabled"} title="${a.sym ? "Adds the approved label: the publish workflow puts it in library.json and closes the issue" : "Only a valid submission can be approved"}">✓ Approve + publish</button>
+          <button class="ok primary" data-act="approve" data-n="${n}" ${canApprove ? "" : "disabled"} title="${a.sym ? (a.labels.includes("approved") ? "Approved before but not published: runs the publish again" : "Adds the approved label: the publish workflow puts it in library.json and closes the issue") : "Only a valid submission can be approved"}">${a.labels.includes("approved") ? "↻ Retry publish" : "✓ Approve + publish"}</button>
           <button data-act="edit" data-n="${n}" ${!s || st?.busy || st?.done ? "disabled" : ""} title="Fix it before approving. Your version replaces the one in the issue, and the original is kept there.">✎ Edit</button>
           <button class="bad" data-act="reject" data-n="${n}" ${st?.busy || st?.done ? "disabled" : ""}>✕ Reject…</button>
           <span class="grow"></span>
@@ -674,9 +675,16 @@ footer a { color: var(--muted); }
   }
   const setStatus = (n, kind, text, extra = {}) => { state.status[n] = { kind, text, busy: kind === "busy", ...extra }; if (state.edit[n]) renderCard(n); else render(); };
 
+  /* Adding a label the issue ALREADY has fires no "labeled" event, so a submission whose publish failed (still
+     open, still labelled approved) would never re-run: take the label off first, then put it back. */
   async function approve(n) {
+    const a = state.queue.find(x => x.issue.number === n);
     setStatus(n, "busy", "Adding the approved label…");
     try {
+      if (a?.labels.includes("approved")) {
+        await gh(`/repos/${OWNER}/${REPO}/issues/${n}/labels/approved`, { method: "DELETE" }).catch(e => { if (e.status !== 404) throw e; });
+        a.labels = a.labels.filter(l => l !== "approved");
+      }
       await gh(`/repos/${OWNER}/${REPO}/issues/${n}/labels`, { method: "POST", body: JSON.stringify({ labels: ["approved"] }) });
       setStatus(n, "busy", "Publishing… (the workflow takes about 30 s)");
       const t0 = Date.now();
@@ -684,14 +692,15 @@ footer a { color: var(--muted); }
         await new Promise(r => setTimeout(r, 5000));
         const [iss, comments] = await Promise.all([gh(`/repos/${OWNER}/${REPO}/issues/${n}`), gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments?per_page=100`)]);
         const fail = comments.find(c => /Not published/.test(c.body) && new Date(c.created_at) >= new Date(t0 - 5000));
-        if (fail) { setStatus(n, "bad", "The workflow refused it: " + fail.body.replace(/^.*?:\s*/, "").slice(0, 200)); return; }
+        if (fail) { if (a && !a.labels.includes("approved")) a.labels.push("approved"); setStatus(n, "bad", "Not published: " + fail.body.replace(/^.*?—\s*/, "").slice(0, 200)); return; }
         if (iss.state === "closed") {
           setStatus(n, "ok", "✓ Published to library.json · apps get it within 30 min", { done: true });
           setTimeout(async () => { delete state.status[n]; await refresh(); render(); }, 4000);
           return;
         }
       }
-      setStatus(n, "bad", "Still not published after 3 minutes. Check the workflow runs (link at the bottom).");
+      if (a && !a.labels.includes("approved")) a.labels.push("approved");
+      setStatus(n, "bad", "Still not published after 3 minutes. Check the workflow runs (link at the bottom), or retry.");
     } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
   }
   async function reject(n) {
