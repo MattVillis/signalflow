@@ -114,9 +114,33 @@ pre { font: 400 10.5px var(--mono); background: var(--panel); padding: 8px; over
 .err { color: var(--bad); font-size: 12px; margin-top: 8px; }
 .spin { display: inline-block; width: 10px; height: 10px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: s .8s linear infinite; }
 @keyframes s { to { transform: rotate(360deg); } }
+.ed { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.ed .top { display: grid; grid-template-columns: 1fr 140px 80px; gap: 6px; }
+.ed label { font: 600 9px var(--mono); letter-spacing: .14em; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
+.ed input, .ed select { padding: 5px 6px; font-size: 11px; }
+select { font: 400 11px var(--mono); color: var(--ink); background: var(--card); border: 1.2px solid var(--rule); padding: 5px 4px; border-radius: 0; min-width: 0; }
+select:focus { outline: none; border-color: var(--accent); }
+.ports { display: flex; flex-direction: column; gap: 3px; max-height: 420px; overflow: auto; padding-right: 2px; }
+.prow { display: grid; grid-template-columns: 16px 22px minmax(64px, 1fr) 66px 54px 88px 100px 22px; grid-template-areas: "mv gap lab side dir sig conn x"; gap: 3px; align-items: center; }
+.prow > :nth-child(1) { grid-area: mv; } .prow > :nth-child(2) { grid-area: gap; } .prow > :nth-child(3) { grid-area: lab; } .prow > :nth-child(4) { grid-area: side; }
+.prow > :nth-child(5) { grid-area: dir; } .prow > :nth-child(6) { grid-area: sig; } .prow > :nth-child(7) { grid-area: conn; } .prow > :nth-child(8) { grid-area: x; }
+.prow.head { font: 600 8px var(--mono); letter-spacing: .12em; color: var(--muted); position: sticky; top: 0; background: var(--card); z-index: 1; padding-bottom: 2px; }
+.prow .mv { display: flex; flex-direction: column; }
+.prow .mv button, .prow .x, .prow .gap { padding: 0; border: none; background: none; font-size: 9px; line-height: 10px; color: var(--ink); letter-spacing: 0; }
+.prow .mv button:disabled { color: var(--rule); }
+.prow .gap { border: 1.2px solid var(--rule); height: 22px; font-size: 10px; color: var(--muted); }
+.prow .gap.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.prow .x { font-size: 14px; color: var(--muted); height: 22px; }
+.prow .x:hover { color: var(--bad); }
+.prow select.unk, .ed select.unk { border-color: var(--warn); color: var(--warn); }
+.prow input.chg, .prow select.chg { background: color-mix(in srgb, var(--accent) 10%, var(--card)); }
 footer { margin-top: 28px; font-size: 10.5px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
 footer a { color: var(--muted); }
 @media (max-width: 720px) {
+  .prow { grid-template-columns: 16px 26px repeat(4, minmax(0, 1fr)) 24px; grid-template-areas: "mv gap lab lab lab lab x" "mv side side dir sig conn conn"; padding-bottom: 5px; border-bottom: 1px solid var(--rule); }
+  .prow select { font-size: 10px; padding: 5px 0 5px 2px; }
+  .prow.head { display: none; }
+  .ed .top { grid-template-columns: 1fr 1fr; } .ed .top label:first-child { grid-column: 1 / -1; }
   .card-b { grid-template-columns: 1fr; }
   .prev { border-right: none; border-bottom: 1px solid var(--rule); max-height: 380px; }
   .chips { margin-left: 0; justify-content: flex-start; width: 100%; }
@@ -145,13 +169,34 @@ footer a { color: var(--muted); }
   const RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/`;
   const MARK = "Symbol submission from SignalFlow";
   const KEY = "sf_desk_token";
+  /* Copied from src/App.jsx (CONN, CATEGORIES) on 2026-10-15. The app blanks a connector its catalogue does
+     not list, so the desk warns about one and the editor offers only these. Refresh both when the app's change. */
+  const CONN = {
+    video: ["HDMI", "DP", "12G SDI", "6G SDI", "3G SDI", "HD SDI", "DVI", "BNC", "HD-BNC", "RJ45", "SFP+", "SFP28", "USB-C"],
+    fiber: ["OPTICALCON DUO", "OPTICALCON QUAD", "LC", "SC", "SFP", "SFP+", "SFP28", "QSFP+", "QSFP28", "SM FIBER", "MM FIBER"],
+    network: ["RJ45", "ETHERCON", "SFP", "SFP+", "SFP28", "QSFP+", "QSFP28", "RJ45 10G"],
+    audio: ["XLR", "TRS", "AES3", "MADI", "ANALOG", "SPDIF", "DIN 1.0/2.3", "RJ45", "ETHERCON", "USB-A", "USB-C"],
+    control: ["DMX 5PIN", "DMX 3PIN", "RS-232", "GPIO", "MIDI", "LTC", "XLR", "BNC", "D-SUB 15", "D-SUB 26", "USB-A", "USB-B", "USB-C", "OCULINK"],
+    power: ["POWERCON", "TRUE1", "IEC C13", "IEC C14", "IEC C19", "IEC C20", "DC", "XLR 4-PIN", "USB-C"],
+  };
+  const CATEGORIES = ["Servers", "Computers", "Processing", "LED", "Extenders", "KVM", "Display", "Cameras", "Network", "Audio", "Control", "Lighting", "Power", "Custom"];
+  const SIGNALS = Object.keys(CONN), NAME_MAX = 36, LABEL_MAX = 15;
+  const clone = o => JSON.parse(JSON.stringify(o));
+  // catalogue warnings: things the validator allows but the app would not draw as intended
+  function catalogueWarnings(sym) {
+    const w = [];
+    if (sym.category && !CATEGORIES.includes(sym.category)) w.push(`Category "${sym.category}" is not one of the app's, so the symbol files under Custom.`);
+    const bad = (sym.ports || []).filter(p => p.conn && SIGNALS.includes(p.signal) && !CONN[p.signal].includes(p.conn));
+    if (bad.length) w.push(`${bad.length} connector${bad.length > 1 ? "s" : ""} the app doesn't know for that signal, which will show blank: ${[...new Set(bad.map(p => p.signal + " " + p.conn))].slice(0, 4).join(", ")}${bad.length > 4 ? "…" : ""}.`);
+    return w;
+  }
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const store = { get: () => { try { return localStorage.getItem(KEY) || ""; } catch { return ""; } }, set: v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} } };
   const ago = iso => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 90) return "just now"; if (s < 5400) return Math.round(s / 60) + " min ago"; if (s < 129600) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " days ago"; };
 
   let token = store.get(), me = null, lib = null, L = null, tab = "queue";
-  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {} };
+  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {} };
 
   async function gh(path, opt = {}) {
     const r = await fetch(API + path, { ...opt, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...(opt.body ? { "Content-Type": "application/json" } : {}) } });
@@ -178,6 +223,7 @@ footer a { color: var(--muted); }
     try { const raw = L.parseSubmission(issue.body); a.errs = L.validate(raw); if (!a.errs.length) a.sym = L.normalise(raw); else a.raw = raw; }
     catch (e) { a.parseErr = e.message; }
     const s = a.sym || a.raw;
+    a.warns = s ? catalogueWarnings(s) : [];
     if (s && lib) {
       a.sameId = lib.find(d => d.id === s.id);
       a.sameName = lib.find(d => d.id !== s.id && String(d.name).toUpperCase() === String(s.name || "").toUpperCase());
@@ -272,14 +318,16 @@ footer a { color: var(--muted); }
     return c.join("");
   }
   function cardHtml(a) {
+    if (state.edit[a.issue.number]) return editCardHtml(a);
     const i = a.issue, s = a.sym || a.raw, n = i.number, st = state.status[n];
     const ports = s ? expand(s) : [];
     const msgs = [];
     if (a.parseErr) msgs.push(`<div class="msg bad">The JSON in this issue can't be read: ${esc(a.parseErr)}. Ask the submitter to fix it, or reject.</div>`);
     a.errs.forEach(e => msgs.push(`<div class="msg bad">${esc(e)}</div>`));
     if (a.sameId) msgs.push(`<div class="msg">Approving <b>replaces</b> the shared <b>${esc(a.sameId.name)}</b> (rev ${esc(a.sameId.rev)}). Apps that use it get the new version unless it is placed in an open drawing.</div>`);
+    a.warns.forEach(w => msgs.push(`<div class="msg warn">${esc(w)}</div>`));
     if (a.sameName) msgs.push(`<div class="msg warn">A different shared symbol is already called <b>${esc(a.sameName.name)}</b>. Approving adds a second one with the same name.</div>`);
-    if (s && !a.errs.length && !a.parseErr && !a.sameName) msgs.push(`<div class="msg ok">Passes the same checks the publish workflow runs.</div>`);
+    if (s && !a.errs.length && !a.parseErr && !a.sameName && !a.warns.length) msgs.push(`<div class="msg ok">Passes the same checks the publish workflow runs.</div>`);
     const counts = {}; ports.forEach(p => counts[p.signal] = (counts[p.signal] || 0) + 1);
     const canApprove = !!a.sym && !st?.busy && !st?.done;
     return `<article class="card" id="i${n}">
@@ -313,12 +361,169 @@ footer a { color: var(--muted); }
           <div class="row"><button class="bad primary" data-act="reject-go" data-n="${n}" style="background:var(--bad);color:#fff;border-color:var(--bad)">Close as rejected</button><button data-act="reject-cancel" data-n="${n}">Cancel</button></div>
         </div>` : `<div class="actions">
           <button class="ok primary" data-act="approve" data-n="${n}" ${canApprove ? "" : "disabled"} title="${a.sym ? "Adds the approved label: the publish workflow puts it in library.json and closes the issue" : "Only a valid submission can be approved"}">✓ Approve + publish</button>
+          <button data-act="edit" data-n="${n}" ${!s || st?.busy || st?.done ? "disabled" : ""} title="Fix it before approving. Your version replaces the one in the issue, and the original is kept there.">✎ Edit</button>
           <button class="bad" data-act="reject" data-n="${n}" ${st?.busy || st?.done ? "disabled" : ""}>✕ Reject…</button>
           <span class="grow"></span>
           ${st ? `<span class="status ${st.kind}">${st.kind === "busy" ? '<span class="spin"></span> ' : ""}${esc(st.text)}</span>` : ""}
         </div>`}
     </article>`;
   }
+  /* ---------- editing a submission ----------
+     The publish workflow reads the issue, so an edit is written INTO the issue body: the edited JSON first
+     (parseSubmission takes the first json block), then the submitter's original folded away as a text block,
+     plus a comment listing what changed. The validate workflow re-runs on the edit by itself. Port ids are
+     kept, so an update to a shared symbol keeps the cables already drawn on it. */
+  const editRow = (p, i, n, len, orig) => {
+    const o = orig && orig.ports.find(q => q.id === p.id);
+    const ch = k => !o ? " chg" : (o[k] || "") !== (p[k] || "") ? " chg" : "";
+    const sigOk = SIGNALS.includes(p.signal), conns = sigOk ? CONN[p.signal] : [];
+    const connUnk = p.conn && !conns.includes(p.conn);
+    const opt = (v, cur, lab) => `<option value="${esc(v)}" ${v === cur ? "selected" : ""}>${esc(lab ?? v)}</option>`;
+    return `<div class="prow">
+      <span class="mv"><button data-e="up" data-n="${n}" data-i="${i}" ${i ? "" : "disabled"} title="Move up">▲</button><button data-e="down" data-n="${n}" data-i="${i}" ${i < len - 1 ? "" : "disabled"} title="Move down">▼</button></span>
+      <button class="gap${p.gap ? " on" : ""}" data-e="gap" data-n="${n}" data-i="${i}" title="${p.gap ? "Remove the gap above this port" : "Add a gap above this port"}">▔</button>
+      <input class="${ch("label").trim()}" data-e="label" data-n="${n}" data-i="${i}" value="${esc(p.label)}" maxlength="${LABEL_MAX}" aria-label="Port label">
+      <select class="${ch("side").trim()}" data-e="side" data-n="${n}" data-i="${i}">${["left", "right"].map(v => opt(v, p.side)).join("")}${["left", "right"].includes(p.side) ? "" : opt(p.side, p.side, p.side + " ?")}</select>
+      <select class="${ch("dir").trim()}" data-e="dir" data-n="${n}" data-i="${i}">${["in", "out", "bi"].map(v => opt(v, p.dir)).join("")}${["in", "out", "bi"].includes(p.dir) ? "" : opt(p.dir, p.dir, p.dir + " ?")}</select>
+      <select class="${(ch("signal") + (sigOk ? "" : " unk")).trim()}" data-e="signal" data-n="${n}" data-i="${i}">${SIGNALS.map(v => opt(v, p.signal)).join("")}${sigOk ? "" : opt(p.signal, p.signal, p.signal + " ?")}</select>
+      <select class="${(ch("conn") + (connUnk ? " unk" : "")).trim()}" data-e="conn" data-n="${n}" data-i="${i}" ${connUnk ? 'title="Not in the app\'s catalogue for this signal"' : ""}>${opt("", p.conn || "", "— none —")}${conns.map(v => opt(v, p.conn)).join("")}${connUnk ? opt(p.conn, p.conn, p.conn + " ?") : ""}</select>
+      <button class="x" data-e="del" data-n="${n}" data-i="${i}" title="Remove this port">×</button>
+    </div>`;
+  };
+  function editIssues(sym) { const e = L.validate(sym); return { errs: e, warns: catalogueWarnings(sym) }; }
+  function editMsgs(n) {
+    const ed = state.edit[n], v = editIssues(ed.sym), m = [];
+    v.errs.forEach(e => m.push(`<div class="msg bad">${esc(e)}</div>`));
+    v.warns.forEach(w => m.push(`<div class="msg warn">${esc(w)}</div>`));
+    const d = diffSym(ed.orig, ed.sym);
+    m.push(d.length ? `<div class="msg">${d.length} change${d.length > 1 ? "s" : ""}: ${esc(d.slice(0, 4).join("; "))}${d.length > 4 ? "…" : ""}</div>` : `<div class="msg">No changes yet.</div>`);
+    return { html: m.join(""), ok: !v.errs.length && d.length > 0 };
+  }
+  function editCardHtml(a) {
+    const i = a.issue, n = i.number, ed = state.edit[n], s = ed.sym, st = state.status[n];
+    const mm = editMsgs(n);
+    const catUnk = !CATEGORIES.includes(s.category);
+    return `<article class="card" id="i${n}">
+      <div class="card-h">
+        <div style="min-width:0">
+          <div class="t">EDITING · ${esc(s.name)}</div>
+          <div class="meta">#${n} · from ${esc(i.user.login)} · your changes replace the symbol in the issue; the original is kept there</div>
+        </div>
+      </div>
+      <div class="card-b">
+        <div class="prev" data-prev="${n}">${preview(s)}</div>
+        <div class="facts ed">
+          <div class="top">
+            <label>NAME<input data-e="name" data-n="${n}" value="${esc(s.name)}" maxlength="${NAME_MAX}"></label>
+            <label>CATEGORY<select class="${catUnk ? "unk" : ""}" data-e="category" data-n="${n}">${CATEGORIES.map(c => `<option ${c === s.category ? "selected" : ""}>${c}</option>`).join("")}${catUnk ? `<option selected>${esc(s.category)}</option>` : ""}</select></label>
+            <label>WIDTH<input data-e="width" data-n="${n}" type="number" min="130" max="280" step="10" value="${esc(s.width)}"></label>
+          </div>
+          ${s.slots?.length ? `<div class="msg">This is a modular symbol. Its slots and cards aren't editable here; edit them in the issue on GitHub.</div>` : ""}
+          <div class="ports">
+            <div class="prow head"><span></span><span>GAP</span><span>LABEL</span><span>SIDE</span><span>DIR</span><span>SIGNAL</span><span>CONNECTOR</span><span></span></div>
+            ${s.ports.map((p, k) => editRow(p, k, n, s.ports.length, ed.orig)).join("")}
+          </div>
+          <div class="row"><button data-e="add" data-n="${n}">+ Add port</button><button class="link" data-e="revert" data-n="${n}">Undo all changes</button></div>
+          <div class="msgs" data-msgs="${n}">${mm.html}</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary" data-act="edit-save" data-n="${n}" ${mm.ok && !st?.busy ? "" : "disabled"}>Save changes to the submission</button>
+        <button data-act="edit-cancel" data-n="${n}" ${st?.busy ? "disabled" : ""}>Cancel</button>
+        <span class="grow"></span>
+        ${st ? `<span class="status ${st.kind}">${st.kind === "busy" ? '<span class="spin"></span> ' : ""}${esc(st.text)}</span>` : ""}
+      </div>
+    </article>`;
+  }
+  function diffSym(a, b) {
+    const d = [];
+    if (a.name !== b.name) d.push(`name ${a.name} → ${b.name}`);
+    if (a.category !== b.category) d.push(`category ${a.category} → ${b.category}`);
+    if (+a.width !== +b.width) d.push(`width ${a.width} → ${b.width}`);
+    const ai = new Map(a.ports.map(p => [p.id, p])), bi = new Map(b.ports.map(p => [p.id, p]));
+    b.ports.forEach(p => { if (!ai.has(p.id)) d.push(`added ${p.label || "(unnamed)"}`); });
+    a.ports.forEach(p => { if (!bi.has(p.id)) d.push(`removed ${p.label}`); });
+    b.ports.forEach(p => {
+      const o = ai.get(p.id); if (!o) return;
+      const f = ["label", "side", "dir", "signal", "conn"].filter(k => (o[k] || "") !== (p[k] || "")).map(k => k === "label" ? `renamed to ${p.label}` : `${k} ${o[k] || "none"} → ${p[k] || "none"}`);
+      if (!!o.gap !== !!p.gap) f.push(p.gap ? "gap added" : "gap removed");
+      if (f.length) d.push(`${o.label}: ${f.join(", ")}`);
+    });
+    const kept = b.ports.filter(p => ai.has(p.id)).map(p => p.id), was = a.ports.filter(p => bi.has(p.id)).map(p => p.id);
+    if (kept.join() !== was.join()) d.push("ports reordered");
+    return d;
+  }
+  // a text edit updates the preview and checks in place, so the field keeps focus while typing
+  function liveUpdate(n) {
+    const ed = state.edit[n], card = document.getElementById("i" + n); if (!card) return;
+    card.querySelector(`[data-prev="${n}"]`).innerHTML = preview(ed.sym);
+    const mm = editMsgs(n); card.querySelector(`[data-msgs="${n}"]`).innerHTML = mm.html;
+    card.querySelector('[data-act="edit-save"]').disabled = !mm.ok;
+    card.querySelector(".t").textContent = "EDITING · " + ed.sym.name;
+  }
+  function renderCard(n) {
+    const a = state.queue.find(x => x.issue.number === n), el = document.getElementById("i" + n);
+    if (a && el) el.outerHTML = cardHtml(a); else render();
+  }
+  function startEdit(n) {
+    const a = state.queue.find(x => x.issue.number === n); const src = a.sym || a.raw; if (!src) return;
+    const base = clone(src);
+    base.ports = (base.ports || []).map((p, i) => ({ id: typeof p.id === "string" && p.id ? p.id : "p" + i, label: String(p.label || ""), side: p.side, dir: p.dir, signal: p.signal, conn: p.conn || "", ...(p.gap ? { gap: true } : {}) }));
+    base.name = String(base.name || ""); base.category = base.category || "Custom"; base.width = +base.width || 170; base.rev = Math.max(1, +base.rev || 1);
+    state.edit[n] = { orig: clone(base), sym: base };
+    renderCard(n);
+  }
+  function onEdit(el, live) {
+    const n = +el.dataset.n, i = +el.dataset.i, ed = state.edit[n]; if (!ed) return;
+    const s = ed.sym, k = el.dataset.e, p = s.ports[i];
+    if (k === "name") { s.name = el.value.toUpperCase().slice(0, NAME_MAX); if (el.value !== s.name) el.value = s.name; return liveUpdate(n); }
+    if (k === "width") { const w = Math.round(+el.value); if (w >= 130 && w <= 280) { s.width = w; liveUpdate(n); } return; }
+    if (k === "label") { p.label = el.value.toUpperCase().slice(0, LABEL_MAX); if (el.value !== p.label) { const c = el.selectionStart; el.value = p.label; el.setSelectionRange(c, c); } return liveUpdate(n); }
+    if (live) return;
+    if (k === "category") s.category = el.value;
+    else if (k === "side" || k === "dir") p[k] = el.value;
+    else if (k === "signal") { p.signal = el.value; if (p.conn && !(CONN[p.signal] || []).includes(p.conn)) p.conn = ""; }
+    else if (k === "conn") p.conn = el.value;
+    renderCard(n);
+  }
+  function onEditClick(b) {
+    const n = +b.dataset.n, i = +b.dataset.i, ed = state.edit[n]; if (!ed) return;
+    const ps = ed.sym.ports, k = b.dataset.e;
+    if (k === "up" && i > 0) [ps[i - 1], ps[i]] = [ps[i], ps[i - 1]];
+    else if (k === "down" && i < ps.length - 1) [ps[i + 1], ps[i]] = [ps[i], ps[i + 1]];
+    else if (k === "gap") { if (ps[i].gap) delete ps[i].gap; else ps[i].gap = true; }
+    else if (k === "del") ps.splice(i, 1);
+    else if (k === "add") {
+      const used = new Set(ps.map(p => p.id)); let j = ps.length; while (used.has("p" + j)) j++;
+      const last = ps[ps.length - 1] || { side: "right", dir: "out", signal: "video" };
+      ps.push({ id: "p" + j, label: `PORT ${ps.length + 1}`, side: last.side, dir: last.dir, signal: last.signal, conn: last.conn || "" });
+    }
+    else if (k === "revert") ed.sym = clone(ed.orig);
+    renderCard(n);
+    if (k === "add") document.querySelector(`#i${n} .ports`)?.scrollTo(0, 1e6);
+  }
+  async function saveEdit(n) {
+    const a = state.queue.find(x => x.issue.number === n), ed = state.edit[n]; if (!a || !ed) return;
+    const changes = diffSym(ed.orig, ed.sym);
+    if (L.validate(ed.sym).length || !changes.length) return;
+    setStatus(n, "busy", "Saving to the issue…");
+    try {
+      const fresh = await gh(`/repos/${OWNER}/${REPO}/issues/${n}`);
+      // keep the FIRST original: a second edit must not fold the first edit away as "original"
+      const prior = /<details><summary>Original submission<\/summary>[\s\S]*?<\/details>/.exec(fresh.body || "");
+      const origJson = prior ? null : (() => { try { return JSON.stringify(L.parseSubmission(fresh.body)); } catch { return fresh.body || ""; } })();
+      const T3 = "\x60\x60\x60";
+      const body = `${MARK}.\n\n${T3}json\n${JSON.stringify(ed.sym)}\n${T3}\n\n_Edited by @${me.login} before approval._\n\n` +
+        (prior ? prior[0] : `<details><summary>Original submission</summary>\n\n${T3}text\n${origJson}\n${T3}\n</details>`) + "\n";
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ body }) });
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments`, { method: "POST", body: JSON.stringify({ body: `✎ Edited before approval:\n\n${changes.map(c => "- " + c).join("\n")}\n\nThe original is kept at the bottom of the issue.` }) });
+      delete state.edit[n];
+      setStatus(n, "ok", "Saved. The checker re-runs on GitHub; approve when you're happy.");
+      await refresh(); render();
+      setTimeout(() => { if (state.status[n]?.kind === "ok") { delete state.status[n]; render(); } }, 6000);
+    } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
+  }
+
   function render() {
     renderWho();
     if (!token) return renderLogin();
@@ -366,7 +571,7 @@ footer a { color: var(--muted); }
       store.set(""); token = ""; renderWho(); renderLogin(e.message);
     }
   }
-  const setStatus = (n, kind, text, extra = {}) => { state.status[n] = { kind, text, busy: kind === "busy", ...extra }; render(); };
+  const setStatus = (n, kind, text, extra = {}) => { state.status[n] = { kind, text, busy: kind === "busy", ...extra }; if (state.edit[n]) renderCard(n); else render(); };
 
   async function approve(n) {
     setStatus(n, "busy", "Adding the approved label…");
@@ -403,14 +608,20 @@ footer a { color: var(--muted); }
     const b = e.target.closest("button"); if (!b) return;
     if (b.dataset.tab) { tab = b.dataset.tab; render(); return; }
     if (b.id === "refresh") { b.disabled = true; b.innerHTML = '<span class="spin"></span> Refresh'; try { await refresh(); } catch (err) { alert(err.message); } render(); return; }
+    if (b.dataset.e) { onEditClick(b); return; }
     const n = +b.dataset.n;
+    if (b.dataset.act === "edit") startEdit(n);
+    if (b.dataset.act === "edit-cancel") { delete state.edit[n]; delete state.status[n]; renderCard(n); }
+    if (b.dataset.act === "edit-save") saveEdit(n);
     if (b.dataset.act === "approve") approve(n);
     if (b.dataset.act === "reject") { state.rejecting[n] = true; render(); $(`#why${n}`)?.focus(); }
     if (b.dataset.act === "reject-cancel") { state.rejecting[n] = false; render(); }
     if (b.dataset.act === "reject-go") reject(n);
   });
+  document.addEventListener("input", e => { const el = e.target.closest("[data-e]"); if (el) onEdit(el, true); });
+  document.addEventListener("change", e => { const el = e.target.closest("[data-e]"); if (el && el.tagName === "SELECT") onEdit(el, false); });
   // a quiet re-check while the tab is open, so a new submission shows up on its own
-  setInterval(async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean)) { try { await refresh(); render(); } catch {} } }, 120000);
+  setInterval(async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean) && !Object.keys(state.edit).length) { try { await refresh(); render(); } catch {} } }, 120000);
 
   if (token) boot(); else render();
 })();
