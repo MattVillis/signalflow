@@ -35,6 +35,7 @@
   --accent: #3FB3CF; --ok: #5BB377; --bad: #E0756E; --warn: #D9A54A; --gridm: #1C1C19; --gridM: #23231F; --card: #1B1B19;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; }
 body {
   background: var(--paper); color: var(--ink); font: 400 13px/1.5 var(--mono);
@@ -183,6 +184,7 @@ footer a { color: var(--muted); }
   const OWNER = "MattVillis", REPO = "signalflow-symbols", API = "https://api.github.com";
   const RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/`;
   const MARK = "Symbol submission from SignalFlow";
+  const FIX_MARK = "Symbol correction from SignalFlow";   // "Suggest a fix" in the app (built-in or shared symbol)
   const KEY = "sf_desk_token";
   /* Copied from src/App.jsx (CONN, CATEGORIES) on 2026-10-15. The app blanks a connector its catalogue does
      not list, so the desk warns about one and the editor offers only these. Refresh both when the app's change. */
@@ -211,7 +213,7 @@ footer a { color: var(--muted); }
   const ago = iso => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 90) return "just now"; if (s < 5400) return Math.round(s / 60) + " min ago"; if (s < 129600) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " days ago"; };
 
   let token = store.get(), me = null, lib = null, L = null, tab = "queue", builtins = null;
-  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {} };
+  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {} };
 
   async function gh(path, opt = {}) {
     const r = await fetch(API + path, { cache: "no-store", ...opt, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...(opt.body ? { "Content-Type": "application/json" } : {}) } });
@@ -236,16 +238,27 @@ footer a { color: var(--muted); }
     const r = await fetch(RAW + "library.json?x=" + Date.now(), { cache: "no-store" });
     return (await r.json()).library || [];
   }
-  const isSubmission = i => !i.pull_request && (/^\[symbol\]/i.test(i.title) || (i.body || "").includes(MARK) || i.labels.some(l => l.name === "symbol"));
+  const isSubmission = i => !i.pull_request && (/^\[(symbol|fix)\]/i.test(i.title) || (i.body || "").includes(MARK) || (i.body || "").includes(FIX_MARK) || i.labels.some(l => l.name === "symbol" || l.name === "fix"));
+  const T3 = "\x60\x60\x60";
+  // a correction: target + the symbol as it is now (folded away in the issue) + the user's note
+  function readFix(body) {
+    const t = L.fixTarget ? L.fixTarget(body) : (() => { const m = /<!--\s*sf-fix\s+(\{[^]*?\})\s*-->/.exec(body || ""); try { return m && JSON.parse(m[1]); } catch { return null; } })();
+    if (!t) return null;
+    const cur = new RegExp("<summary>Current symbol</summary>\\s*" + T3 + "text\\s*([\\s\\S]*?)" + T3).exec(body || "");
+    let before = null; try { before = cur ? JSON.parse(cur[1].trim()) : null; } catch {}
+    const line = k => (new RegExp("\\*\\*" + k + ":\\*\\*\\s*(.+)").exec(body || "") || [])[1]?.trim() || "";
+    return { target: t.target, id: t.id, before, note: line("What's wrong"), source: line("Source") };
+  }
 
   function analyse(issue) {
     const a = { issue, sym: null, errs: [], parseErr: null, labels: issue.labels.map(l => l.name) };
     try { const raw = L.parseSubmission(issue.body); a.errs = L.validate(raw); if (!a.errs.length) a.sym = L.normalise(raw); else a.raw = raw; }
     catch (e) { a.parseErr = e.message; }
     const s = a.sym || a.raw;
+    a.fix = readFix(issue.body);
     a.warns = s ? catalogueWarnings(s) : [];
     if (s && lib) {
-      a.sameId = lib.find(d => d.id === s.id);
+      a.sameId = a.fix?.target === "builtin" ? null : lib.find(d => d.id === s.id);
     }
     return a;
   }
@@ -388,20 +401,29 @@ footer a { color: var(--muted); }
     if (a.parseErr) c.push(`<span class="chip bad">CAN'T READ</span>`);
     else if (a.errs.length) c.push(`<span class="chip bad">INVALID</span>`);
     else c.push(`<span class="chip ok">VALID</span>`);
-    if (a.sameId) c.push(`<span class="chip info">UPDATE · REV ${esc(a.sameId.rev)} → ${esc((a.sym || a.raw)?.rev)}</span>`);
-    else if (a.sym) c.push(`<span class="chip info">NEW</span>`);
+    if (a.sameId) c.push(`<span class="chip info">UPDATE · REV ${esc(a.sameId.rev)} → ${Math.max(+a.sameId.rev || 1, +(a.sym || a.raw)?.rev || 1) + 1}</span>`);
+    else if (a.sym && !a.fix) c.push(`<span class="chip info">NEW</span>`);
     if (d?.exact.length) c.push(`<span class="chip bad">DUPLICATE</span>`);
     else if (d?.close.length) c.push(`<span class="chip warn">SIMILAR</span>`);
     if (!a.labels.includes("symbol") && !a.labels.includes("invalid")) c.push(`<span class="chip mute">NOT CHECKED BY BOT</span>`);
-    if (a.labels.includes("approved")) c.push(`<span class="chip warn">APPROVED · NOT PUBLISHED</span>`);
+    if (a.fix) c.unshift(`<span class="chip info">FIX · ${a.fix.target === "builtin" ? "BUILT-IN" : "SHARED"}</span>`);
+    if (a.fix?.target === "builtin" && a.labels.includes("accepted")) c.push(`<span class="chip warn">ACCEPTED · TO FIX IN THE APP</span>`);
+    if (a.labels.includes("approved") && a.fix?.target !== "builtin") c.push(`<span class="chip warn">APPROVED · NOT PUBLISHED</span>`);
     return c.join("");
   }
   function cardHtml(a) {
     if (state.edit[a.issue.number]) return editCardHtml(a);
     const i = a.issue, s = a.sym || a.raw, n = i.number, st = state.status[n];
     const ports = s ? expand(s) : [];
-    const dupes = s ? findDupes(s, n) : { exact: [], close: [] };
+    const dupes = s && !a.fix ? findDupes(s, n) : { exact: [], close: [] };
     const msgs = [...dupeMsgs(dupes, ports.length)];
+    if (a.fix) {
+      const f = a.fix, diff = f.before && s ? diffSym(normForDiff(f.before), normForDiff(s)) : [];
+      msgs.push(`<div class="msg"><b>What's wrong:</b> ${esc(f.note || "(no note)")}${f.source ? `<br><b>Source:</b> <a href="${esc(f.source)}" target="_blank" rel="noopener noreferrer">${esc(f.source.replace(/^https?:\/\/(www\.)?/, "").slice(0, 80))}</a>` : ""}</div>`);
+      msgs.push(diff.length ? `<div class="msg"><b>${diff.length} change${diff.length > 1 ? "s" : ""} to the current symbol:</b><br>${diff.map(d => "· " + esc(d)).join("<br>")}</div>`
+        : `<div class="msg">No port changes: this is a report. Read the note.</div>`);
+      if (f.target === "builtin") msgs.push(`<div class="msg warn">Built-in symbols are part of the app, so approving can't publish this. <b>Accept</b> tells the submitter it'll be fixed in the next app update; <b>Mark fixed</b> closes it once that has shipped.</div>`);
+    }
     if (a.parseErr) msgs.push(`<div class="msg bad">The JSON in this issue can't be read: ${esc(a.parseErr)}. Ask the submitter to fix it, or reject.</div>`);
     a.errs.forEach(e => msgs.push(`<div class="msg bad">${esc(e)}</div>`));
     if (a.sameId) msgs.push(`<div class="msg">Approving <b>replaces</b> the shared <b>${esc(a.sameId.name)}</b> (rev ${esc(a.sameId.rev)}). Apps that use it get the new version unless it is placed in an open drawing.</div>`);
@@ -409,16 +431,18 @@ footer a { color: var(--muted); }
     if (s && !a.errs.length && !a.parseErr && !dupes.exact.length && !dupes.close.length && !a.warns.length) msgs.push(`<div class="msg ok">Passes the same checks the publish workflow runs.</div>`);
     const counts = {}; ports.forEach(p => counts[p.signal] = (counts[p.signal] || 0) + 1);
     const canApprove = !!a.sym && !st?.busy && !st?.done;
+    const builtinFix = a.fix?.target === "builtin";
     return `<article class="card" id="i${n}">
       <div class="card-h">
         <div style="min-width:0">
-          <div class="t">${esc(s?.name || i.title.replace(/^\[symbol\]\s*/i, ""))}</div>
+          <div class="t">${esc(s?.name || i.title.replace(/^\[(symbol|fix)\]\s*/i, ""))}</div>
           <div class="meta">#${n} · from <a href="${esc(i.user.html_url)}" target="_blank" rel="noopener">${esc(i.user.login)}</a> · ${ago(i.created_at)} · <a href="${esc(i.html_url)}" target="_blank" rel="noopener">open on GitHub ↗</a></div>
         </div>
         <div class="chips">${chipsFor(a, dupes)}</div>
       </div>
       <div class="card-b">
-        <div class="prev">${s && ports.length ? preview(s) : `<div class="note" style="padding:30px 0">No preview</div>`}</div>
+        <div class="prev" style="flex-direction:column;align-items:center;gap:8px">${s && ports.length ? (a.fix?.before ? '<div class="note">CORRECTED</div>' : "") + preview(s) : `<div class="note" style="padding:30px 0">No preview</div>`}
+          ${a.fix?.before ? `<details style="width:100%"><summary>CURRENT SYMBOL</summary>${preview(normForDiff(a.fix.before))}</details>` : ""}</div>
         <div class="facts">
           ${s ? `<dl>
             <dt>CATEGORY</dt><dd>${esc(s.category)}</dd>
@@ -434,12 +458,19 @@ footer a { color: var(--muted); }
           <details><summary>ISSUE TEXT</summary><pre>${esc(i.body || "")}</pre></details>
         </div>
       </div>
-      ${state.rejecting[n] ? `<div class="reject">
+      ${state.fixing[n] ? `<div class="reject">
+          <label class="note" for="ver${n}">Which app version has the fix? (posted on the issue)</label>
+          <input id="ver${n}" placeholder="e.g. 1.27.0" maxlength="20" style="max-width:200px">
+          <div class="row"><button class="ok primary" data-act="fixed-go" data-n="${n}">Close as fixed</button><button data-act="fixed-cancel" data-n="${n}">Cancel</button></div>
+        </div>` : state.rejecting[n] ? `<div class="reject">
           <label class="note" for="why${n}">Reason (optional, posted on the issue so the submitter knows what to fix)</label>
           <textarea id="why${n}" rows="3" placeholder="e.g. Port 25-28 are SFP, not RJ45. Fix and resubmit and I'll approve it."></textarea>
           <div class="row"><button class="bad primary" data-act="reject-go" data-n="${n}" style="background:var(--bad);color:#fff;border-color:var(--bad)">Close as rejected</button><button data-act="reject-cancel" data-n="${n}">Cancel</button></div>
         </div>` : `<div class="actions">
-          <button class="ok primary" data-act="approve" data-n="${n}" ${canApprove ? "" : "disabled"} title="${a.sym ? (a.labels.includes("approved") ? "Approved before but not published: runs the publish again" : "Adds the approved label: the publish workflow puts it in library.json and closes the issue") : "Only a valid submission can be approved"}">${a.labels.includes("approved") ? "↻ Retry publish" : "✓ Approve + publish"}</button>
+          ${builtinFix ? (a.labels.includes("accepted")
+            ? `<button class="ok primary" data-act="fixed" data-n="${n}" ${st?.busy || st?.done ? "disabled" : ""} title="It's fixed in the app: thank the submitter and close this">✓ Mark fixed…</button>`
+            : `<button class="ok primary" data-act="accept" data-n="${n}" ${st?.busy || st?.done ? "disabled" : ""} title="Tell the submitter it'll be fixed in the next app update; it stays here as a to-do">✓ Accept · fix in the app</button>`) : ""}
+          <button class="ok primary" data-act="approve" data-n="${n}" ${canApprove ? "" : "disabled"} ${builtinFix ? 'hidden' : ""} title="${a.sym ? (a.labels.includes("approved") ? "Approved before but not published: runs the publish again" : "Adds the approved label: the publish workflow puts it in library.json and closes the issue") : "Only a valid submission can be approved"}">${a.labels.includes("approved") ? "↻ Retry publish" : "✓ Approve + publish"}</button>
           <button data-act="edit" data-n="${n}" ${!s || st?.busy || st?.done ? "disabled" : ""} title="Fix it before approving. Your version replaces the one in the issue, and the original is kept there.">✎ Edit</button>
           <button class="bad" data-act="reject" data-n="${n}" ${st?.busy || st?.done ? "disabled" : ""}>✕ Reject…</button>
           <span class="grow"></span>
@@ -526,6 +557,8 @@ footer a { color: var(--muted); }
       </div>
     </article>`;
   }
+  const normForDiff = d => ({ ...d, name: String(d.name || ""), category: d.category || "Custom", width: +d.width || 170,
+    ports: (d.ports || []).map((p, i) => ({ id: p.id || "p" + i, label: String(p.label || ""), side: p.side, dir: p.dir, signal: p.signal, conn: p.conn || "", ...(p.gap ? { gap: true } : {}) })) });
   function diffSym(a, b) {
     const d = [];
     if (a.name !== b.name) d.push(`name ${a.name} → ${b.name}`);
@@ -607,9 +640,13 @@ footer a { color: var(--muted); }
       // keep the FIRST original: a second edit must not fold the first edit away as "original"
       const prior = /<details><summary>Original submission<\/summary>[\s\S]*?<\/details>/.exec(fresh.body || "");
       const origJson = prior ? null : (() => { try { return JSON.stringify(L.parseSubmission(fresh.body)); } catch { return fresh.body || ""; } })();
-      const T3 = "\x60\x60\x60";
-      const body = `${MARK}.\n\n${T3}json\n${JSON.stringify(ed.sym)}\n${T3}\n\n_Edited by @${me.login} before approval._\n\n` +
-        (prior ? prior[0] : `<details><summary>Original submission</summary>\n\n${T3}text\n${origJson}\n${T3}\n</details>`) + "\n";
+      // replace ONLY the first json block, so whatever else the issue says (a fix's note, target and the
+      // current symbol) survives; then the edited-by line and the first-ever original after it
+      const old = fresh.body || "", first = new RegExp(T3 + "json\\s*[\\s\\S]*?" + T3).exec(old);
+      const block = `${T3}json\n${JSON.stringify(ed.sym)}\n${T3}`;
+      const tail = `\n\n_Edited by @${me.login} before approval._` + (prior ? "" : `\n\n<details><summary>Original submission</summary>\n\n${T3}text\n${origJson}\n${T3}\n</details>`);
+      let body = first ? old.slice(0, first.index) + block + tail + old.slice(first.index + first[0].length).replace(/^\s*_Edited by @[^\n]*before approval\._/, "")
+                       : `${MARK}.\n\n${block}${tail}\n`;
       // GitHub's issue LIST can serve the old body for a minute after an edit, so the issue the PATCH returns
       // is kept and used until the list's updated_at catches up (a saved edit used to vanish on refresh)
       state.saved[n] = await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ body }) });
@@ -633,9 +670,9 @@ footer a { color: var(--muted); }
         : `<div class="empty"><div class="big">NOTHING WAITING</div>No open symbol submissions. New ones also email you, since you're watching the repo.</div>`);
     } else if (tab === "done") {
       body = state.done.length ? `<div class="list">${state.done.map(i => {
-        const approved = i.labels.some(l => l.name === "approved");
-        return `<div class="li"><span class="chip ${approved ? "ok" : "mute"}">${approved ? "PUBLISHED" : "REJECTED"}</span>
-          <span class="n">${esc(i.title.replace(/^\[symbol\]\s*/i, ""))}</span><span class="m">#${i.number} · ${esc(i.user.login)} · ${ago(i.closed_at)}</span>
+        const approved = i.labels.some(l => l.name === "approved"), fixed = !approved && i.labels.some(l => l.name === "fix") && i.state_reason === "completed";
+        return `<div class="li"><span class="chip ${approved || fixed ? "ok" : "mute"}">${approved ? "PUBLISHED" : fixed ? "FIXED" : "REJECTED"}</span>
+          <span class="n">${esc(i.title.replace(/^\[(symbol|fix)\]\s*/i, ""))}</span><span class="m">#${i.number} · ${esc(i.user.login)} · ${ago(i.closed_at)}</span>
           <span class="r"><a class="btn" href="${esc(i.html_url)}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
       }).join("")}</div>` : `<div class="empty">Nothing decided yet.</div>`;
     } else {
@@ -703,6 +740,26 @@ footer a { color: var(--muted); }
       setStatus(n, "bad", "Still not published after 3 minutes. Check the workflow runs (link at the bottom), or retry.");
     } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
   }
+  async function acceptFix(n) {
+    setStatus(n, "busy", "Accepting…");
+    try {
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/labels`, { method: "POST", body: JSON.stringify({ labels: ["accepted"] }) });
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments`, { method: "POST", body: JSON.stringify({ body: "👍 Thanks, accepted. Built-in symbols are part of the SignalFlow app, so this will be fixed in an upcoming app update. I'll close this issue when it ships." }) });
+      const a = state.queue.find(x => x.issue.number === n); if (a && !a.labels.includes("accepted")) a.labels.push("accepted");
+      setStatus(n, "ok", "Accepted. It stays here as a to-do until you mark it fixed.");
+    } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
+  }
+  async function markFixed(n) {
+    const v = ($(`#ver${n}`)?.value || "").trim().replace(/^v/i, "");
+    state.fixing[n] = false;
+    setStatus(n, "busy", "Closing…");
+    try {
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments`, { method: "POST", body: JSON.stringify({ body: `✅ Fixed${v ? ` in SignalFlow **v${v}**` : " in the app"}. Refresh the app to get it (Ctrl+Shift+R). Thanks for reporting it!` }) });
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ state: "closed", state_reason: "completed" }) });
+      setStatus(n, "ok", "Closed as fixed", { done: true });
+      setTimeout(async () => { delete state.status[n]; await refresh(); render(); }, 2500);
+    } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
+  }
   async function reject(n) {
     const why = ($(`#why${n}`)?.value || "").trim();
     state.rejecting[n] = false;
@@ -724,6 +781,10 @@ footer a { color: var(--muted); }
     if (b.dataset.act === "edit-cancel") { delete state.edit[n]; delete state.status[n]; renderCard(n); }
     if (b.dataset.act === "edit-save") saveEdit(n);
     if (b.dataset.act === "approve") approve(n);
+    if (b.dataset.act === "accept") acceptFix(n);
+    if (b.dataset.act === "fixed") { state.fixing[n] = true; render(); $(`#ver${n}`)?.focus(); }
+    if (b.dataset.act === "fixed-cancel") { state.fixing[n] = false; render(); }
+    if (b.dataset.act === "fixed-go") markFixed(n);
     if (b.dataset.act === "reject") { state.rejecting[n] = true; render(); $(`#why${n}`)?.focus(); }
     if (b.dataset.act === "reject-cancel") { state.rejecting[n] = false; render(); }
     if (b.dataset.act === "reject-go") reject(n);
@@ -731,7 +792,7 @@ footer a { color: var(--muted); }
   document.addEventListener("input", e => { const el = e.target.closest("[data-e]"); if (el) onEdit(el, true); });
   document.addEventListener("change", e => { const el = e.target.closest("[data-e]"); if (el && el.tagName === "SELECT") onEdit(el, false); });
   // a quiet re-check while the tab is open, so a new submission shows up on its own
-  setInterval(async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean) && !Object.keys(state.edit).length) { try { await refresh(); render(); } catch {} } }, 120000);
+  setInterval(async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean) && !Object.values(state.fixing).some(Boolean) && !Object.keys(state.edit).length) { try { await refresh(); render(); } catch {} } }, 120000);
 
   if (token) boot(); else render();
 })();
