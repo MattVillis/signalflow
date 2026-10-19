@@ -314,9 +314,13 @@ footer a { color: var(--muted); }
       ...(builtins || []).map(b => ({ where: "built-in", name: b.name, ports: b.ports })),
       ...(lib || []).filter(d => d.id !== sym.id).map(d => ({ where: "shared library", name: d.name, ports: expand(d).length })),
       ...state.queue.filter(a => a.issue.number !== selfNumber && (a.sym || a.raw)?.name).map(a => ({ where: `waiting #${a.issue.number}`, name: (a.sym || a.raw).name, ports: expand(a.sym || a.raw).length || 0 })),
+      // turned down before: a resend of a rejected symbol (same id, or same name) is flagged like a duplicate
+      ...state.done.filter(i => i.state_reason === "not_planned" && i.number !== selfNumber && !readFix(i.body)).map(i => ({ where: `rejected #${i.number}`, rejected: true,
+        name: String(i.title || "").replace(/^\[symbol\]\s*/i, "").trim(), id: (String(i.body || "").match(/"id"\s*:\s*"([^"]+)"/) || [])[1] || null, ports: null })),
     ];
     const exact = [], close = [];
     pool.forEach(c => {
+      if (c.rejected && c.id && sym.id && c.id === sym.id) { exact.push(c); return; }
       const them = norm(c.name); if (!them || !me) return;
       if (them === me) { exact.push(c); return; }
       const short = Math.min(me.length, them.length);
@@ -335,10 +339,12 @@ footer a { color: var(--muted); }
     close.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
     return { exact, close: close.slice(0, 4) };
   }
-  const dupeLine = c => `${c.where}: <b>${esc(c.name)}</b> (${c.ports} port${c.ports === 1 ? "" : "s"}${c.why ? `, ${esc(c.why)}` : ""})`;
+  const dupeLine = c => c.rejected ? `${c.where}: <b>${esc(c.name)}</b>${c.why ? ` (${esc(c.why)})` : ""}` : `${c.where}: <b>${esc(c.name)}</b> (${c.ports} port${c.ports === 1 ? "" : "s"}${c.why ? `, ${esc(c.why)}` : ""})`;
   function dupeMsgs(d, portsHere) {
     const m = [];
-    if (d.exact.length) m.push(`<div class="msg bad"><b>Already exists.</b> ${d.exact.map(dupeLine).join("; ")}. This one has ${portsHere} ports. Approving adds a second symbol with the same name.</div>`);
+    const rej = d.exact.filter(x => x.rejected), ex = d.exact.filter(x => !x.rejected);
+    if (rej.length) m.push(`<div class="msg bad"><b>Sent before and rejected.</b> ${rej.map(dupeLine).join("; ")}. Same symbol or same name as one you turned down.</div>`);
+    if (ex.length) m.push(`<div class="msg bad"><b>Already exists.</b> ${ex.map(dupeLine).join("; ")}. This one has ${portsHere} ports. Approving adds a second symbol with the same name.</div>`);
     if (d.close.length) m.push(`<div class="msg warn"><b>Possible duplicate.</b> ${d.close.map(dupeLine).join("; ")}.</div>`);
     return m;
   }
@@ -449,7 +455,8 @@ footer a { color: var(--muted); }
     else c.push(`<span class="chip ok">VALID</span>`);
     if (a.sameId) c.push(`<span class="chip info">UPDATE · REV ${esc(a.sameId.rev)} → ${Math.max(+a.sameId.rev || 1, +(a.sym || a.raw)?.rev || 1) + 1}</span>`);
     else if (a.sym && !a.fix) c.push(`<span class="chip info">NEW</span>`);
-    if (d?.exact.length) c.push(`<span class="chip bad">DUPLICATE</span>`);
+    if (d?.exact.some(x => x.rejected)) c.push(`<span class="chip bad">REJECTED BEFORE · ${esc(d.exact.find(x => x.rejected).where.replace("rejected ", ""))}</span>`);
+    if (d?.exact.some(x => !x.rejected)) c.push(`<span class="chip bad">DUPLICATE</span>`);
     else if (d?.close.length) c.push(`<span class="chip warn">SIMILAR</span>`);
     if (!a.labels.includes("symbol") && !a.labels.includes("invalid")) c.push(`<span class="chip mute">NOT CHECKED BY BOT</span>`);
     if (a.fix) c.unshift(`<span class="chip info">FIX · ${a.fix.target === "builtin" ? "BUILT-IN" : "SHARED"}</span>`);
@@ -738,7 +745,7 @@ footer a { color: var(--muted); }
       if (new Date(i.updated_at) >= new Date(sv.updated_at) && i.body === sv.body) { delete state.saved[i.number]; return i; }
       return { ...i, body: sv.body, title: sv.title, updated_at: sv.updated_at }; });
     state.queue = issues.filter(isSubmission).map(analyse);
-    const closed = await gh(`/repos/${OWNER}/${REPO}/issues?state=closed&per_page=30&sort=updated&direction=desc`);
+    const closed = await gh(`/repos/${OWNER}/${REPO}/issues?state=closed&per_page=100&sort=updated&direction=desc`);
     state.done = closed.filter(isSubmission);
   }
   async function boot() {
