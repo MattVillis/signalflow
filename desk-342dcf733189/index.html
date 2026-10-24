@@ -202,6 +202,9 @@ footer a { color: var(--muted); }
   const RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/`;
   const MARK = "Symbol submission from SignalFlow";
   const FIX_MARK = "Symbol correction from SignalFlow";   // "Suggest a fix" in the app (built-in or shared symbol)
+  // "Suggest a category" in the app: approving it runs the symbols repo's category.yml, which files the symbols under
+  // the category in library.json's catalog (built-ins included: the catalog re-files a shipped symbol with no new build)
+  const CAT_MARK = "Category suggestion from SignalFlow";
   const KEY = "sf_desk_token";
   /* Copied from src/App.jsx (CONN, CATEGORIES) on 2026-10-15. The app blanks a connector its catalogue does
      not list, so the desk warns about one and the editor offers only these. Refresh both when the app's change. */
@@ -216,10 +219,20 @@ footer a { color: var(--muted); }
   const CATEGORIES = ["Servers", "Computers", "Processing", "LED", "Extenders", "KVM", "Display", "Cameras", "Network", "Audio", "Control", "Lighting", "Power", "Custom"];
   const SIGNALS = Object.keys(CONN), NAME_MAX = 36, LABEL_MAX = 24;   // = the app's NAME_MAX / PORT_LABEL_MAX
   const clone = o => JSON.parse(JSON.stringify(o));
+  /* Every category the shared library already has: the app's, the catalog's extra ones and the ones symbols use. Since
+     app 1.31.0 the sidebar lists any category a symbol uses, so a submission in a category nobody has is a NEW
+     category (approving it creates it), no longer one that silently files under Custom. */
+  const knownCats = () => {
+    const out = [...CATEGORIES];
+    const add = c => { if (typeof c === "string" && c.trim() && !out.some(x => x.toLowerCase() === c.toLowerCase())) out.push(c); };
+    (catalog?.cats || []).forEach(add); Object.values(catalog?.defs || {}).forEach(d => add(d?.category)); (lib || []).forEach(d => add(d.category));
+    return out;
+  };
+  const isNewCat = c => !!c && !knownCats().some(x => x.toLowerCase() === String(c).toLowerCase());
   // catalogue warnings: things the validator allows but the app would not draw as intended
   function catalogueWarnings(sym) {
     const w = [];
-    if (sym.category && !CATEGORIES.includes(sym.category)) w.push(`Category "${sym.category}" is not one of the app's, so the symbol files under Custom.`);
+    if (sym.category && isNewCat(sym.category)) w.push(`New category "${sym.category}": approving this symbol creates it in every app. Check it isn't a near-duplicate of one there already (${knownCats().filter(c => c !== "Custom").join(", ")}).`);
     const bad = (sym.ports || []).filter(p => p.conn && SIGNALS.includes(p.signal) && !CONN[p.signal].includes(p.conn));
     if (bad.length) w.push(`${bad.length} connector${bad.length > 1 ? "s" : ""} the app doesn't know for that signal, which will show blank: ${[...new Set(bad.map(p => p.signal + " " + p.conn))].slice(0, 4).join(", ")}${bad.length > 4 ? "…" : ""}.`);
     return w;
@@ -234,8 +247,8 @@ footer a { color: var(--muted); }
     history.replaceState(null, "", location.pathname + location.search);
     if (t) store.set(t);
   }
-  let token = store.get(), me = null, lib = null, L = null, tab = "queue", builtins = null;
-  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {} };
+  let token = store.get(), me = null, lib = null, catalog = null, L = null, tab = "queue", builtins = null;
+  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {}, catEdit: {} };
 
   async function gh(path, opt = {}) {
     const r = await fetch(API + path, { cache: "no-store", ...opt, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...(opt.body ? { "Content-Type": "application/json" } : {}) } });
@@ -258,9 +271,13 @@ footer a { color: var(--muted); }
   }
   async function loadLibrary() {
     const r = await fetch(RAW + "library.json?x=" + Date.now(), { cache: "no-store" });
-    return (await r.json()).library || [];
+    const j = await r.json();
+    catalog = j.catalog && typeof j.catalog === "object" ? j.catalog : { cats: [], defs: {} };
+    return j.library || [];
   }
-  const isSubmission = i => !i.pull_request && (/^\[(symbol|fix)\]/i.test(i.title) || (i.body || "").includes(MARK) || (i.body || "").includes(FIX_MARK) || i.labels.some(l => l.name === "symbol" || l.name === "fix"));
+  const isCatIssue = i => /^\[category\]/i.test(i.title || "") || (i.body || "").includes(CAT_MARK) || i.labels.some(l => l.name === "category");
+  const isSubmission = i => !i.pull_request && (/^\[(symbol|fix|category)\]/i.test(i.title) || (i.body || "").includes(MARK) || (i.body || "").includes(FIX_MARK) || (i.body || "").includes(CAT_MARK) || i.labels.some(l => l.name === "symbol" || l.name === "fix" || l.name === "category"));
+  const plainTitle = t => String(t || "").replace(/^\[(symbol|fix|category)\]\s*/i, "");
   const T3 = "\x60\x60\x60";
   // a correction: target + the symbol as it is now (folded away in the issue) + the user's note
   function readFix(body) {
@@ -272,8 +289,28 @@ footer a { color: var(--muted); }
     return { target: t.target, id: t.id, before, note: line("What's wrong"), source: line("Source") };
   }
 
+  /* A category suggestion: the repo's own parse/validate/normalise (the same as category.yml), plus where each symbol
+     sits now. A symbol the desk can't find in the built-ins or the shared library is flagged: the catalog would hold
+     an override nobody sees. */
+  function analyseCat(a) {
+    const c = { raw: null, s: null, errs: [], parseErr: null };
+    if (!L.parseCategory) { c.parseErr = "the symbols repo's scripts/symbol.js predates category suggestions, so this desk can't read them yet"; return c; }
+    try { c.raw = L.parseCategory(a.issue.body); c.errs = L.validateCategory(c.raw); if (!c.errs.length) c.s = L.normaliseCategory(c.raw); }
+    catch (e) { c.parseErr = e.message; }
+    if (c.s) {
+      const where = id => { const b = (builtins || []).find(x => x.id === id), d = (lib || []).find(x => x.id === id);
+        return b ? { kind: "built-in", name: b.name, now: catalog?.defs?.[id]?.category || b.category } : d ? { kind: "shared", name: d.name, now: catalog?.defs?.[id]?.category || d.category } : null; };
+      c.rows = c.s.symbols.map(x => ({ ...x, at: where(x.id) }));
+      c.isNew = isNewCat(c.s.category);
+      const key = v => String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      // near-duplicates of a category that exists: one contains the other, or a typo apart
+      c.near = c.isNew ? knownCats().filter(k => k !== "Custom" && key(k).length >= 3 && (key(k).includes(key(c.s.category)) || key(c.s.category).includes(key(k)) || lev(key(k), key(c.s.category)) <= 2)) : [];
+    }
+    return c;
+  }
   function analyse(issue) {
     const a = { issue, sym: null, errs: [], parseErr: null, labels: issue.labels.map(l => l.name) };
+    if (isCatIssue(issue)) { a.cat = analyseCat(a); a.warns = []; return a; }
     try { const raw = L.parseSubmission(issue.body); a.errs = L.validate(raw); if (!a.errs.length) a.sym = L.normalise(raw); else a.raw = raw; }
     catch (e) { a.parseErr = e.message; }
     const s = a.sym || a.raw;
@@ -315,7 +352,7 @@ footer a { color: var(--muted); }
       ...(lib || []).filter(d => d.id !== sym.id).map(d => ({ where: "shared library", name: d.name, ports: expand(d).length })),
       ...state.queue.filter(a => a.issue.number !== selfNumber && (a.sym || a.raw)?.name).map(a => ({ where: `waiting #${a.issue.number}`, name: (a.sym || a.raw).name, ports: expand(a.sym || a.raw).length || 0 })),
       // turned down before: a resend of a rejected symbol (same id, or same name) is flagged like a duplicate
-      ...state.done.filter(i => i.state_reason === "not_planned" && i.number !== selfNumber && !readFix(i.body)).map(i => ({ where: `rejected #${i.number}`, rejected: true,
+      ...state.done.filter(i => i.state_reason === "not_planned" && i.number !== selfNumber && !readFix(i.body) && !isCatIssue(i)).map(i => ({ where: `rejected #${i.number}`, rejected: true,
         name: String(i.title || "").replace(/^\[symbol\]\s*/i, "").trim(), id: (String(i.body || "").match(/"id"\s*:\s*"([^"]+)"/) || [])[1] || null, ports: null })),
     ];
     const exact = [], close = [];
@@ -464,7 +501,95 @@ footer a { color: var(--muted); }
     if (a.labels.includes("approved") && a.fix?.target !== "builtin") c.push(`<span class="chip warn">APPROVED · NOT PUBLISHED</span>`);
     return c.join("");
   }
+  /* ---------- category suggestions ----------
+     Approve runs the same label flow as a symbol (approve()). Edit renames the category or takes symbols out, written
+     into the issue the way a symbol edit is (the edited json block first, the original folded away, a change comment),
+     so category.yml re-checks it and publishes exactly what was approved. */
+  function catCardHtml(a) {
+    const i = a.issue, n = i.number, c = a.cat, s = c.s, st = state.status[n], ed = state.catEdit[n];
+    const chips = [`<span class="chip info">CATEGORY</span>`];
+    chips.push(c.parseErr ? `<span class="chip bad">CAN'T READ</span>` : c.errs.length ? `<span class="chip bad">INVALID</span>` : `<span class="chip ok">VALID</span>`);
+    if (s) chips.push(c.isNew ? `<span class="chip warn">NEW CATEGORY</span>` : `<span class="chip mute">EXISTING CATEGORY</span>`);
+    if (!a.labels.includes("category") && !a.labels.includes("invalid")) chips.push(`<span class="chip mute">NOT CHECKED BY BOT</span>`);
+    if (a.labels.includes("approved")) chips.push(`<span class="chip warn">APPROVED · NOT PUBLISHED</span>`);
+    const why = (/\*\*Why:\*\*\s*(.+)/.exec(i.body || "") || [])[1]?.trim() || "";
+    const rows = c.rows || [], kept = rows.filter(r => !ed?.drop.has(r.id));
+    const target = ed ? ed.category : s?.category || "";
+    const unknown = kept.filter(r => !r.at), here = kept.filter(r => r.at && String(r.at.now || "").toLowerCase() === target.toLowerCase());
+    const msgs = [];
+    if (why) msgs.push(`<div class="msg"><b>Why:</b> ${esc(why)}</div>`);
+    if (c.parseErr) msgs.push(`<div class="msg bad">The suggestion in this issue can't be read: ${esc(c.parseErr)}. Reject it, or ask the submitter to fix it.</div>`);
+    c.errs.forEach(e => msgs.push(`<div class="msg bad">${esc(e)}</div>`));
+    if (s && c.isNew) msgs.push(`<div class="msg warn"><b>New category.</b> Approving creates <b>${esc(s.category)}</b> in every app.${c.near.length ? ` It looks close to ${c.near.map(k => `<b>${esc(k)}</b>`).join(", ")}: Edit can rename it to one of those.` : ""}</div>`);
+    if (unknown.length) msgs.push(`<div class="msg warn">${unknown.length === 1 ? "One symbol isn't" : `${unknown.length} symbols aren't`} a built-in or in the shared library (${unknown.map(r => esc(r.name)).join(", ")}), so filing ${unknown.length === 1 ? "it" : "them"} changes nothing anyone sees.${builtins ? "" : " builtins.json didn't load, so built-ins can't be checked."}</div>`);
+    if (here.length) msgs.push(`<div class="msg">${here.length} already filed there: ${here.map(r => esc(r.name)).join(", ")}.</div>`);
+    if (s && !c.errs.length && !unknown.length && !c.near.length && !c.isNew) msgs.push(`<div class="msg ok">Passes the same checks the category workflow runs.</div>`);
+    const table = rows.length ? `<table><thead><tr>${ed ? "<th>KEEP</th>" : ""}<th>SYMBOL</th><th>KIND</th><th>NOW IN</th><th>MOVES TO</th></tr></thead><tbody>
+      ${rows.map(r => { const out = ed?.drop.has(r.id); return `<tr style="${out ? "opacity:.4;text-decoration:line-through" : ""}">
+        ${ed ? `<td><input type="checkbox" data-ce="drop" data-n="${n}" data-id="${esc(r.id)}" ${out ? "" : "checked"} aria-label="Keep ${esc(r.name)}" style="width:auto"></td>` : ""}
+        <td>${esc(r.at?.name || r.name)}</td><td>${r.at ? esc(r.at.kind) : '<span style="color:var(--warn)">not found</span>'}</td><td>${esc(r.at?.now || r.from)}</td><td>${esc(target)}</td></tr>`; }).join("")}
+      </tbody></table>` : "";
+    const busy = st?.busy || st?.done;
+    return `<article class="card" id="i${n}">
+      <div class="card-h">
+        <div style="min-width:0">
+          <div class="t">${ed ? "EDITING · " : ""}${esc(target || plainTitle(i.title))}</div>
+          <div class="meta">#${n} · from <a href="${esc(i.user.html_url)}" target="_blank" rel="noopener">${esc(i.user.login)}</a> · ${ago(i.created_at)} · <a href="${esc(i.html_url)}" target="_blank" rel="noopener">open on GitHub ↗</a></div>
+        </div>
+        <div class="chips">${chips.join("")}</div>
+      </div>
+      <div class="facts">
+        ${ed ? `<label class="note" style="display:flex;flex-direction:column;gap:3px;max-width:360px">CATEGORY NAME<input data-ce="name" data-n="${n}" value="${esc(ed.category)}" maxlength="18"></label>` : ""}
+        ${s ? `<dl><dt>SYMBOLS</dt><dd>${kept.length} to file under <b>${esc(target)}</b>${ed && kept.length !== rows.length ? ` (${rows.length - kept.length} taken out)` : ""}</dd></dl>` : ""}
+        <div class="msgs">${msgs.join("")}</div>
+        ${table}
+        <details><summary>ISSUE TEXT</summary><pre>${esc(i.body || "")}</pre></details>
+      </div>
+      ${state.rejecting[n] ? `<div class="reject">
+          <label class="note" for="why${n}">Reason (optional, posted on the issue)</label>
+          <textarea id="why${n}" rows="3" placeholder="e.g. These belong under Control; a separate category would only hold three symbols."></textarea>
+          <div class="row"><button class="bad primary" data-act="reject-go" data-n="${n}" style="background:var(--bad);color:#fff;border-color:var(--bad)">Close as rejected</button><button data-act="reject-cancel" data-n="${n}">Cancel</button></div>
+        </div>` : ed ? `<div class="actions">
+          <button class="primary" data-act="cat-save" data-n="${n}" ${busy ? "disabled" : ""}>Save changes to the suggestion</button>
+          <button data-act="cat-cancel" data-n="${n}" ${st?.busy ? "disabled" : ""}>Cancel</button>
+          <span class="grow"></span>
+          ${st ? `<span class="status ${st.kind}">${st.kind === "busy" ? '<span class="spin"></span> ' : ""}${esc(st.text)}</span>` : ""}
+        </div>` : `<div class="actions">
+          <button class="ok primary" data-act="approve" data-n="${n}" ${s && !busy ? "" : "disabled"} title="${s ? "Adds the approved label: the category workflow files these symbols in library.json and closes the issue" : "Only a valid suggestion can be approved"}">${a.labels.includes("approved") ? "↻ Retry publish" : "✓ Approve + file them"}</button>
+          <button data-act="cat-edit" data-n="${n}" ${s && !busy ? "" : "disabled"} title="Rename the category or take symbols out before approving">✎ Edit</button>
+          <button class="bad" data-act="reject" data-n="${n}" ${busy ? "disabled" : ""}>✕ Reject…</button>
+          <span class="grow"></span>
+          ${st ? `<span class="status ${st.kind}">${st.kind === "busy" ? '<span class="spin"></span> ' : ""}${esc(st.text)}</span>` : ""}
+        </div>`}
+    </article>`;
+  }
+  async function saveCatEdit(n) {
+    const a = state.queue.find(x => x.issue.number === n), ed = state.catEdit[n], s = a?.cat?.s; if (!s || !ed) return;
+    const next = { category: ed.category.replace(/\s+/g, " ").trim(), new: isNewCat(ed.category.trim()), symbols: s.symbols.filter(x => !ed.drop.has(x.id)) };
+    const errs = L.validateCategory(next); if (errs.length) { setStatus(n, "bad", errs[0]); return; }
+    const changes = [...(next.category !== s.category ? [`category ${s.category} → ${next.category}`] : []), ...s.symbols.filter(x => ed.drop.has(x.id)).map(x => `took out ${x.name}`)];
+    if (!changes.length) { delete state.catEdit[n]; renderCard(n); return; }
+    setStatus(n, "busy", "Saving to the issue…");
+    try {
+      const fresh = await gh(`/repos/${OWNER}/${REPO}/issues/${n}`);
+      const old = fresh.body || "", first = new RegExp(T3 + "json\\s*[\\s\\S]*?" + T3).exec(old);
+      // keep the FIRST original, as a symbol edit does
+      const prior = /<details><summary>Original suggestion<\/summary>/.test(old);
+      const block = `${T3}json\n${JSON.stringify(next)}\n${T3}`;
+      const orig = first ? first[0].slice(first[0].indexOf("\n") + 1, -3).trim() : "";
+      const tail = `\n\n_Edited by @${me.login} before approval._` + (prior || !orig ? "" : `\n\n<details><summary>Original suggestion</summary>\n\n${T3}text\n${orig}\n${T3}\n</details>`);
+      let body = first ? old.slice(0, first.index) + block + tail + old.slice(first.index + first[0].length).replace(/^\s*_Edited by @[^\n]*before approval\._/, "") : `${CAT_MARK}.\n\n${block}${tail}\n`;
+      body = body.replace(/\*\*Category:\*\*[^\n]*/, `**Category:** ${next.category} (${next.new ? "new" : "existing"})`);
+      state.saved[n] = await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ body }) });
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments`, { method: "POST", body: JSON.stringify({ body: `✎ Edited before approval:\n\n${changes.map(c => "- " + c).join("\n")}\n\nThe original is kept at the bottom of the issue.` }) });
+      delete state.catEdit[n];
+      setStatus(n, "ok", "Saved. The checker re-runs on GitHub; approve when you're happy.");
+      await refresh(); render();
+      setTimeout(() => { if (state.status[n]?.kind === "ok") { delete state.status[n]; render(); } }, 6000);
+    } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
+  }
   function cardHtml(a) {
+    if (a.cat) return catCardHtml(a);
     if (state.edit[a.issue.number]) return editCardHtml(a);
     const i = a.issue, s = a.sym || a.raw, n = i.number, st = state.status[n];
     const ports = s ? expand(s) : [];
@@ -580,7 +705,7 @@ footer a { color: var(--muted); }
   function editCardHtml(a) {
     const i = a.issue, n = i.number, ed = state.edit[n], s = ed.sym, st = state.status[n];
     const mm = editMsgs(n);
-    const catUnk = !CATEGORIES.includes(s.category);
+    const cats = knownCats(), catUnk = !cats.includes(s.category);   // unknown = a NEW category, which approving creates
     return `<article class="card" id="i${n}">
       <div class="card-h">
         <div style="min-width:0">
@@ -593,7 +718,7 @@ footer a { color: var(--muted); }
         <div class="facts ed">
           <div class="top">
             <label>NAME<input data-e="name" data-n="${n}" value="${esc(s.name)}" maxlength="${NAME_MAX}"></label>
-            <label>CATEGORY<select class="${catUnk ? "unk" : ""}" data-e="category" data-n="${n}">${CATEGORIES.map(c => `<option ${c === s.category ? "selected" : ""}>${c}</option>`).join("")}${catUnk ? `<option selected>${esc(s.category)}</option>` : ""}</select></label>
+            <label>CATEGORY<select class="${catUnk ? "unk" : ""}" data-e="category" data-n="${n}" ${catUnk ? 'title="A new category: approving creates it"' : ""}>${cats.map(c => `<option ${c === s.category ? "selected" : ""}>${esc(c)}</option>`).join("")}${catUnk ? `<option selected>${esc(s.category)}</option>` : ""}</select></label>
             <label>WIDTH<input data-e="width" data-n="${n}" type="number" min="130" max="280" step="10" value="${esc(s.width)}"></label>
           </div>
           ${s.slots?.length ? `<div class="msg">This is a modular symbol. Its slots and cards aren't editable here; edit them in the issue on GitHub.</div>` : ""}
@@ -724,15 +849,18 @@ footer a { color: var(--muted); }
     } else if (tab === "done") {
       body = state.done.length ? `<div class="list">${state.done.map(i => {
         const approved = i.labels.some(l => l.name === "approved"), fixed = !approved && i.labels.some(l => l.name === "fix") && i.state_reason === "completed";
-        return `<div class="li"><span class="chip ${approved || fixed ? "ok" : "mute"}">${approved ? "PUBLISHED" : fixed ? "FIXED" : "REJECTED"}</span>
-          <span class="n">${esc(i.title.replace(/^\[(symbol|fix)\]\s*/i, ""))}</span><span class="m">#${i.number} · ${esc(i.user.login)} · ${ago(i.closed_at)}</span>
+        const isCat = isCatIssue(i);
+        return `<div class="li"><span class="chip ${approved || fixed ? "ok" : "mute"}">${approved ? (isCat ? "FILED" : "PUBLISHED") : fixed ? "FIXED" : "REJECTED"}</span>${isCat ? '<span class="chip info">CATEGORY</span>' : ""}
+          <span class="n">${esc(plainTitle(i.title))}</span><span class="m">#${i.number} · ${esc(i.user.login)} · ${ago(i.closed_at)}</span>
           <span class="r"><a class="btn" href="${esc(i.html_url)}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
       }).join("")}</div>` : `<div class="empty">Nothing decided yet.</div>`;
     } else {
-      body = lib?.length ? `<div class="list">${lib.map(d => `<div class="li"><span class="n">${esc(d.name)}</span>
-        <span class="m">${esc(d.category)} · ${expand(d).length} ports · rev ${esc(d.rev)}</span></div>`).join("")}</div>
+      const nCats = (catalog?.cats || []).length, nRe = Object.keys(catalog?.defs || {}).length;
+      body = (nCats || nRe ? `<p class="note" style="margin:0 0 10px">Catalog: ${nCats ? `${nCats} extra categor${nCats === 1 ? "y" : "ies"} (${(catalog.cats || []).map(esc).join(", ")})` : "no extra categories"} · ${nRe} symbol${nRe === 1 ? "" : "s"} re-filed (approved category suggestions, and Library admin).</p>` : "") +
+        (lib?.length ? `<div class="list">${lib.map(d => `<div class="li"><span class="n">${esc(d.name)}</span>
+        <span class="m">${esc(catalog?.defs?.[d.id]?.category || d.category)} · ${expand(d).length} ports · rev ${esc(d.rev)}</span></div>`).join("")}</div>
         <p class="note">To change or remove one of these, edit library.json in the repo. Every app picks up changes on its next sync (within 30 minutes).</p>`
-        : `<div class="empty">The shared library is empty.</div>`;
+        : `<div class="empty">The shared library is empty.</div>`);
     }
     $("#app").innerHTML = tabsHtml() + body;
   }
@@ -830,6 +958,9 @@ footer a { color: var(--muted); }
     if (b.id === "refresh") { b.disabled = true; b.innerHTML = '<span class="spin"></span> Refresh'; try { await refresh(); } catch (err) { alert(err.message); } render(); return; }
     if (b.dataset.e) { onEditClick(b); return; }
     const n = +b.dataset.n;
+    if (b.dataset.act === "cat-edit") { const a = state.queue.find(x => x.issue.number === n); if (a?.cat?.s) { state.catEdit[n] = { category: a.cat.s.category, drop: new Set() }; renderCard(n); } }
+    if (b.dataset.act === "cat-cancel") { delete state.catEdit[n]; delete state.status[n]; renderCard(n); }
+    if (b.dataset.act === "cat-save") saveCatEdit(n);
     if (b.dataset.act === "edit") startEdit(n);
     if (b.dataset.act === "edit-cancel") { delete state.edit[n]; delete state.status[n]; renderCard(n); }
     if (b.dataset.act === "edit-save") saveEdit(n);
@@ -842,11 +973,22 @@ footer a { color: var(--muted); }
     if (b.dataset.act === "reject-cancel") { state.rejecting[n] = false; render(); }
     if (b.dataset.act === "reject-go") reject(n);
   });
-  document.addEventListener("input", e => { const el = e.target.closest("[data-e]"); if (el) onEdit(el, true); });
-  document.addEventListener("change", e => { const el = e.target.closest("[data-e]"); if (el && el.tagName === "SELECT") onEdit(el, false); });
+  document.addEventListener("input", e => {
+    const el = e.target.closest("[data-e]"); if (el) onEdit(el, true);
+    // the category name is typed in place (no re-render, so the field keeps focus); the card redraws on change
+    const ce = e.target.closest('[data-ce="name"]');
+    if (ce) { const ed = state.catEdit[+ce.dataset.n]; if (ed) { const v = ce.value.replace(/[^A-Za-z0-9 /&+-]/g, "").slice(0, 18); if (v !== ce.value) ce.value = v; ed.category = v; } }
+  });
+  document.addEventListener("change", e => {
+    const el = e.target.closest("[data-e]"); if (el && el.tagName === "SELECT") onEdit(el, false);
+    const ce = e.target.closest("[data-ce]"); if (!ce) return;
+    const n = +ce.dataset.n, ed = state.catEdit[n]; if (!ed) return;
+    if (ce.dataset.ce === "drop") { if (ce.checked) ed.drop.delete(ce.dataset.id); else ed.drop.add(ce.dataset.id); }
+    renderCard(n);
+  });
   // a quiet re-check while the tab is open, so a new submission shows up on its own
   let lastQuiet = Date.now();
-  const quietRefresh = async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean) && !Object.values(state.fixing).some(Boolean) && !Object.keys(state.edit).length) { lastQuiet = Date.now(); try { await refresh(); render(); } catch {} } };
+  const quietRefresh = async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean) && !Object.values(state.fixing).some(Boolean) && !Object.keys(state.edit).length && !Object.keys(state.catEdit).length) { lastQuiet = Date.now(); try { await refresh(); render(); } catch {} } };
   setInterval(quietRefresh, 120000);
   // reopening the phone app resumes the old page, so check again when it comes back after a while
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - lastQuiet > 30000) quietRefresh(); });
