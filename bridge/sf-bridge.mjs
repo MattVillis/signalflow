@@ -126,18 +126,27 @@ const canPublish = () => existsSync(join(SYMBOLS_DIR, "library.json")) && exists
 // The shared taxonomy (category renames/moves for shipped symbols, extra
 // categories) rides in library.json next to the symbols, so one sync carries
 // both. Kept deliberately dumb: strings only, capped, no schema of its own.
+// caps = the app's cleanCat and the repo's scripts/symbol.js (raised 2026-10-24 for approved category suggestions)
 function cleanCatalog(raw) {
-  const cats = (Array.isArray(raw?.cats) ? raw.cats : []).map(c => String(c).slice(0, 18)).filter(Boolean).slice(0, 16);
+  const cats = (Array.isArray(raw?.cats) ? raw.cats : []).map(c => String(c).slice(0, 18)).filter(Boolean).slice(0, 64);
   const defs = {};
-  Object.entries(raw?.defs && typeof raw.defs === "object" ? raw.defs : {}).slice(0, 400).forEach(([id, v]) => {
+  Object.entries(raw?.defs && typeof raw.defs === "object" ? raw.defs : {}).slice(0, 2000).forEach(([id, v]) => {
     const e = {};
     if (typeof v?.category === "string" && v.category.trim()) e.category = v.category.slice(0, 18);
-    if (typeof v?.name === "string" && v.name.trim()) e.name = v.name.toUpperCase().slice(0, 32);
+    if (typeof v?.name === "string" && v.name.trim()) e.name = v.name.toUpperCase().slice(0, 36);
     if (Object.keys(e).length) defs[String(id).slice(0, 64)] = e;
   });
   return { cats, defs };
 }
-function publishSymbols(list, catalog) {
+/* The app's own catalog EDITS laid over the catalog just pulled. Approved category suggestions write that catalog too
+   (the repo's category workflow), so replacing it with the app's copy, synced up to 30 minutes earlier, could undo one.
+   Per symbol, an edit replaces only the fields it sets. */
+function mergeCatalog(base, edits) {
+  const b = cleanCatalog(base), e = cleanCatalog(edits), defs = { ...b.defs };
+  Object.entries(e.defs).forEach(([id, v]) => { defs[id] = { ...(defs[id] || {}), ...v }; });
+  return cleanCatalog({ cats: [...new Set([...b.cats, ...e.cats])], defs });
+}
+function publishSymbols(list, catalog, catalogEdits) {
   if (!canPublish()) return { ok: false, error: `symbols repo checkout not found at ${SYMBOLS_DIR} (set SF_SYMBOLS_DIR)` };
   const git = (...a) => spawnSync("git", a, { cwd: SYMBOLS_DIR, encoding: "utf8" });
   const lib = createRequire(import.meta.url)(join(SYMBOLS_DIR, "scripts", "symbol.js"));
@@ -156,8 +165,8 @@ function publishSymbols(list, catalog) {
     lib.upsert(file.library, sym) === "added" ? added++ : updated++;
   }
   let catChanged = false;
-  if (catalog) {
-    const next = cleanCatalog(catalog);
+  if (catalogEdits || catalog) {
+    const next = catalogEdits ? mergeCatalog(file.catalog, catalogEdits) : cleanCatalog(catalog);
     if (JSON.stringify(next) !== JSON.stringify(file.catalog || { cats: [], defs: {} })) { file.catalog = next; catChanged = true; }
   }
   if (!added && !updated && !catChanged) return { ok: true, added, updated, bad, note: "nothing to publish" };
@@ -400,8 +409,8 @@ else {
       let body = "";
       req.on("data", c => { body += c; if (body.length > 8e6) req.destroy(); });
       req.on("end", () => {
-        let list, catalog; try { ({ library: list, catalog } = JSON.parse(body)); } catch { res.writeHead(400, { "Content-Type": "application/json" }); return res.end('{"ok":false,"error":"bad JSON body"}'); }
-        const r = publishSymbols(list, catalog);
+        let list, catalog, catalogEdits; try { ({ library: list, catalog, catalogEdits } = JSON.parse(body)); } catch { res.writeHead(400, { "Content-Type": "application/json" }); return res.end('{"ok":false,"error":"bad JSON body"}'); }
+        const r = publishSymbols(list, catalog, catalogEdits);
         console.log(`[sf-bridge] publish: ${r.ok ? `${r.added} added, ${r.updated} updated${r.catalog ? ", taxonomy" : ""}${r.commit ? " → " + r.commit : ""}` : "FAILED " + r.error}`);
         res.writeHead(200, { "Content-Type": "application/json" }); res.end(JSON.stringify(r));
       });
