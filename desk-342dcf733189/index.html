@@ -206,15 +206,15 @@ footer a { color: var(--muted); }
   // the category in library.json's catalog (built-ins included: the catalog re-files a shipped symbol with no new build)
   const CAT_MARK = "Category suggestion from SignalFlow";
   const KEY = "sf_desk_token";
-  /* Copied from src/App.jsx (CONN, CATEGORIES) on 2026-10-15. The app blanks a connector its catalogue does
+  /* Copied from src/App.jsx (CONN, CATEGORIES) on 2026-10-25. The app blanks a connector its catalogue does
      not list, so the desk warns about one and the editor offers only these. Refresh both when the app's change. */
   const CONN = {
-    video: ["HDMI", "DP", "12G SDI", "6G SDI", "3G SDI", "HD SDI", "DVI", "BNC", "HD-BNC", "RJ45", "SFP+", "SFP28", "USB-C"],
+    video: ["HDMI", "DP", "12G SDI", "6G SDI", "3G SDI", "HD SDI", "DVI", "VGA", "BNC", "HD-BNC", "RJ45", "SFP+", "SFP28", "USB-C"],
     fiber: ["OPTICALCON DUO", "OPTICALCON QUAD", "LC", "SC", "SFP", "SFP+", "SFP28", "QSFP+", "QSFP28", "SM FIBER", "MM FIBER"],
     network: ["RJ45", "ETHERCON", "SFP", "SFP+", "SFP28", "QSFP+", "QSFP28", "RJ45 10G"],
-    audio: ["XLR", "TRS", "AES3", "MADI", "ANALOG", "SPDIF", "DIN 1.0/2.3", "RJ45", "ETHERCON", "USB-A", "USB-C"],
-    control: ["DMX 5PIN", "DMX 3PIN", "RS-232", "GPIO", "MIDI", "LTC", "XLR", "BNC", "D-SUB 15", "D-SUB 26", "USB-A", "USB-B", "USB-C", "OCULINK"],
-    power: ["POWERCON", "TRUE1", "IEC C13", "IEC C14", "IEC C19", "IEC C20", "DC", "XLR 4-PIN", "USB-C"],
+    audio: ["XLR", "TRS", "AES3", "MADI", "ANALOG", "SPDIF", "DIN 1.0/2.3", "RJ45", "ETHERCON", "USB-A", "USB-B", "USB-C", "NL4", "NL8", "CA-COM", "PA-COM", "SC32", "SPEAKER TERMINAL", "TERMINAL", "AES50", "ULTRANET", "RJ45 AUDIO", "TOSLINK", "ANTENNA", "BNC", "DB25", "RCA", "3.5MM"],
+    control: ["DMX 5PIN", "DMX 3PIN", "DMX RJ45", "DMX TERMINAL", "RS-232", "GPIO", "MIDI", "LTC", "XLR", "BNC", "D-SUB 9", "D-SUB 15", "D-SUB 26", "TRS", "CAN", "USB-A", "USB-B", "USB-C", "OCULINK"],
+    power: ["POWERCON", "POWERCON 32A", "TRUE1", "IEC C13", "IEC C14", "IEC C19", "IEC C20", "DC", "XLR 4-PIN", "USB-C", "CEE 16A 1P", "CEE 32A 1P", "CEE 16A 3P", "CEE 32A 3P", "CEE 63A 3P", "CEE 125A 3P", "SOCAPEX", "POWERLOCK", "CAMLOK", "SCHUKO"],
   };
   const CATEGORIES = ["Servers", "Computers", "Processing", "LED", "Extenders", "KVM", "Display", "Cameras", "Network", "Audio", "Control", "Lighting", "Power", "Custom"];
   const SIGNALS = Object.keys(CONN), NAME_MAX = 36, LABEL_MAX = 24;   // = the app's NAME_MAX / PORT_LABEL_MAX
