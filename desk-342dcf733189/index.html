@@ -29,17 +29,21 @@
   --paper: #FAFAF7; --ink: #1A1A18; --panel: #F1F0EB; --rule: #C9C8BF; --muted: #6B6A63;
   --accent: #0E7490; --ok: #2E7D46; --bad: #B3403A; --warn: #B07C22; --gridm: #ECECE6; --gridM: #DDDDD4;
   --card: #FFFFFF;
+  /* class colours = the app legend; dark mode lifts them so they read on the dark paper */
+  --c-video: var(--ink); --c-audio: #0E7490; --c-lighting: #7A4BA0; --c-network: #2E7D46; --c-control: #8A8A82; --c-power: #B3403A;
   --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace; --cond: 'Barlow Condensed', 'Arial Narrow', sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #161614; --ink: #ECEBE4; --panel: #1F1F1C; --rule: #3A3A35; --muted: #9A998F;
     --accent: #3FB3CF; --ok: #5BB377; --bad: #E0756E; --warn: #D9A54A; --gridm: #1C1C19; --gridM: #23231F; --card: #1B1B19;
+    --c-audio: #3FB3CF; --c-lighting: #B58CE0; --c-network: #5BB377; --c-control: #A9A89E; --c-power: #E0756E;
   }
 }
 :root[data-theme="dark"] {
   --paper: #161614; --ink: #ECEBE4; --panel: #1F1F1C; --rule: #3A3A35; --muted: #9A998F;
   --accent: #3FB3CF; --ok: #5BB377; --bad: #E0756E; --warn: #D9A54A; --gridm: #1C1C19; --gridM: #23231F; --card: #1B1B19;
+    --c-audio: #3FB3CF; --c-lighting: #B58CE0; --c-network: #5BB377; --c-control: #A9A89E; --c-power: #E0756E;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -161,6 +165,47 @@ footer a { color: var(--muted); }
 .pair { margin-top: 14px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
 .pair .qr { background: #fff; padding: 10px; line-height: 0; }
 .pair .qr img { width: 220px; height: 220px; image-rendering: pixelated; }
+/* the Symbols tab: every symbol's class and category */
+.sy-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0 0 10px; }
+.sy-bar input { max-width: 280px; padding: 6px 8px; }
+.sy-bar select { max-width: 220px; }
+.clsf { display: flex; gap: 0; flex-wrap: wrap; }
+.clsf button { padding: 4px 8px; font-size: 9.5px; border-right-width: 0; }
+.clsf button:last-child { border-right-width: 1.2px; }
+.clsf button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.clsf button span { font-weight: 500; opacity: .7; margin-left: 2px; }
+.cls { display: inline-flex; align-items: center; gap: 5px; font: 600 9.5px var(--mono); letter-spacing: .1em; white-space: nowrap; }
+.cls i { display: inline-block; width: 11px; border-top: 2.4px solid currentColor; }
+.cls.auto { font-weight: 500; }
+.cls.auto b { font-weight: 500; color: var(--muted); letter-spacing: .04em; margin-left: 2px; }
+.sy { background: var(--card); border: 1.2px solid var(--ink); }
+.sy-r { display: grid; grid-template-columns: 22px minmax(0, 2.2fr) 80px 128px minmax(0, 1.3fr) 46px; gap: 8px; align-items: center; padding: 5px 10px; border-bottom: 1px solid var(--rule); font-size: 11.5px; }
+.sy-r.head { font: 600 9px var(--mono); letter-spacing: .12em; color: var(--muted); position: sticky; top: 0; background: var(--card); z-index: 1; border-bottom-color: var(--ink); }
+.sy-r .nm { font: 600 14px var(--cond); letter-spacing: .05em; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: none; border: none; padding: 0; text-align: left; color: var(--ink); text-transform: none; display: block; width: 100%; }
+.sy-r .nm:hover { color: var(--accent); background: none; }
+.sy-r.chg { background: color-mix(in srgb, var(--accent) 9%, var(--card)); }
+.sy-r.open { background: var(--panel); }
+.sy-r .was { color: var(--muted); font-size: 10px; text-decoration: line-through; margin-right: 4px; }
+.sy-r .src, .sy-r .pc { color: var(--muted); font-size: 10.5px; }
+.sy-r input[type=checkbox] { width: auto; margin: 0; }
+.sy-d { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-bottom: 1.2px solid var(--ink); background: var(--paper); }
+.sy-d .prev { max-height: 62vh; }
+.sy-d .facts label { font: 600 9px var(--mono); letter-spacing: .14em; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
+.sy-d .facts select { font-size: 12px; padding: 6px; }
+.sy-edit { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sy-bulk { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 10px; border: 1.2px solid var(--ink); background: var(--panel); margin-bottom: 8px; font-size: 11.5px; }
+.sy-foot { position: sticky; bottom: 0; z-index: 3; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 12px; background: var(--panel); border: 1.2px solid var(--ink); box-shadow: 0 -6px 14px -10px rgba(0,0,0,.35); margin-top: 10px; }
+.sy-cats { margin-bottom: 14px; }
+.sy-cats table { max-width: 720px; }
+.sy-cats td, .sy-cats th { padding: 4px 10px 4px 0; vertical-align: middle; }
+.sy-cats select { min-width: 190px; }
+.sy-r .ct2 { display: none; }
+@media (max-width: 720px) {
+  .sy-r { grid-template-columns: 22px minmax(0, 1fr) 96px; }
+  .sy-r .src, .sy-r .pc, .sy-r .ct { display: none; }
+  .sy-r .ct2 { display: block; font: 500 10px var(--mono); color: var(--muted); }
+  .sy-d, .sy-edit { grid-template-columns: 1fr; }
+}
 @media (max-width: 720px) {
   .card-b.edit { grid-template-columns: 1fr; }
   .card-b.edit .prev { position: static; max-height: 340px; }
@@ -248,7 +293,9 @@ footer a { color: var(--muted); }
     if (t) store.set(t);
   }
   let token = store.get(), me = null, lib = null, catalog = null, L = null, tab = "queue", builtins = null;
-  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {}, catEdit: {} };
+  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {}, catEdit: {}, catOpen: [],
+    // the Symbols tab: filters, the expanded row, ticked rows, changes not yet published, the publish status
+    sy: { q: "", fcls: "", fcat: "", fsrc: "", changed: false, open: null, sel: new Set(), pend: { sym: {}, cats: {} }, newName: "", newCls: "", pub: null, optimistic: null, showCats: false } };
 
   async function gh(path, opt = {}) {
     const r = await fetch(API + path, { cache: "no-store", ...opt, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, ...(opt.body ? { "Content-Type": "application/json" } : {}) } });
@@ -272,9 +319,17 @@ footer a { color: var(--muted); }
   async function loadLibrary() {
     const r = await fetch(RAW + "library.json?x=" + Date.now(), { cache: "no-store" });
     const j = await r.json();
-    catalog = j.catalog && typeof j.catalog === "object" ? j.catalog : { cats: [], defs: {} };
+    const fresh = j.catalog && typeof j.catalog === "object" ? j.catalog : { cats: [], defs: {} };
+    // raw.githubusercontent can serve library.json from before a catalog edit for a few minutes: until the copy it
+    // serves shows what this page just applied (or 10 minutes pass), keep showing what was applied
+    const o = state.sy.optimistic;
+    if (o && Date.now() - o.at < 600000 && !caughtUp(fresh, o)) catalog = o.catalog;
+    else { catalog = fresh; state.sy.optimistic = null; }
     return j.library || [];
   }
+  const canon = v => v && typeof v === "object" && !Array.isArray(v) ? JSON.stringify(Object.keys(v).sort().map(k => [k, v[k]])) : JSON.stringify(v ?? null);
+  const caughtUp = (fresh, o) => o.ids.every(id => canon(fresh.defs?.[id] || {}) === canon(o.catalog.defs?.[id] || {}))
+    && o.keys.every(k => (fresh.catClass?.[k] || "") === (o.catalog.catClass?.[k] || ""));
   const isCatIssue = i => /^\[category\]/i.test(i.title || "") || (i.body || "").includes(CAT_MARK) || i.labels.some(l => l.name === "category");
   const isSubmission = i => !i.pull_request && (/^\[(symbol|fix|category)\]/i.test(i.title) || (i.body || "").includes(MARK) || (i.body || "").includes(FIX_MARK) || (i.body || "").includes(CAT_MARK) || i.labels.some(l => l.name === "symbol" || l.name === "fix" || l.name === "category"));
   const plainTitle = t => String(t || "").replace(/^\[(symbol|fix|category)\]\s*/i, "");
@@ -432,6 +487,275 @@ footer a { color: var(--muted); }
     </svg>`;
   }
 
+  /* ---------- classes and categories (app 1.34.0; Matt: "a symbol has both a class and category") ----------
+     A CLASS is the department (video, audio, lighting, network, control, power) and the app's library filter; a CATEGORY
+     is the finer filing. The app works a class out for itself: set on the symbol, else the class its category is
+     allotted to, else its ports. The Symbols tab sets either for ANY symbol, built-ins too, and allots categories to
+     classes. A change goes out as one "[catalog] ..." issue that this page labels approved itself, and the symbols repo's
+     catalog.yml writes it into library.json's catalog (this token can only touch issues, not files).
+     The class rules below COPY src/App.jsx (CLASSES, CAT_CLASS, SERVICE_CONN, portClass, catClassOf): keep them in step.
+     Built-ins come with the app's own port verdict in builtins.json (portClass), so the copy only decides for shared
+     symbols. */
+  const CATALOG_MARK = "Catalog edit from the SignalFlow symbol desk";
+  const isCatalogIssue = i => !i.pull_request && (/^\[catalog\]/i.test(i.title || "") || (i.body || "").includes(CATALOG_MARK));
+  const CLASSES = [["video", "VIDEO"], ["audio", "AUDIO"], ["lighting", "LIGHTING"], ["network", "NETWORK"], ["control", "CONTROL"], ["power", "POWER"]];
+  const CLASS_KEYS = CLASSES.map(([k]) => k), classLabel = k => (CLASSES.find(([x]) => x === k) || [])[1] || "";
+  // the legend's colours (LIGHTING = the DMX purple, VIDEO = the ink), as CSS variables so dark mode can lift them
+  const CLASS_C = Object.fromEntries(CLASS_KEYS.map(k => [k, `var(--c-${k})`]));
+  const CAT_CLASS = { servers: "video", computers: "video", processing: "video", led: "video", extenders: "video", kvm: "video", display: "video",
+    cameras: "video", audio: "audio", lighting: "lighting", network: "network", power: "power" };
+  const SERVICE_CONN = new Set(["USB-A", "USB-B", "USB-C", "RS-232", "GPIO", "D-SUB 9", "OCULINK"]);
+  const DMX_CONN = new Set(["DMX 5PIN", "DMX 3PIN", "DMX RJ45", "DMX TERMINAL"]);
+  const catKeyOf = c => (String(c || "").replace(/[^A-Za-z0-9 /&+-]/g, "").replace(/\s+/g, " ").trim().slice(0, 18) || "Custom").toLowerCase();
+  const cleanClass = v => CLASS_KEYS.includes(v) ? v : "";
+  const isDmx = p => p.signal === "control" && (DMX_CONN.has(p.conn) || /\bDMX\b/.test(String(p.label || "").toUpperCase()));
+  const portKind = p => p.signal === "control" ? (isDmx(p) ? "lighting" : SERVICE_CONN.has(p.conn) ? null : "control") : p.signal === "power" || p.signal === "fiber" ? null : p.signal;
+  function portClass(ports) {
+    const P = ports || [];
+    if (P.filter(p => p.signal === "power" && p.dir === "out").length >= 2) return "power";
+    const n = {}; P.forEach(p => { const k = portKind(p); if (k) n[k] = (n[k] || 0) + 1; });
+    const top = Math.max(0, ...Object.values(n));
+    if (top) return CLASS_KEYS.find(k => n[k] === top);
+    return P.some(p => p.signal === "fiber") ? "network" : P.some(p => p.signal === "power") ? "power" : P.length ? "control" : "";
+  }
+  const catClassOf = (category, cat) => { const k = catKeyOf(category); return k === "custom" ? "" : cleanClass(cat?.catClass?.[k]) || CAT_CLASS[k] || ""; };
+  const clsHtml = (k, auto) => k ? `<span class="cls${auto ? " auto" : ""}" style="color:${CLASS_C[k]}"><i></i>${classLabel(k)}${auto ? "<b>auto</b>" : ""}</span>` : `<span class="note">—</span>`;
+  // the built-ins (compact in builtins.json) as symbols the preview can draw
+  const builtinDef = b => ({ id: b.id, name: b.name, width: b.width || 170,
+    ports: (b.list || []).map(([label, side, dir, signal, conn, gap, gi]) => ({ label, side, dir, signal, conn, ...(gap ? { gap: true } : {}), ...(gi >= 0 ? { group: b.g[gi] } : {}) })) });
+  // every symbol, built-in and shared, as the app sees it under catalog `cat`
+  function symRows(cat) {
+    const rows = [];
+    (builtins || []).forEach(b => rows.push({ id: b.id, src: "built-in", own: b.category || "Custom", name0: b.name, n: b.ports, pc: b.portClass || (b.list ? portClass(builtinDef(b).ports) : ""), b }));
+    (lib || []).forEach(d => { const P = expand(d); rows.push({ id: d.id, src: "shared", own: d.category || "Custom", name0: d.name, n: P.length, pc: portClass(P), d }); });
+    return rows.map(r => {
+      const o = cat?.defs?.[r.id] || {}, category = o.category || r.own, set = cleanClass(o.class), allot = catClassOf(category, cat);
+      return { ...r, name: o.name || r.name0, category, set, auto: allot || r.pc, cls: set || allot || r.pc, by: set ? "set" : allot ? "category" : "ports" };
+    }).sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+  }
+  // every category: the app's, the catalog's, the ones symbols use, and new ones waiting to be published
+  function allCats(cat) {
+    const out = [...CATEGORIES];
+    const add = c => { if (typeof c === "string" && c.trim() && !out.some(x => x.toLowerCase() === c.toLowerCase())) out.push(c); };
+    (cat?.cats || []).forEach(add); Object.values(cat?.defs || {}).forEach(d => add(d?.category)); (lib || []).forEach(d => add(d.category));
+    Object.values(state.sy.pend.cats).forEach(c => add(c.name));
+    return out;
+  }
+
+  // ---- changes waiting to be published: per symbol {class?, category?} and per category {name, class?, add?}; null = clear
+  const sy = state.sy;
+  const pendCount = () => Object.keys(sy.pend.sym).length + Object.keys(sy.pend.cats).length;
+  const baseCatalog = () => catalog || { cats: [], defs: {} };
+  function pendingEdit() {
+    const names = new Map(symRows(baseCatalog()).map(r => [r.id, r.name]));
+    return { symbols: Object.entries(sy.pend.sym).map(([id, v]) => ({ id, name: names.get(id) || id, ...v })),
+      categories: Object.values(sy.pend.cats).map(c => ({ name: c.name, ...("class" in c ? { class: c.class } : {}) })) };
+  }
+  // the catalog as it will be once the waiting changes are published: the repo's own applyCatalogEdit, so what this
+  // page shows is what catalog.yml will write
+  function effCatalog() {
+    const base = baseCatalog(); if (!pendCount() || !L?.applyCatalogEdit) return base;
+    const f = { library: lib || [], catalog: clone(base) };
+    try { L.applyCatalogEdit(f, L.normaliseCatalogEdit(pendingEdit())); } catch { /* over a cap: the publish says so */ }
+    return f.catalog;
+  }
+  const tidy = (id, cur) => { if (Object.keys(cur).length) sy.pend.sym[id] = cur; else delete sy.pend.sym[id]; };
+  // cls "" = automatic (clear the symbol's own class)
+  function setSymClass(id, cls) {
+    const was = cleanClass(baseCatalog().defs?.[id]?.class), cur = { ...(sy.pend.sym[id] || {}) };
+    if ((cls || "") === was) delete cur.class; else cur.class = cls || null;
+    tidy(id, cur);
+  }
+  // picking the symbol's OWN category clears its re-filing
+  function setSymCat(id, category, own) {
+    const was = baseCatalog().defs?.[id]?.category || "", want = category && category.toLowerCase() !== own.toLowerCase() ? category : "";
+    const cur = { ...(sy.pend.sym[id] || {}) };
+    if (want.toLowerCase() === was.toLowerCase()) delete cur.category; else cur.category = want || null;
+    tidy(id, cur);
+  }
+  // cls "" = the built-in allotment (or none, for a category that has no built-in one)
+  function setCatClass(name, cls) {
+    const key = catKeyOf(name), was = cleanClass(baseCatalog().catClass?.[key]), want = cls && cls !== (CAT_CLASS[key] || "") ? cls : "";
+    const cur = { ...(sy.pend.cats[key] || { name }) };
+    if (want === was) delete cur.class; else cur.class = want || null;
+    if ("class" in cur || cur.add) sy.pend.cats[key] = cur; else delete sy.pend.cats[key];
+  }
+  function addCategory() {
+    const name = sy.newName.replace(/[^A-Za-z0-9 /&+-]/g, "").replace(/\s+/g, " ").trim().slice(0, 18);
+    if (name.length < 2 || /^custom$/i.test(name)) { sy.pub = { kind: "bad", text: "A category name is 2 to 18 letters, digits, spaces or / & + -, and not Custom." }; return; }
+    if (allCats(baseCatalog()).some(c => c.toLowerCase() === name.toLowerCase())) { sy.pub = { kind: "bad", text: `${name} is already a category.` }; return; }
+    sy.pend.cats[catKeyOf(name)] = { name, add: true, ...(sy.newCls ? { class: sy.newCls } : {}) };
+    sy.newName = ""; sy.newCls = ""; sy.pub = null;
+  }
+
+  async function publishCatalog() {
+    const e = pendingEdit(), errs = L.validateCatalogEdit(e);
+    if (errs.length) { sy.pub = { kind: "bad", text: errs[0] }; return render(); }
+    const n = L.normaliseCatalogEdit(e), one = n.symbols.length === 1 && !n.categories.length ? n.symbols[0] : null;
+    const say = v => v === null ? "automatic" : v;
+    const title = "[catalog] " + (one ? `${one.name}: ${["class" in one ? `class ${say(one.class)}` : "", "category" in one ? `category ${say(one.category)}` : ""].filter(Boolean).join(", ")}`
+      : [n.symbols.length ? `${n.symbols.length} symbol${n.symbols.length > 1 ? "s" : ""}` : "", n.categories.length ? `${n.categories.length} categor${n.categories.length > 1 ? "ies" : "y"}` : ""].filter(Boolean).join(", "));
+    const body = `${CATALOG_MARK}.\n\n${L.catalogEditSummary(n)}\n\n${T3}json\n${JSON.stringify(n)}\n${T3}\n`;
+    sy.pub = { kind: "busy", text: "Opening the change on GitHub…" }; render();
+    try {
+      const iss = await gh(`/repos/${OWNER}/${REPO}/issues`, { method: "POST", body: JSON.stringify({ title, body }) });
+      const t0 = Date.now();
+      // a separate call, so GitHub fires the "labeled" event catalog.yml listens for
+      await gh(`/repos/${OWNER}/${REPO}/issues/${iss.number}/labels`, { method: "POST", body: JSON.stringify({ labels: ["approved"] }) });
+      sy.pub = { kind: "busy", text: `Applying #${iss.number}… (the workflow takes about 30 s)` }; render();
+      while (Date.now() - t0 < 180000) {
+        await new Promise(r => setTimeout(r, 5000));
+        const [now, comments] = await Promise.all([gh(`/repos/${OWNER}/${REPO}/issues/${iss.number}`), gh(`/repos/${OWNER}/${REPO}/issues/${iss.number}/comments?per_page=100`)]);
+        const fail = comments.find(c => /Not published/.test(c.body));
+        if (fail) { sy.pub = { kind: "bad", text: `#${iss.number} not applied: ` + fail.body.replace(/^.*?—\s*/, "").slice(0, 200) }; await refresh(); return render(); }
+        if (now.state === "closed") {
+          sy.optimistic = { catalog: effCatalog(), at: t0, ids: n.symbols.map(s => s.id), keys: n.categories.map(c => catKeyOf(c.name)) };
+          catalog = sy.optimistic.catalog;
+          sy.pend = { sym: {}, cats: {} }; sy.sel.clear();
+          sy.pub = { kind: "ok", text: `✓ Applied (#${iss.number}). Every app picks it up on its next sync, within 30 minutes.` };
+          render(); refresh().then(render).catch(() => {});
+          return;
+        }
+      }
+      sy.pub = { kind: "bad", text: `#${iss.number} still not applied after 3 minutes. Check the workflow runs (link at the bottom); it is listed above to retry.` };
+      await refresh(); render();
+    } catch (e) { sy.pub = { kind: "bad", text: e.status === 403 || e.status === 404 ? "The token can't create or label issues. Give it Issues: Read and write." : e.message }; render(); }
+  }
+  async function retryCatalog(n) {
+    try {
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/labels/approved`, { method: "DELETE" }).catch(e => { if (e.status !== 404) throw e; });
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/labels`, { method: "POST", body: JSON.stringify({ labels: ["approved"] }) });
+      sy.pub = { kind: "busy", text: `Retrying #${n}… give it a minute, then Refresh.` };
+    } catch (e) { sy.pub = { kind: "bad", text: e.message }; }
+    render();
+  }
+  async function closeCatalog(n) {
+    try { await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ state: "closed", state_reason: "not_planned" }) }); await refresh(); }
+    catch (e) { sy.pub = { kind: "bad", text: e.message }; }
+    render();
+  }
+
+  // the list's filters: search (name, id, category), class (skipped when counting the class buttons), category, source, changed
+  function syMatch(r, skip) {
+    const ql = sy.q.trim().toLowerCase();
+    return (!ql || r.name.toLowerCase().includes(ql) || r.id.toLowerCase().includes(ql) || r.category.toLowerCase().includes(ql))
+      && (skip === "cls" || !sy.fcls || r.cls === sy.fcls) && (!sy.fcat || r.category.toLowerCase() === sy.fcat.toLowerCase())
+      && (!sy.fsrc || r.src === sy.fsrc) && (!sy.changed || !!sy.pend.sym[r.id]);
+  }
+  function onSy(b) {
+    const k = b.dataset.sy;
+    if (k === "open") sy.open = sy.open === b.dataset.id ? null : b.dataset.id;
+    else if (k === "fcls") sy.fcls = b.dataset.v;
+    else if (k === "selnone") sy.sel.clear();
+    else if (k === "catadd") addCategory();
+    else if (k === "discard") { sy.pend = { sym: {}, cats: {} }; sy.pub = null; }
+    else if (k === "publish") return publishCatalog();
+    else if (k === "retry") return retryCatalog(+b.dataset.n);
+    else if (k === "close") return closeCatalog(+b.dataset.n);
+    render();
+  }
+  function onSyChange(el) {
+    const k = el.dataset.syc, id = el.dataset.id;
+    const own = () => new Map(symRows(baseCatalog()).map(r => [r.id, r.own]));
+    if (k === "ncls") { sy.newCls = el.value; return; }
+    if (k === "cls") setSymClass(id, el.value);
+    else if (k === "cat") setSymCat(id, el.value, el.dataset.own);
+    else if (k === "ccls") setCatClass(el.dataset.cat, el.value);
+    else if (k === "fcat") sy.fcat = el.value;
+    else if (k === "fsrc") sy.fsrc = el.value;
+    else if (k === "chg") sy.changed = el.checked;
+    else if (k === "sel") { if (el.checked) sy.sel.add(id); else sy.sel.delete(id); }
+    else if (k === "selall") symRows(effCatalog()).filter(r => syMatch(r)).forEach(r => { if (el.checked) sy.sel.add(r.id); else sy.sel.delete(r.id); });
+    else if (k === "bcls" && el.value !== "__") [...sy.sel].forEach(i => setSymClass(i, el.value));
+    else if (k === "bcat" && el.value !== "__") { const o = own(); [...sy.sel].forEach(i => setSymCat(i, el.value, o.get(i) || "Custom")); }
+    // an edit makes an old success or error line stale
+    if (["cls", "cat", "ccls", "bcls", "bcat"].includes(k) && sy.pub?.kind !== "busy") sy.pub = null;
+    render();
+  }
+  function symbolsTabHtml() {
+    const base = baseCatalog(), cat = effCatalog(), rows = symRows(cat), was = new Map(symRows(base).map(r => [r.id, r]));
+    const cats = allCats(cat), can = !!L?.applyCatalogEdit;
+    const shown = rows.filter(r => syMatch(r)), counts = {};
+    rows.filter(r => syMatch(r, "cls")).forEach(r => { counts[r.cls] = (counts[r.cls] || 0) + 1; });
+    const nB = rows.filter(r => r.src === "built-in").length, nS = rows.length - nB;
+    const nSet = Object.values(base.defs || {}).filter(d => cleanClass(d?.class)).length, nAl = Object.keys(base.catClass || {}).length;
+    const opt = (v, cur, lab) => `<option value="${esc(v)}" ${String(v).toLowerCase() === String(cur).toLowerCase() ? "selected" : ""}>${esc(lab ?? v)}</option>`;
+    const clsOpts = cur => CLASSES.map(([k, lab]) => opt(k, cur, lab)).join("");
+    const parts = [];
+    if (!can) parts.push(`<div class="msg warn" style="margin-bottom:10px">The symbols repo's scripts/symbol.js predates catalog edits, so changes can't be published yet. You can still look.</div>`);
+    if (!builtins) parts.push(`<div class="msg warn" style="margin-bottom:10px">builtins.json didn't load, so the built-in symbols are missing from this list.</div>`);
+    else if (builtins.length && !builtins[0].list) parts.push(`<div class="msg warn" style="margin-bottom:10px">This builtins.json is from before app 1.34.0: no port lists, so built-ins have no preview and their class is only what their category says.</div>`);
+    state.catOpen.forEach(i => parts.push(`<div class="msg warn" style="margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>Not applied yet:</b> #${i.number} ${esc(i.title.replace(/^\[catalog\]\s*/i, ""))}
+      <a href="${esc(i.html_url)}" target="_blank" rel="noopener">open ↗</a><span class="grow" style="flex:1"></span>
+      <button data-sy="retry" data-n="${i.number}">↻ Retry</button><button class="bad" data-sy="close" data-n="${i.number}">Close</button></div>`));
+    parts.push(`<p class="note" style="margin:0 0 10px">${nB} built-in · ${nS} shared · catalog: ${nSet} class${nSet === 1 ? "" : "es"} set on symbols, ${nAl} categor${nAl === 1 ? "y" : "ies"} allotted by the desk, ${(base.cats || []).length} extra categor${(base.cats || []).length === 1 ? "y" : "ies"}. Every symbol has a <b>class</b> (the library filter in the app) and a <b>category</b> (where it is filed).</p>`);
+    // categories and the class each is allotted to
+    const nIn = {}; rows.forEach(r => { const k = r.category.toLowerCase(); nIn[k] = (nIn[k] || 0) + 1; });
+    parts.push(`<details class="sy-cats" ${sy.showCats ? "open" : ""} data-sy-cats><summary>CATEGORIES AND THEIR CLASS</summary>
+      <p class="note" style="margin:6px 0">A symbol takes its category's class unless it has one of its own. A category with no class is <b>mixed</b>: each symbol's ports decide. Custom is the catch-all and stays mixed.</p>
+      <table><thead><tr><th>CATEGORY</th><th>CLASS</th><th>SYMBOLS</th></tr></thead><tbody>
+      ${cats.map(c => { const key = catKeyOf(c), builtIn = CAT_CLASS[key] || "", cur = catClassOf(c, cat), pc = sy.pend.cats[key], custom = key === "custom";
+        return `<tr${pc ? ' style="background:color-mix(in srgb, var(--accent) 9%, var(--card))"' : ""}><td>${esc(c)}${pc?.add ? ' <span class="chip info">NEW</span>' : ""}</td>
+          <td>${custom ? '<span class="note">mixed (catch-all)</span>' : `<select data-syc="ccls" data-cat="${esc(c)}" ${can ? "" : "disabled"}>${builtIn ? "" : opt("", cur, "— mixed: by ports —")}${CLASSES.map(([k, lab]) => opt(k, cur, lab + (k === builtIn ? " (built in)" : ""))).join("")}</select>`}</td>
+          <td>${nIn[c.toLowerCase()] || 0}</td></tr>`; }).join("")}
+      </tbody></table>
+      <div class="row" style="margin-top:8px"><input data-syi="newName" placeholder="New category, e.g. Amplifiers" maxlength="18" value="${esc(sy.newName)}" style="max-width:240px;padding:6px 8px">
+        <select data-syc="ncls"><option value="">— mixed: by ports —</option>${clsOpts(sy.newCls)}</select>
+        <button data-sy="catadd" ${can ? "" : "disabled"}>+ Add category</button></div>
+    </details>`);
+    parts.push(`<div class="sy-bar">
+      <input id="syq" data-syi="q" type="search" placeholder="Search name, id or category" value="${esc(sy.q)}">
+      <div class="clsf"><button data-sy="fcls" data-v="" aria-pressed="${!sy.fcls}">ALL</button>${CLASSES.map(([k, lab]) => `<button data-sy="fcls" data-v="${k}" aria-pressed="${sy.fcls === k}" style="${sy.fcls === k ? "" : `color:${CLASS_C[k]}`}">${lab}<span>${counts[k] || 0}</span></button>`).join("")}</div>
+      <select data-syc="fcat"><option value="">All categories</option>${cats.map(c => opt(c, sy.fcat)).join("")}</select>
+      <select data-syc="fsrc">${opt("", sy.fsrc, "Built-in + shared")}${opt("built-in", sy.fsrc, "Built-in only")}${opt("shared", sy.fsrc, "Shared only")}</select>
+      <label class="note" style="display:flex;gap:5px;align-items:center"><input type="checkbox" data-syc="chg" ${sy.changed ? "checked" : ""} style="width:auto">changed only</label>
+    </div>`);
+    const sel = [...sy.sel];
+    if (sel.length) parts.push(`<div class="sy-bulk"><b>${sel.length} ticked</b>
+      <span class="note">Class</span><select data-syc="bcls" ${can ? "" : "disabled"}><option value="__">— set class —</option><option value="">Automatic</option>${clsOpts("__")}</select>
+      <span class="note">Category</span><select data-syc="bcat" ${can ? "" : "disabled"}><option value="__">— file under —</option><option value="">Its own category</option>${cats.filter(c => c !== "Custom").map(c => opt(c, "__")).join("")}</select>
+      <span style="flex:1"></span><button class="link" data-sy="selnone">Untick all</button></div>`);
+    const allTicked = shown.length && shown.every(r => sy.sel.has(r.id));
+    parts.push(`<div class="sy"><div class="sy-r head"><input type="checkbox" data-syc="selall" ${allTicked ? "checked" : ""} title="Tick every symbol shown" aria-label="Tick all"><span>SYMBOL · ${shown.length}</span><span class="src">SOURCE</span><span>CLASS</span><span class="ct">CATEGORY</span><span class="pc">PORTS</span></div>
+      ${shown.map(r => rowHtml(r, was.get(r.id), cats, opt, clsOpts, can)).join("") || `<div class="empty" style="border:none">No symbols match.</div>`}</div>`);
+    const nP = pendCount();
+    if (nP || sy.pub) parts.push(`<div class="sy-foot">
+      ${nP ? `<b>${nP} change${nP === 1 ? "" : "s"} waiting</b><button class="primary" data-sy="publish" ${can && sy.pub?.kind !== "busy" ? "" : "disabled"}>Publish to the shared library</button><button data-sy="discard" ${sy.pub?.kind === "busy" ? "disabled" : ""}>Discard</button>` : ""}
+      <span style="flex:1"></span>${sy.pub ? `<span class="status ${sy.pub.kind}">${sy.pub.kind === "busy" ? '<span class="spin"></span> ' : ""}${esc(sy.pub.text)}</span>` : ""}</div>`);
+    return parts.join("");
+  }
+  function rowHtml(r, w, cats, opt, clsOpts, can) {
+    const chg = !!sy.pend.sym[r.id], open = sy.open === r.id;
+    const clsWas = w && w.cls !== r.cls ? `<span class="was">${esc(classLabel(w.cls))}</span>` : "", catWas = w && w.category !== r.category ? `<span class="was">${esc(w.category)}</span>` : "";
+    let html = `<div class="sy-r${chg ? " chg" : ""}${open ? " open" : ""}" data-row="${esc(r.id)}">
+      <input type="checkbox" data-syc="sel" data-id="${esc(r.id)}" ${sy.sel.has(r.id) ? "checked" : ""} aria-label="Tick ${esc(r.name)}">
+      <span style="min-width:0"><button class="nm" data-sy="open" data-id="${esc(r.id)}" title="Show it, and change its class or category">${esc(r.name)}</button><span class="ct2">${esc(r.category)}</span></span>
+      <span class="src">${r.src === "built-in" ? "built-in" : `shared · r${esc(r.d.rev || 1)}`}</span>
+      <span>${clsWas}${clsHtml(r.cls, !r.set)}</span>
+      <span class="ct" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${catWas}${esc(r.category)}${!catWas && r.category !== r.own ? ` <span class="note" title="Filed here by the catalog; its own category is ${esc(r.own)}">(own: ${esc(r.own)})</span>` : ""}</span>
+      <span class="pc">${r.n}</span></div>`;
+    if (!open) return html;
+    const def = r.src === "built-in" ? builtinDef(r.b) : r.d, P = r.src === "built-in" ? def.ports : expand(r.d);
+    const tally = {}; P.forEach(p => { const k = portKind(p); if (k) tally[k] = (tally[k] || 0) + 1; });
+    const allot = catClassOf(r.category, effCatalog());
+    const why = r.by === "set" ? `Set to ${classLabel(r.cls)} here.`
+      : r.by === "category" ? `Its category, ${esc(r.category)}, is allotted to ${classLabel(allot)}${CAT_CLASS[catKeyOf(r.category)] === allot && !effCatalog().catClass?.[catKeyOf(r.category)] ? " (built in)" : ""}.`
+      : `${esc(r.category)} is mixed, so its ports decide: ${Object.entries(tally).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${v} ${k}`).join(", ") || "none counted"}.`;
+    html += `<div class="sy-d" data-detail="${esc(r.id)}">
+      <div class="prev">${P.length ? preview(def) : '<div class="note" style="padding:30px 0">No ports to draw</div>'}</div>
+      <div class="facts">
+        <div class="sy-edit">
+          <label>CLASS<select data-syc="cls" data-id="${esc(r.id)}" ${can ? "" : "disabled"}>${opt("", r.set, `Automatic · ${classLabel(r.auto) || "none"}`)}${clsOpts(r.set)}</select></label>
+          <label>CATEGORY<select data-syc="cat" data-id="${esc(r.id)}" data-own="${esc(r.own)}" ${can ? "" : "disabled"}>${cats.filter(c => c !== "Custom" || r.own === "Custom").map(c => opt(c, r.category, c + (c.toLowerCase() === r.own.toLowerCase() ? " (its own)" : ""))).join("")}</select></label>
+        </div>
+        <div class="msgs"><div class="msg">${why}</div></div>
+        <dl><dt>ID</dt><dd>${esc(r.id)}</dd><dt>SOURCE</dt><dd>${r.src === "built-in" ? "built into the app" : `shared library · rev ${esc(r.d.rev || 1)}`}</dd>
+          <dt>FILED</dt><dd>${esc(r.category)}${r.category !== r.own ? ` (its own category is ${esc(r.own)})` : ""}</dd><dt>PORTS</dt><dd>${P.length}</dd></dl>
+        <p class="note" style="margin:0">A new category goes in <b>Categories and their class</b> above.</p>
+      </div></div>`;
+    return html;
+  }
+
   /* ---------- views ---------- */
   function renderWho() {
     $("#who").innerHTML = me ? `<span>signed in as <b>${esc(me.login)}</b></span><button class="link" id="pairbtn">Pair phone</button><button class="link" id="signout">Forget token</button>` : "";
@@ -483,7 +807,7 @@ footer a { color: var(--muted); }
   }
   function tabsHtml() {
     const t = (k, label, n) => `<button data-tab="${k}" aria-pressed="${tab === k}">${label}${n != null ? ` <span class="count">${n}</span>` : ""}</button>`;
-    return `<div class="tabs">${t("queue", "Waiting", state.queue.length)}${t("done", "Recently decided")}${t("lib", "Shared library", lib?.length ?? 0)}<button id="refresh" style="margin-left:auto;border-right-width:1.2px" title="Check GitHub again">↻ Refresh</button></div>`;
+    return `<div class="tabs">${t("queue", "Waiting", state.queue.length)}${t("done", "Recently decided")}${t("sym", "Symbols", (builtins?.length || 0) + (lib?.length || 0))}<button id="refresh" style="margin-left:auto;border-right-width:1.2px" title="Check GitHub again">↻ Refresh</button></div>`;
   }
   function chipsFor(a, d) {
     const c = [];
@@ -849,18 +1173,14 @@ footer a { color: var(--muted); }
     } else if (tab === "done") {
       body = state.done.length ? `<div class="list">${state.done.map(i => {
         const approved = i.labels.some(l => l.name === "approved"), fixed = !approved && i.labels.some(l => l.name === "fix") && i.state_reason === "completed";
-        const isCat = isCatIssue(i);
-        return `<div class="li"><span class="chip ${approved || fixed ? "ok" : "mute"}">${approved ? (isCat ? "FILED" : "PUBLISHED") : fixed ? "FIXED" : "REJECTED"}</span>${isCat ? '<span class="chip info">CATEGORY</span>' : ""}
-          <span class="n">${esc(plainTitle(i.title))}</span><span class="m">#${i.number} · ${esc(i.user.login)} · ${ago(i.closed_at)}</span>
+        const isCat = isCatIssue(i), isCatalog = isCatalogIssue(i);
+        const what = isCatalog ? (i.state_reason === "completed" ? "APPLIED" : "CLOSED") : approved ? (isCat ? "FILED" : "PUBLISHED") : fixed ? "FIXED" : "REJECTED";
+        return `<div class="li"><span class="chip ${approved || fixed || what === "APPLIED" ? "ok" : "mute"}">${what}</span>${isCat ? '<span class="chip info">CATEGORY</span>' : ""}${isCatalog ? '<span class="chip info">CLASS / CATEGORY</span>' : ""}
+          <span class="n">${esc(plainTitle(i.title).replace(/^\[catalog\]\s*/i, ""))}</span><span class="m">#${i.number} · ${esc(i.user.login)} · ${ago(i.closed_at)}</span>
           <span class="r"><a class="btn" href="${esc(i.html_url)}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
       }).join("")}</div>` : `<div class="empty">Nothing decided yet.</div>`;
     } else {
-      const nCats = (catalog?.cats || []).length, nRe = Object.keys(catalog?.defs || {}).length;
-      body = (nCats || nRe ? `<p class="note" style="margin:0 0 10px">Catalog: ${nCats ? `${nCats} extra categor${nCats === 1 ? "y" : "ies"} (${(catalog.cats || []).map(esc).join(", ")})` : "no extra categories"} · ${nRe} symbol${nRe === 1 ? "" : "s"} re-filed (approved category suggestions, and Library admin).</p>` : "") +
-        (lib?.length ? `<div class="list">${lib.map(d => `<div class="li"><span class="n">${esc(d.name)}</span>
-        <span class="m">${esc(catalog?.defs?.[d.id]?.category || d.category)} · ${expand(d).length} ports · rev ${esc(d.rev)}</span></div>`).join("")}</div>
-        <p class="note">To change or remove one of these, edit library.json in the repo. Every app picks up changes on its next sync (within 30 minutes).</p>`
-        : `<div class="empty">The shared library is empty.</div>`);
+      body = symbolsTabHtml();
     }
     $("#app").innerHTML = tabsHtml() + body;
   }
@@ -873,8 +1193,10 @@ footer a { color: var(--muted); }
       if (new Date(i.updated_at) >= new Date(sv.updated_at) && i.body === sv.body) { delete state.saved[i.number]; return i; }
       return { ...i, body: sv.body, title: sv.title, updated_at: sv.updated_at }; });
     state.queue = issues.filter(isSubmission).map(analyse);
+    // the desk's own class / category changes still open on GitHub (applying, or failed)
+    state.catOpen = issues.filter(isCatalogIssue);
     const closed = await gh(`/repos/${OWNER}/${REPO}/issues?state=closed&per_page=100&sort=updated&direction=desc`);
-    state.done = closed.filter(isSubmission);
+    state.done = closed.filter(i => isSubmission(i) || isCatalogIssue(i));
   }
   async function boot() {
     $("#app").innerHTML = `<div class="empty"><span class="spin"></span> Connecting…</div>`;
@@ -955,6 +1277,7 @@ footer a { color: var(--muted); }
   document.addEventListener("click", async e => {
     const b = e.target.closest("button"); if (!b) return;
     if (b.dataset.tab) { tab = b.dataset.tab; render(); return; }
+    if (b.dataset.sy) { onSy(b); return; }
     if (b.id === "refresh") { b.disabled = true; b.innerHTML = '<span class="spin"></span> Refresh'; try { await refresh(); } catch (err) { alert(err.message); } render(); return; }
     if (b.dataset.e) { onEditClick(b); return; }
     const n = +b.dataset.n;
@@ -974,12 +1297,16 @@ footer a { color: var(--muted); }
     if (b.dataset.act === "reject-go") reject(n);
   });
   document.addEventListener("input", e => {
+    // the Symbols tab's search redraws the list as you type, and keeps the caret where it was
+    const si = e.target.closest("[data-syi]");
+    if (si) { sy[si.dataset.syi] = si.value; if (si.dataset.syi === "q") { const pos = si.selectionStart; render(); const q = $("#syq"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } } return; }
     const el = e.target.closest("[data-e]"); if (el) onEdit(el, true);
     // the category name is typed in place (no re-render, so the field keeps focus); the card redraws on change
     const ce = e.target.closest('[data-ce="name"]');
     if (ce) { const ed = state.catEdit[+ce.dataset.n]; if (ed) { const v = ce.value.replace(/[^A-Za-z0-9 /&+-]/g, "").slice(0, 18); if (v !== ce.value) ce.value = v; ed.category = v; } }
   });
   document.addEventListener("change", e => {
+    const sc = e.target.closest("[data-syc]"); if (sc) { onSyChange(sc); return; }
     const el = e.target.closest("[data-e]"); if (el && el.tagName === "SELECT") onEdit(el, false);
     const ce = e.target.closest("[data-ce]"); if (!ce) return;
     const n = +ce.dataset.n, ed = state.catEdit[n]; if (!ed) return;
@@ -988,7 +1315,11 @@ footer a { color: var(--muted); }
   });
   // a quiet re-check while the tab is open, so a new submission shows up on its own
   let lastQuiet = Date.now();
-  const quietRefresh = async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean) && !Object.values(state.fixing).some(Boolean) && !Object.keys(state.edit).length && !Object.keys(state.catEdit).length) { lastQuiet = Date.now(); try { await refresh(); render(); } catch {} } };
+  // (not while class / category changes wait to be published, or a field on the Symbols tab has the focus)
+  const quietRefresh = async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean) && !Object.values(state.fixing).some(Boolean) && !Object.keys(state.edit).length && !Object.keys(state.catEdit).length
+    && !pendCount() && sy.pub?.kind !== "busy" && !(tab === "sym" && document.activeElement?.closest?.("#app") && /INPUT|SELECT/.test(document.activeElement.tagName))) { lastQuiet = Date.now(); try { await refresh(); render(); } catch {} } };
+  // the categories panel stays open or shut across redraws ("toggle" does not bubble, so listen while it travels down)
+  document.addEventListener("toggle", e => { if (e.target.matches?.("[data-sy-cats]")) sy.showCats = e.target.open; }, true);
   setInterval(quietRefresh, 120000);
   // reopening the phone app resumes the old page, so check again when it comes back after a while
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - lastQuiet > 30000) quietRefresh(); });
