@@ -127,6 +127,11 @@ const canPublish = () => existsSync(join(SYMBOLS_DIR, "library.json")) && exists
 // categories) rides in library.json next to the symbols, so one sync carries
 // both. Kept deliberately dumb: strings only, capped, no schema of its own.
 // caps = the app's cleanCat and the repo's scripts/symbol.js (raised 2026-10-24 for approved category suggestions)
+// Since app 1.34.0 the symbol desk also writes a symbol's CLASS (defs[id].class) and which class a category is
+// allotted to (catClass, keyed by the lower-case category). Both MUST survive here: this function used to keep only
+// category and name, so a publish from the app would have wiped every class set on the desk.
+const CLASSES = ["video", "audio", "lighting", "network", "control", "power"];
+const catKey = c => String(c || "").replace(/[^A-Za-z0-9 /&+-]/g, "").replace(/\s+/g, " ").trim().slice(0, 18).toLowerCase() || "custom";
 function cleanCatalog(raw) {
   const cats = (Array.isArray(raw?.cats) ? raw.cats : []).map(c => String(c).slice(0, 18)).filter(Boolean).slice(0, 64);
   const defs = {};
@@ -134,17 +139,22 @@ function cleanCatalog(raw) {
     const e = {};
     if (typeof v?.category === "string" && v.category.trim()) e.category = v.category.slice(0, 18);
     if (typeof v?.name === "string" && v.name.trim()) e.name = v.name.toUpperCase().slice(0, 36);
+    if (CLASSES.includes(v?.class)) e.class = v.class;
     if (Object.keys(e).length) defs[String(id).slice(0, 64)] = e;
   });
-  return { cats, defs };
+  const catClass = {};
+  Object.entries(raw?.catClass && typeof raw.catClass === "object" ? raw.catClass : {}).slice(0, 128).forEach(([k, v]) => {
+    const key = catKey(k); if (key !== "custom" && CLASSES.includes(v)) catClass[key] = v;
+  });
+  return Object.keys(catClass).length ? { cats, defs, catClass } : { cats, defs };
 }
-/* The app's own catalog EDITS laid over the catalog just pulled. Approved category suggestions write that catalog too
-   (the repo's category workflow), so replacing it with the app's copy, synced up to 30 minutes earlier, could undo one.
-   Per symbol, an edit replaces only the fields it sets. */
+/* The app's own catalog EDITS laid over the catalog just pulled. Approved category suggestions and the symbol desk's
+   class edits write that catalog too (the repo's workflows), so replacing it with the app's copy, synced up to 30
+   minutes earlier, could undo one. Per symbol, an edit replaces only the fields it sets. */
 function mergeCatalog(base, edits) {
   const b = cleanCatalog(base), e = cleanCatalog(edits), defs = { ...b.defs };
   Object.entries(e.defs).forEach(([id, v]) => { defs[id] = { ...(defs[id] || {}), ...v }; });
-  return cleanCatalog({ cats: [...new Set([...b.cats, ...e.cats])], defs });
+  return cleanCatalog({ cats: [...new Set([...b.cats, ...e.cats])], defs, catClass: { ...(b.catClass || {}), ...(e.catClass || {}) } });
 }
 function publishSymbols(list, catalog, catalogEdits) {
   if (!canPublish()) return { ok: false, error: `symbols repo checkout not found at ${SYMBOLS_DIR} (set SF_SYMBOLS_DIR)` };
@@ -166,7 +176,8 @@ function publishSymbols(list, catalog, catalogEdits) {
   }
   let catChanged = false;
   if (catalogEdits || catalog) {
-    const next = catalogEdits ? mergeCatalog(file.catalog, catalogEdits) : cleanCatalog(catalog);
+    // an app older than 1.31 sends only the whole catalog: merged too, so it cannot wipe what it never knew about
+    const next = mergeCatalog(file.catalog, catalogEdits || catalog);
     if (JSON.stringify(next) !== JSON.stringify(file.catalog || { cats: [], defs: {} })) { file.catalog = next; catChanged = true; }
   }
   if (!added && !updated && !catChanged) return { ok: true, added, updated, bad, note: "nothing to publish" };
