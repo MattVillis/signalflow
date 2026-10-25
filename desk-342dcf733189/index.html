@@ -293,7 +293,7 @@ footer a { color: var(--muted); }
     if (t) store.set(t);
   }
   let token = store.get(), me = null, lib = null, catalog = null, L = null, tab = "queue", builtins = null;
-  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {}, catEdit: {}, catOpen: [],
+  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {}, catEdit: {}, catOpen: [], justClosed: {},
     // the Symbols tab: filters, the expanded row, ticked rows, changes not yet published, the publish status
     sy: { q: "", fcls: "", fcat: "", fsrc: "", changed: false, open: null, sel: new Set(), pend: { sym: {}, cats: {} }, newName: "", newCls: "", pub: null, optimistic: null, showCats: false } };
 
@@ -304,9 +304,23 @@ footer a { color: var(--muted); }
     if (!r.ok) { const e = new Error(j.message || `GitHub said ${r.status}`); e.status = r.status; throw e; }
     return j;
   }
+  /* A file in the symbols repo as main has it NOW: read through the API with the token. raw.githubusercontent caches
+     each file for up to 5 minutes, so a desk opened soon after a change (a class set from the phone, say) showed the
+     catalog from before it, and clearing that class there looked like no change. The cached copy is the fallback. */
+  async function repoText(path) {
+    if (token) {
+      try {
+        const r = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${path}?ref=main`, { cache: "no-store", headers: { Accept: "application/vnd.github.raw+json", Authorization: `Bearer ${token}` } });
+        if (r.ok) return await r.text();
+      } catch { /* offline or blocked: the cached copy */ }
+    }
+    const r = await fetch(RAW + path + "?x=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw new Error(`Couldn't read ${path} from the symbols repo (${r.status}).`);
+    return r.text();
+  }
   // the repo's own validator (scripts/symbol.js, CommonJS) so this page judges exactly as the workflows do
   async function loadValidator() {
-    const src = await (await fetch(RAW + "scripts/symbol.js", { cache: "no-store" })).text();
+    const src = await repoText("scripts/symbol.js");
     const module = { exports: {} };
     new Function("module", "exports", src)(module, module.exports);
     return module.exports;
@@ -317,11 +331,10 @@ footer a { color: var(--muted); }
     catch { return null; }
   }
   async function loadLibrary() {
-    const r = await fetch(RAW + "library.json?x=" + Date.now(), { cache: "no-store" });
-    const j = await r.json();
+    const j = JSON.parse(await repoText("library.json"));
     const fresh = j.catalog && typeof j.catalog === "object" ? j.catalog : { cats: [], defs: {} };
-    // raw.githubusercontent can serve library.json from before a catalog edit for a few minutes: until the copy it
-    // serves shows what this page just applied (or 10 minutes pass), keep showing what was applied
+    // the API can trail the workflow's push by a moment (the cached fallback by minutes): until the copy it serves shows
+    // what this page just applied (or 10 minutes pass), keep showing what was applied
     const o = state.sy.optimistic;
     if (o && Date.now() - o.at < 600000 && !caughtUp(fresh, o)) catalog = o.catalog;
     else { catalog = fresh; state.sy.optimistic = null; }
@@ -609,6 +622,7 @@ footer a { color: var(--muted); }
         const fail = comments.find(c => /Not published/.test(c.body));
         if (fail) { sy.pub = { kind: "bad", text: `#${iss.number} not applied: ` + fail.body.replace(/^.*?—\s*/, "").slice(0, 200) }; await refresh(); return render(); }
         if (now.state === "closed") {
+          noteClosed(now);
           sy.optimistic = { catalog: effCatalog(), at: t0, ids: n.symbols.map(s => s.id), keys: n.categories.map(c => catKeyOf(c.name)) };
           catalog = sy.optimistic.catalog;
           sy.pend = { sym: {}, cats: {} }; sy.sel.clear();
@@ -630,7 +644,7 @@ footer a { color: var(--muted); }
     render();
   }
   async function closeCatalog(n) {
-    try { await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ state: "closed", state_reason: "not_planned" }) }); await refresh(); }
+    try { noteClosed(await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ state: "closed", state_reason: "not_planned" }) }), state.catOpen.find(i => i.number === n), "not_planned"); await refresh(); }
     catch (e) { sy.pub = { kind: "bad", text: e.message }; }
     render();
   }
@@ -1186,16 +1200,34 @@ footer a { color: var(--muted); }
   }
 
   /* ---------- actions ---------- */
+  /* GitHub's issue LISTS trail a change by a few seconds. Straight after this page saw an issue close, the open list
+     could still hold it (an applied catalog edit showed under "Not applied yet", a published card came back to the
+     queue) and the closed list could lack it (missing from Recently decided). What this page saw wins until the lists
+     show it, or they hold a NEWER copy (reopened since), or 10 minutes pass. */
+  // GitHub's answer over what this page knew of the issue, so even a partial answer leaves a whole issue to list
+  const noteClosed = (iss, known = null, reason = null) => {
+    const at = new Date().toISOString(), i = { ...known, state_reason: reason, closed_at: at, updated_at: at, ...iss };
+    if (i.number && i.state === "closed" && Array.isArray(i.labels) && typeof i.title === "string") state.justClosed[i.number] = { iss: i, at: Date.now() };
+  };
+  function settleLists(open, closed) {
+    for (const [n, c] of Object.entries(state.justClosed)) {
+      const o = open.find(i => i.number === +n);
+      if (Date.now() - c.at > 600000 || (o && new Date(o.updated_at) > new Date(c.iss.updated_at)) || (!o && closed.some(i => i.number === +n))) delete state.justClosed[n];
+    }
+    const seen = Object.values(state.justClosed).map(c => c.iss).filter(i => !closed.some(k => k.number === i.number));
+    // newest first, as GitHub sorts the closed list
+    return [open.filter(i => !state.justClosed[i.number]), [...seen, ...closed].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))];
+  }
   async function refresh() {
     [lib, L, builtins] = await Promise.all([loadLibrary(), L || loadValidator(), builtins ? Promise.resolve(builtins) : loadBuiltins()]);
-    const open = await gh(`/repos/${OWNER}/${REPO}/issues?state=open&per_page=100&sort=created&direction=asc`);
+    const [open, closed] = settleLists(...await Promise.all([gh(`/repos/${OWNER}/${REPO}/issues?state=open&per_page=100&sort=created&direction=asc`),
+      gh(`/repos/${OWNER}/${REPO}/issues?state=closed&per_page=100&sort=updated&direction=desc`)]));
     const issues = open.map(i => { const sv = state.saved[i.number]; if (!sv) return i;
       if (new Date(i.updated_at) >= new Date(sv.updated_at) && i.body === sv.body) { delete state.saved[i.number]; return i; }
       return { ...i, body: sv.body, title: sv.title, updated_at: sv.updated_at }; });
     state.queue = issues.filter(isSubmission).map(analyse);
     // the desk's own class / category changes still open on GitHub (applying, or failed)
     state.catOpen = issues.filter(isCatalogIssue);
-    const closed = await gh(`/repos/${OWNER}/${REPO}/issues?state=closed&per_page=100&sort=updated&direction=desc`);
     state.done = closed.filter(i => isSubmission(i) || isCatalogIssue(i));
   }
   async function boot() {
@@ -1234,6 +1266,7 @@ footer a { color: var(--muted); }
         const fail = comments.find(c => /Not published/.test(c.body) && new Date(c.created_at) >= new Date(t0 - 5000));
         if (fail) { if (a && !a.labels.includes("approved")) a.labels.push("approved"); setStatus(n, "bad", "Not published: " + fail.body.replace(/^.*?—\s*/, "").slice(0, 200)); return; }
         if (iss.state === "closed") {
+          noteClosed(iss, a?.issue);
           setStatus(n, "ok", "✓ Published to library.json · apps get it within 30 min", { done: true });
           setTimeout(async () => { delete state.status[n]; await refresh(); render(); }, 4000);
           return;
@@ -1258,7 +1291,8 @@ footer a { color: var(--muted); }
     setStatus(n, "busy", "Closing…");
     try {
       await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments`, { method: "POST", body: JSON.stringify({ body: `✅ Fixed${v ? ` in SignalFlow **v${v}**` : " in the app"}. Refresh the app to get it (Ctrl+Shift+R). Thanks for reporting it!` }) });
-      await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ state: "closed", state_reason: "completed" }) });
+      noteClosed(await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ state: "closed", state_reason: "completed" }) }),
+        state.queue.find(x => x.issue.number === n)?.issue, "completed");
       setStatus(n, "ok", "Closed as fixed", { done: true });
       setTimeout(async () => { delete state.status[n]; await refresh(); render(); }, 2500);
     } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
@@ -1269,7 +1303,8 @@ footer a { color: var(--muted); }
     setStatus(n, "busy", "Closing…");
     try {
       if (why) await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments`, { method: "POST", body: JSON.stringify({ body: `Not added to the shared library this time.\n\n${why}` }) });
-      await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ state: "closed", state_reason: "not_planned" }) });
+      noteClosed(await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ state: "closed", state_reason: "not_planned" }) }),
+        state.queue.find(x => x.issue.number === n)?.issue, "not_planned");
       setStatus(n, "ok", "Rejected and closed", { done: true });
       setTimeout(async () => { delete state.status[n]; await refresh(); render(); }, 2500);
     } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
