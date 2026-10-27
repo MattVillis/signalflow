@@ -14,7 +14,7 @@
      "id": "dx1",
      "defId": "lightact",
      "x": 40,
-     "y": 150,
+     "y": 152,
      "label": "MEDIA 1",
      "override": {
       "width": 168,
@@ -83,7 +83,7 @@
     {
      "id": "dx2",
      "defId": "lw-gvn-tx",
-     "x": 330,
+     "x": 328,
      "y": 40,
      "label": "ENC 1",
      "ip": "10.20.0.21"
@@ -91,8 +91,8 @@
     {
      "id": "dx3",
      "defId": "lw-gvn-tx",
-     "x": 330,
-     "y": 330,
+     "x": 328,
+     "y": 328,
      "label": "ENC 2",
      "ip": "10.20.0.22"
     },
@@ -100,7 +100,7 @@
      "id": "dx4",
      "defId": "switch8",
      "x": 640,
-     "y": 230,
+     "y": 232,
      "label": "AV CORE",
      "override": {
       "width": 152,
@@ -192,32 +192,32 @@
     {
      "id": "dx5",
      "defId": "lw-gvn-rx",
-     "x": 930,
-     "y": 40,
+     "x": 928,
+     "y": 56,
      "label": "DEC 1",
      "ip": "10.20.0.23"
     },
     {
      "id": "dx6",
      "defId": "lw-gvn-rx",
-     "x": 930,
-     "y": 330,
+     "x": 928,
+     "y": 344,
      "label": "DEC 2",
      "ip": "10.20.0.24"
     },
     {
      "id": "dx7",
      "defId": "epson",
-     "x": 1230,
-     "y": 60,
+     "x": 1232,
+     "y": 64,
      "label": "PJ LEFT",
      "ip": "192.168.10.21"
     },
     {
      "id": "dx8",
      "defId": "epson",
-     "x": 1230,
-     "y": 350,
+     "x": 1232,
+     "y": 352,
      "label": "PJ RIGHT",
      "ip": "192.168.10.22"
     },
