@@ -454,7 +454,7 @@ footer a { color: var(--muted); }
     return m;
   }
 
-  /* ---------- symbol preview: the app's own layout (HEADER 24, ROW 16, PADV 9, GAP 8, GROUP 12) ---------- */
+  /* ---------- symbol preview: the app's own layout (HEADER 24, ROW 16, PADV 8, GAP 8, GROUP 16: its 8 px grid since 1.37.0) ---------- */
   const SIGC = { video: "#1A1A18", fiber: "#C77D1E", network: "#2E7D46", audio: "#0E7490", control: "#8A8A82", power: "#B3403A" };
   function expand(sym) {
     if (!sym.slots?.length || !sym.cards?.length) return sym.ports;
@@ -475,7 +475,7 @@ footer a { color: var(--muted); }
     return s + (p.dir === "bi" ? `<circle cx="${x}" cy="${y}" r="1.2" fill="#fff"/>` : "");
   }
   function preview(sym) {
-    const HEADER = 24, ROW = 16, PADV = 9, GAP = 8, GROUP = 12, W = sym.width || 170;
+    const HEADER = 24, ROW = 16, PADV = 8, GAP = 8, GROUP = 16, W = sym.width || 170;
     const ports = expand(sym), pos = [], heads = [], bands = [];
     const clash = y => bands.some(b => y < b[1] && y + GROUP > b[0]);
     const place = (side, x) => {
