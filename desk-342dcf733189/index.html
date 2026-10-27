@@ -124,6 +124,8 @@ pre { font: 400 10.5px var(--mono); background: var(--panel); padding: 8px; over
 .li .n { font: 600 15px var(--cond); letter-spacing: .05em; }
 .li .m { color: var(--muted); font-size: 11px; }
 .li .r { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.early-h { font: 600 13px var(--cond); letter-spacing: .14em; margin: 22px 0 4px; color: var(--warn); }
+.early-p { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
 .err { color: var(--bad); font-size: 12px; margin-top: 8px; }
 .spin { display: inline-block; width: 10px; height: 10px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: s .8s linear infinite; }
 @keyframes s { to { transform: rotate(360deg); } }
@@ -293,7 +295,7 @@ footer a { color: var(--muted); }
     if (t) store.set(t);
   }
   let token = store.get(), me = null, lib = null, catalog = null, L = null, tab = "queue", builtins = null;
-  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {}, catEdit: {}, catOpen: [], justClosed: {},
+  const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {}, catEdit: {}, catOpen: [], justClosed: {}, justOpened: {}, closedEarly: [],
     // the Symbols tab: filters, the expanded row, ticked rows, changes not yet published, the publish status
     sy: { q: "", fcls: "", fcat: "", fsrc: "", changed: false, open: null, sel: new Set(), pend: { sym: {}, cats: {} }, newName: "", newCls: "", pub: null, optimistic: null, showCats: false } };
 
@@ -511,6 +513,13 @@ footer a { color: var(--muted); }
      symbols. */
   const CATALOG_MARK = "Catalog edit from the SignalFlow symbol desk";
   const isCatalogIssue = i => !i.pull_request && (/^\[catalog\]/i.test(i.title || "") || (i.body || "").includes(CATALOG_MARK));
+  /* A submission closed before anyone decided on it (2026-10-27: #28 and #29 were closed by their sender's account seconds
+     after opening, so they never reached the queue while the validator's email asked for approval). The maintainer
+     rejects as not planned and the publish workflow closes what was approved; anything else closed as completed, or
+     labelled `withdrawn` by the validator, was never reviewed. Listed under Waiting with Reopen. */
+  const unreviewed = i => isSubmission(i) && i.state === "closed" && !i.labels.some(l => l.name === "approved")
+    && !(i.labels.some(l => l.name === "fix") && i.state_reason === "completed")
+    && (i.state_reason === "completed" || i.labels.some(l => l.name === "withdrawn"));
   const CLASSES = [["video", "VIDEO"], ["audio", "AUDIO"], ["lighting", "LIGHTING"], ["network", "NETWORK"], ["control", "CONTROL"], ["power", "POWER"]];
   const CLASS_KEYS = CLASSES.map(([k]) => k), classLabel = k => (CLASSES.find(([x]) => x === k) || [])[1] || "";
   // the legend's colours (LIGHTING = the DMX purple, VIDEO = the ink), as CSS variables so dark mode can lift them
@@ -1183,12 +1192,17 @@ footer a { color: var(--muted); }
     if (tab === "queue") {
       const bnote = builtins ? "" : `<div class="msg warn" style="margin-bottom:12px">The built-in symbol list (builtins.json) couldn't be loaded, so duplicates of built-ins aren't checked. It's published with every app deploy.</div>`;
       body = bnote + (state.queue.length ? state.queue.map(cardHtml).join("")
-        : `<div class="empty"><div class="big">NOTHING WAITING</div>No open symbol submissions. New ones also email you, since you're watching the repo.</div>`);
+        : `<div class="empty"><div class="big">NOTHING WAITING</div>No open symbol submissions. New ones also email you, since you're watching the repo.</div>`)
+        + (state.closedEarly.length ? `<h3 class="early-h">CLOSED BEFORE REVIEW · ${state.closedEarly.length}</h3>
+          <p class="early-p">Closed before you decided on them, usually by the person who sent them, so they're not published. Reopen one to review it here.</p>
+          <div class="list">${state.closedEarly.map(i => `<div class="li" data-early="${i.number}"><span class="chip warn">CLOSED BEFORE REVIEW</span>${i.labels.some(l => l.name === "withdrawn") ? '<span class="chip mute">BY THE SENDER</span>' : ""}
+            <span class="n">${esc(plainTitle(i.title))}</span><span class="m">#${i.number} · ${esc(i.user.login)} · closed ${ago(i.closed_at)}</span>
+            <span class="r"><button data-act="reopen" data-n="${i.number}" ${state.status[i.number]?.busy ? "disabled" : ""}>↺ Reopen</button><a class="btn" href="${esc(i.html_url)}" target="_blank" rel="noopener">Open ↗</a></span></div>`).join("")}</div>` : "");
     } else if (tab === "done") {
       body = state.done.length ? `<div class="list">${state.done.map(i => {
         const approved = i.labels.some(l => l.name === "approved"), fixed = !approved && i.labels.some(l => l.name === "fix") && i.state_reason === "completed";
         const isCat = isCatIssue(i), isCatalog = isCatalogIssue(i);
-        const what = isCatalog ? (i.state_reason === "completed" ? "APPLIED" : "CLOSED") : approved ? (isCat ? "FILED" : "PUBLISHED") : fixed ? "FIXED" : "REJECTED";
+        const what = isCatalog ? (i.state_reason === "completed" ? "APPLIED" : "CLOSED") : approved ? (isCat ? "FILED" : "PUBLISHED") : fixed ? "FIXED" : unreviewed(i) ? "CLOSED BEFORE REVIEW" : "REJECTED";
         return `<div class="li"><span class="chip ${approved || fixed || what === "APPLIED" ? "ok" : "mute"}">${what}</span>${isCat ? '<span class="chip info">CATEGORY</span>' : ""}${isCatalog ? '<span class="chip info">CLASS / CATEGORY</span>' : ""}
           <span class="n">${esc(plainTitle(i.title).replace(/^\[catalog\]\s*/i, ""))}</span><span class="m">#${i.number} · ${esc(i.user.login)} · ${ago(i.closed_at)}</span>
           <span class="r"><a class="btn" href="${esc(i.html_url)}" target="_blank" rel="noopener">Open ↗</a></span></div>`;
@@ -1210,6 +1224,9 @@ footer a { color: var(--muted); }
     if (i.number && i.state === "closed" && Array.isArray(i.labels) && typeof i.title === "string") state.justClosed[i.number] = { iss: i, at: Date.now() };
   };
   function settleLists(open, closed) {
+    for (const [n, c] of Object.entries(state.justOpened)) if (Date.now() - c.at > 600000 || open.some(i => i.number === +n)) delete state.justOpened[n];
+    open = [...open, ...Object.values(state.justOpened).map(c => c.iss)];
+    closed = closed.filter(i => !open.some(o => o.number === i.number && new Date(o.updated_at) >= new Date(i.updated_at)));
     for (const [n, c] of Object.entries(state.justClosed)) {
       const o = open.find(i => i.number === +n);
       if (Date.now() - c.at > 600000 || (o && new Date(o.updated_at) > new Date(c.iss.updated_at)) || (!o && closed.some(i => i.number === +n))) delete state.justClosed[n];
@@ -1229,6 +1246,7 @@ footer a { color: var(--muted); }
     // the desk's own class / category changes still open on GitHub (applying, or failed)
     state.catOpen = issues.filter(isCatalogIssue);
     state.done = closed.filter(i => isSubmission(i) || isCatalogIssue(i));
+    state.closedEarly = closed.filter(i => unreviewed(i) && Date.now() - new Date(i.closed_at) < 30 * 864e5);
   }
   async function boot() {
     $("#app").innerHTML = `<div class="empty"><span class="spin"></span> Connecting…</div>`;
@@ -1297,6 +1315,17 @@ footer a { color: var(--muted); }
       setTimeout(async () => { delete state.status[n]; await refresh(); render(); }, 2500);
     } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
   }
+  async function reopen(n) {
+    const known = state.closedEarly.find(i => i.number === n);
+    state.status[n] = { kind: "busy", busy: true }; render();
+    try {
+      const iss = await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ state: "open" }) });
+      // the open list trails the change: what GitHub answered is shown until the lists agree
+      state.justOpened[n] = { iss: { ...known, ...iss, state: "open", state_reason: null, closed_at: null, updated_at: iss?.updated_at || new Date().toISOString() }, at: Date.now() };
+      delete state.status[n];
+      await refresh(); render();
+    } catch (e) { delete state.status[n]; render(); alert(e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
+  }
   async function reject(n) {
     const why = ($(`#why${n}`)?.value || "").trim();
     state.rejecting[n] = false;
@@ -1330,6 +1359,7 @@ footer a { color: var(--muted); }
     if (b.dataset.act === "reject") { state.rejecting[n] = true; render(); $(`#why${n}`)?.focus(); }
     if (b.dataset.act === "reject-cancel") { state.rejecting[n] = false; render(); }
     if (b.dataset.act === "reject-go") reject(n);
+    if (b.dataset.act === "reopen") reopen(n);
   });
   document.addEventListener("input", e => {
     // the Symbols tab's search redraws the list as you type, and keeps the caret where it was
