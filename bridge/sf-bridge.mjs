@@ -217,8 +217,8 @@ function execEngine(prompt, imagePath) {
 
 const APP_URL = process.env.SF_APP_URL || "https://mattvillis.github.io/signalflow/";
 function openApp() {
-  // a local standalone next to the bridge wins (developer setup); beta users
-  // just have the bridge files and get the hosted app
+  // a local standalone next to the bridge wins (developer setup); someone with
+  // only the bridge files gets the hosted app
   const local = join(dirname(SCRIPT), "signalflow.html");
   const url = existsSync(local) ? pathToFileURL(local).href : APP_URL;
   const [c, a] = WIN ? ["cmd", ["/c", "start", "", url]]
