@@ -240,6 +240,9 @@
   "add a bend (becomes ROUTED)": "曲げ点を追加（経路指定になる）",
   "Drag a link end dot": "ケーブル端の点をドラッグ",
   "move that end to another port": "その端を別のポートへ移動",
+  "Drag a flag": "フラグをドラッグ",
+  "Hold 1 / 2 / 3 · click a cable, a flag or a port": "1 / 2 / 3 を押しながら · ケーブル、フラグ、ポートをクリック",
+  "change the connection there: direct / routed / flags": "その接続の種類を変更: 直結 / 経路指定 / フラグ",
   "EDIT": "編集",
   "Del / Backspace": "Del / Backspace",
   "delete the selection": "選択したものを削除",
@@ -973,6 +976,7 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "VLANの不一致 — {x}{x2}。そのままにしました。",
   " (+{x} more)": "（ほか{x}件）",
+  "An off-page reference joins two sheets, so it can only be drawn as flags.": "ページ外参照は 2 つのシートをつなぐため、フラグとしてしか描けません。",
   "Replaced with {name}": "{name}に置き換えました",
   "{n} device replaced with {name}|{n} devices replaced with {name}": {
    "other": "機器{n}台を{name}に置き換えました"

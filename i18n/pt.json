@@ -286,6 +286,9 @@
   "add a bend (becomes ROUTED)": "adicionar uma dobra (vira ROTEADO)",
   "Drag a link end dot": "Arrastar a ponta do cabo",
   "move that end to another port": "levar essa ponta para outra porta",
+  "Drag a flag": "Arrastar uma bandeira",
+  "Hold 1 / 2 / 3 · click a cable, a flag or a port": "Segure 1 / 2 / 3 · clique num cabo, numa bandeira ou numa porta",
+  "change the connection there: direct / routed / flags": "muda a ligação: direta / roteada / bandeiras",
   "EDIT": "EDITAR",
   "Del / Backspace": "Del / Backspace",
   "delete the selection": "apagar a seleção",
@@ -1103,6 +1106,7 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "VLAN divergente — {x}{x2}. Nada foi alterado.",
   " (+{x} more)": " (e mais {x})",
+  "An off-page reference joins two sheets, so it can only be drawn as flags.": "Uma referência fora da folha liga duas folhas, por isso só pode ser desenhada como bandeiras.",
   "Replaced with {name}": "Substituído por {name}",
   "{n} device replaced with {name}|{n} devices replaced with {name}": {
    "one": "{n} dispositivo substituído por {name}",

@@ -286,6 +286,9 @@
   "add a bend (becomes ROUTED)": "añadir un codo (pasa a TRAZADO)",
   "Drag a link end dot": "Arrastrar el extremo de un cable",
   "move that end to another port": "llevar ese extremo a otro puerto",
+  "Drag a flag": "Arrastrar una bandera",
+  "Hold 1 / 2 / 3 · click a cable, a flag or a port": "Mantén 1 / 2 / 3 · clic en un cable, una bandera o un puerto",
+  "change the connection there: direct / routed / flags": "cambia la conexión: directa / trazada / banderas",
   "EDIT": "EDICIÓN",
   "Del / Backspace": "Del / Backspace",
   "delete the selection": "borrar la selección",
@@ -1103,6 +1106,7 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "Discrepancia de VLAN — {x}{x2}. Se deja como está.",
   " (+{x} more)": " (+{x} más)",
+  "An off-page reference joins two sheets, so it can only be drawn as flags.": "Una referencia a otra hoja une dos hojas, así que solo puede dibujarse como banderas.",
   "Replaced with {name}": "Reemplazado por {name}",
   "{n} device replaced with {name}|{n} devices replaced with {name}": {
    "one": "{n} equipo reemplazado por {name}",

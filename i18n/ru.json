@@ -309,6 +309,9 @@
   "add a bend (becomes ROUTED)": "добавить излом (кабель станет РУЧНЫМ)",
   "Drag a link end dot": "Перетаскивание точки на конце кабеля",
   "move that end to another port": "перенести этот конец на другой порт",
+  "Drag a flag": "Перетаскивание флажка",
+  "Hold 1 / 2 / 3 · click a cable, a flag or a port": "Удерживая 1 / 2 / 3, щёлкните кабель, флажок или порт",
+  "change the connection there: direct / routed / flags": "меняет тип соединения: авто / ручной / флажки",
   "EDIT": "ПРАВКА",
   "Del / Backspace": "Del / Backspace",
   "delete the selection": "удалить выделенное",
@@ -1168,6 +1171,7 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "Несовпадение VLAN — {x}{x2}. Оставлено как есть.",
   " (+{x} more)": " (и ещё {x})",
+  "An off-page reference joins two sheets, so it can only be drawn as flags.": "Ссылка на другой лист соединяет два листа, поэтому её можно нарисовать только флажками.",
   "Replaced with {name}": "Заменено на {name}",
   "{n} device replaced with {name}|{n} devices replaced with {name}": {
    "one": "{n} устройство заменено на {name}",

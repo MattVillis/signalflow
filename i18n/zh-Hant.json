@@ -240,6 +240,9 @@
   "add a bend (becomes ROUTED)": "新增轉折點（變為自訂路徑）",
   "Drag a link end dot": "拖曳纜線端點",
   "move that end to another port": "將該端移到其他連接埠",
+  "Drag a flag": "拖曳旗標",
+  "Hold 1 / 2 / 3 · click a cable, a flag or a port": "按住 1 / 2 / 3 · 點選纜線、旗標或連接埠",
+  "change the connection there: direct / routed / flags": "更改該連線的類型：直連 / 自訂路徑 / 旗標",
   "EDIT": "編輯",
   "Del / Backspace": "Del / Backspace",
   "delete the selection": "刪除選取項目",
@@ -973,6 +976,7 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "VLAN 不一致 — {x}{x2}。維持原狀。",
   " (+{x} more)": "（另有 {x} 個）",
+  "An off-page reference joins two sheets, so it can only be drawn as flags.": "跨頁參照連接兩張圖紙，因此只能繪製為旗標。",
   "Replaced with {name}": "已取代為 {name}",
   "{n} device replaced with {name}|{n} devices replaced with {name}": {
    "other": "已將 {n} 台裝置取代為 {name}"

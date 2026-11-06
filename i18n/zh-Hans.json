@@ -240,6 +240,9 @@
   "add a bend (becomes ROUTED)": "添加拐点（变为手动走线）",
   "Drag a link end dot": "拖动线缆端点",
   "move that end to another port": "将该端移到另一个端口",
+  "Drag a flag": "拖动旗标",
+  "Hold 1 / 2 / 3 · click a cable, a flag or a port": "按住 1 / 2 / 3 · 点击线缆、旗标或端口",
+  "change the connection there: direct / routed / flags": "更改该连接的类型：直连 / 手动走线 / 旗标",
   "EDIT": "编辑",
   "Del / Backspace": "Del / Backspace",
   "delete the selection": "删除所选内容",
@@ -973,6 +976,7 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "VLAN 不一致 — {x}{x2}。保持不变。",
   " (+{x} more)": "（另有 {x} 处）",
+  "An off-page reference joins two sheets, so it can only be drawn as flags.": "跨图纸引用连接两张图纸，因此只能绘制为旗标。",
   "Replaced with {name}": "已替换为 {name}",
   "{n} device replaced with {name}|{n} devices replaced with {name}": {
    "other": "已将 {n} 台设备替换为 {name}"

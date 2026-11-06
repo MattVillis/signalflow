@@ -286,6 +286,9 @@
   "add a bend (becomes ROUTED)": "ajouter un coude (devient ROUTÉ)",
   "Drag a link end dot": "Glisser l'extrémité d'un câble",
   "move that end to another port": "déplacer cette extrémité vers un autre port",
+  "Drag a flag": "Glisser un renvoi",
+  "Hold 1 / 2 / 3 · click a cable, a flag or a port": "Maintenir 1 / 2 / 3 · cliquer un câble, un renvoi ou un port",
+  "change the connection there: direct / routed / flags": "change la liaison : directe / routée / renvois",
   "EDIT": "ÉDITION",
   "Del / Backspace": "Del / Backspace",
   "delete the selection": "supprimer la sélection",
@@ -1103,6 +1106,7 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "VLAN incohérent — {x}{x2}. Laissé tel quel.",
   " (+{x} more)": " (et {x} de plus)",
+  "An off-page reference joins two sheets, so it can only be drawn as flags.": "Un renvoi vers une autre feuille relie deux feuilles : il ne peut être dessiné qu'en renvois.",
   "Replaced with {name}": "Remplacé par {name}",
   "{n} device replaced with {name}|{n} devices replaced with {name}": {
    "one": "{n} appareil remplacé par {name}",

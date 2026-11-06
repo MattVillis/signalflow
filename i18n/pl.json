@@ -309,6 +309,9 @@
   "add a bend (becomes ROUTED)": "dodaj załamanie (zmienia typ na TRASOWANY)",
   "Drag a link end dot": "Przeciągnij kropkę na końcu kabla",
   "move that end to another port": "przenieś ten koniec na inny port",
+  "Drag a flag": "Przeciągnij flagę",
+  "Hold 1 / 2 / 3 · click a cable, a flag or a port": "Przytrzymaj 1 / 2 / 3 · kliknij kabel, flagę lub port",
+  "change the connection there: direct / routed / flags": "zmienia typ połączenia: bezpośredni / trasowany / flagi",
   "EDIT": "EDYCJA",
   "Del / Backspace": "Del / Backspace",
   "delete the selection": "usuń zaznaczone",
@@ -1168,6 +1171,7 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "Niezgodność VLAN — {x}{x2}. Bez zmian.",
   " (+{x} more)": " (+{x} więcej)",
+  "An off-page reference joins two sheets, so it can only be drawn as flags.": "Odnośnik do innego arkusza łączy dwa arkusze, więc można go narysować tylko jako flagi.",
   "Replaced with {name}": "Zamieniono na {name}",
   "{n} device replaced with {name}|{n} devices replaced with {name}": {
    "one": "Zamieniono {n} urządzenie na {name}",
