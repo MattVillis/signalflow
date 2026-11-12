@@ -224,6 +224,8 @@
   "Go to the sheet with this cable selected": "转到该线缆所在图纸并选中它",
   "Show on sheet": "在图纸上显示",
   "nothing plugged in": "未连接任何线缆",
+  "DOES NOT FIT": "放不下",
+  "OVERLAP": "重叠",
   "FRONT PANEL": "前面板",
   "REAR PANEL": "后面板",
   "DEPTH UNKNOWN": "深度未知",
@@ -329,6 +331,7 @@
   "which rack it goes in, the U it sits at, rear-facing": "放入哪个机柜、位于哪个 U、是否反向安装",
   "Drag in the rack view": "在机柜视图中拖动",
   "another U, another rack · off the rack = out of it": "另一个 U、另一个机柜 · 拖出机柜 = 移出",
+  "in the rack view: the selected device a U up or down (Shift: 5), or along its row": "在机柜视图中：将所选设备上移或下移 1U（Shift：5U），或沿该行移动",
   "Click a port": "点击端口",
   "names its cable and the far end · rings that port when it is racked too": "显示其线缆和另一端 · 若另一端也在机柜中，则圈出该端口",
   "out of the rack (the symbol stays on its sheet)": "移出机柜（符号仍留在图纸上）",
@@ -1044,6 +1047,7 @@
    "other": "有 {n} 个文件未放置：图纸可放置图片（PNG、JPEG、WebP、GIF、SVG），PDF 每次只能放一个"
   },
   "{taken} Replace with this connection?": "{taken}是否替换为此连接？",
+  "The rack can't be lower than the highest device in it (U {u})": "机柜不能低于其中最高的设备（U {u}）",
   "{taken} Replace with the new connection?": "{taken}是否替换为新连接？",
   "{end} already carries all {n} lane of a {label}.|{end} already carries all {n} lanes of a {label}.": {
    "other": "{end} 已承载 {label} 的全部 {n} 个通道。"
@@ -1168,6 +1172,25 @@
   "switch port\u0004spare": "空闲",
   "Save — asks before overwriting {fileName}  Ctrl+S": "保存 — 覆盖 {fileName} 前会先询问  Ctrl+S",
   "Save the project file  Ctrl+S": "保存项目文件  Ctrl+S",
+  "<0>{project}</0> — {devices} on {sheets}, auto-saved {ago}": "<0>{project}</0> — {sheets}，共 {devices}，自动保存：{ago}",
+  "UNTITLED": "未命名",
+  "{n} sheet|{n} sheets": {
+   "other": "{n} 张图纸"
+  },
+  "Restore": "恢复",
+  "Start a blank project — the auto-saved copy is deleted": "新建空白项目，自动保存的副本将被删除",
+  "Find device, port, IP, C012 or univ U2": "查找设备、端口、IP、C012 或域 U2",
+  "ESC": "ESC",
+  "{n} SYMBOL BUILDING…|{n} SYMBOLS BUILDING…": {
+   "other": "正在生成 {n} 个符号…"
+  },
+  "SYMBOL READY": "符号已就绪",
+  "ANALYSIS FAILED": "分析失败",
+  "RESEARCH FAILED": "查询失败",
+  "REVIEW": "查看",
+  "DETAILS": "详情",
+  "KEYBOARD SHORTCUTS": "键盘快捷键",
+  "? toggles this panel · click outside or ESC to close": "? 键切换此面板 · 点击外部或按 ESC 关闭",
   "Open": "打开",
   "Open a .signalflow.json project": "打开 .signalflow.json 项目",
   "Save as": "另存为",
@@ -1322,31 +1345,12 @@
   "+ LOGO": "+ LOGO",
   "Click to move or resize the logo": "点击以移动 Logo 或调整其大小",
   "Fold the title block away — it is still drawn on every export": "收起标题栏（每次导出时仍会绘制）",
-  "<0>{project}</0> — {devices} on {sheets}, auto-saved {ago}": "<0>{project}</0> — {sheets}，共 {devices}，自动保存：{ago}",
-  "UNTITLED": "未命名",
-  "{n} sheet|{n} sheets": {
-   "other": "{n} 张图纸"
-  },
-  "Restore": "恢复",
-  "Start a blank project — the auto-saved copy is deleted": "新建空白项目，自动保存的副本将被删除",
-  "Find device, port, IP, C012 or univ U2": "查找设备、端口、IP、C012 或域 U2",
-  "ESC": "ESC",
   "LINK TYPE · {label}": "走线方式 · {label}",
   "Auto-routed elbow": "自动折线走线",
   "Click paper to place bends, ENTER to finish": "点击画布放置拐点，ENTER 完成",
   "FLAGS": "旗标",
   "Reference tags at each end, no line drawn": "两端各放一个旗标，不画线",
   "Note text — Ctrl+Enter to commit": "注释文字，Ctrl+Enter 确认",
-  "{n} SYMBOL BUILDING…|{n} SYMBOLS BUILDING…": {
-   "other": "正在生成 {n} 个符号…"
-  },
-  "SYMBOL READY": "符号已就绪",
-  "ANALYSIS FAILED": "分析失败",
-  "RESEARCH FAILED": "查询失败",
-  "REVIEW": "查看",
-  "DETAILS": "详情",
-  "KEYBOARD SHORTCUTS": "键盘快捷键",
-  "? toggles this panel · click outside or ESC to close": "? 键切换此面板 · 点击外部或按 ESC 关闭",
   "Cable number — kept for good; Lists → Cables can renumber": "线缆编号：永久保留；可在 清单 → 线缆 中重新编号",
   "ROUTE": "走线",
   "Shift channel 10px left / up": "将通道向左 / 上移 10px",
@@ -1366,7 +1370,7 @@
   "LOCKED": "已锁定",
   "LOCK": "锁定",
   "Back to the original shape": "恢复原始比例",
-  "RACKS: drag a device between U rows or racks · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "机柜：在 U 位或机柜之间拖动设备 · 放到机柜外 = 移出 · 点击端口 = 线缆去向 · 双击 = 编辑 · DEL = 移出机柜",
+  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "机柜：在 U 位或机柜之间拖动设备 · ↑ ↓ = 上移或下移 1U · 放到机柜外 = 移出 · 点击端口 = 线缆去向 · 双击 = 编辑 · DEL = 移出机柜",
   "ROUTED LINK: click paper to add bends · ENTER or ESC to finish": "手动走线：点击画布添加拐点 · ENTER 或 ESC 结束",
   "CHOOSE LINK TYPE · ESC to cancel": "选择走线方式 · ESC 取消",
   "OFF-PAGE LINK from {x}: click a port on this sheet · ESC to cancel": "来自 {x} 的跨图纸连接：点击此图纸上的端口 · ESC 取消",
@@ -1400,7 +1404,6 @@
   "{n} LINK CREATED|{n} LINKS CREATED": {
    "other": "已创建 {n} 条线缆"
   },
-  "Replace connection?": "替换连接？",
-  "Apply name{x}{x2}": "应用名称{x}{x2}"
+  "Replace connection?": "替换连接？"
  }
 }

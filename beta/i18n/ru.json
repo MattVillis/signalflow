@@ -281,6 +281,8 @@
   "Go to the sheet with this cable selected": "Перейти на лист с выбранным кабелем",
   "Show on sheet": "Показать на листе",
   "nothing plugged in": "ничего не подключено",
+  "DOES NOT FIT": "НЕ ПОМЕЩАЕТСЯ",
+  "OVERLAP": "ПЕРЕКРЫТИЕ",
   "FRONT PANEL": "ПЕРЕДНЯЯ ПАНЕЛЬ",
   "REAR PANEL": "ЗАДНЯЯ ПАНЕЛЬ",
   "DEPTH UNKNOWN": "ГЛУБИНА НЕИЗВЕСТНА",
@@ -410,6 +412,7 @@
   "which rack it goes in, the U it sits at, rear-facing": "в какую стойку, на какой юнит, лицом назад",
   "Drag in the rack view": "Перетаскивание в виде стоек",
   "another U, another rack · off the rack = out of it": "другой юнит, другая стойка · мимо стойки = убрать",
+  "in the rack view: the selected device a U up or down (Shift: 5), or along its row": "в виде стоек: выбранное устройство на юнит выше или ниже (Shift — на 5) или вдоль ряда",
   "Click a port": "Щелчок по порту",
   "names its cable and the far end · rings that port when it is racked too": "называет его кабель и дальний конец · обводит тот порт, если его устройство тоже в стойке",
   "out of the rack (the symbol stays on its sheet)": "убрать из стойки (символ остаётся на листе)",
@@ -1245,6 +1248,7 @@
    "other": "{n} файла не поставлены: на лист можно ставить изображения (PNG, JPEG, WebP, GIF, SVG) или по одному PDF"
   },
   "{taken} Replace with this connection?": "{taken} Заменить на это подключение?",
+  "The rack can't be lower than the highest device in it (U {u})": "Стойка не может быть ниже самого верхнего устройства в ней (юнит {u})",
   "{taken} Replace with the new connection?": "{taken} Заменить на новое подключение?",
   "{end} already carries all {n} lane of a {label}.|{end} already carries all {n} lanes of a {label}.": {
    "one": "{end}: все {n} линия {label} уже заняты.",
@@ -1423,6 +1427,31 @@
   "switch port\u0004spare": "свободен",
   "Save — asks before overwriting {fileName}  Ctrl+S": "Сохранить — с вопросом перед перезаписью {fileName}  Ctrl+S",
   "Save the project file  Ctrl+S": "Сохранить файл проекта  Ctrl+S",
+  "<0>{project}</0> — {devices} on {sheets}, auto-saved {ago}": "<0>{project}</0> — {devices}, {sheets}, автосохранение {ago}",
+  "UNTITLED": "БЕЗ НАЗВАНИЯ",
+  "{n} sheet|{n} sheets": {
+   "one": "{n} лист",
+   "few": "{n} листа",
+   "many": "{n} листов",
+   "other": "{n} листа"
+  },
+  "Restore": "Восстановить",
+  "Start a blank project — the auto-saved copy is deleted": "Начать пустой проект — автосохранённая копия будет удалена",
+  "Find device, port, IP, C012 or univ U2": "Найти устройство, порт, IP, C012 или юниверс U2",
+  "ESC": "ESC",
+  "{n} SYMBOL BUILDING…|{n} SYMBOLS BUILDING…": {
+   "one": "СОЗДАЁТСЯ {n} СИМВОЛ…",
+   "few": "СОЗДАЮТСЯ {n} СИМВОЛА…",
+   "many": "СОЗДАЁТСЯ {n} СИМВОЛОВ…",
+   "other": "СОЗДАЁТСЯ {n} СИМВОЛА…"
+  },
+  "SYMBOL READY": "СИМВОЛ ГОТОВ",
+  "ANALYSIS FAILED": "АНАЛИЗ НЕ УДАЛСЯ",
+  "RESEARCH FAILED": "ПОИСК НЕ УДАЛСЯ",
+  "REVIEW": "ПРОСМОТР",
+  "DETAILS": "ПОДРОБНЕЕ",
+  "KEYBOARD SHORTCUTS": "СОЧЕТАНИЯ КЛАВИШ",
+  "? toggles this panel · click outside or ESC to close": "? — показать/скрыть эту панель · щелчок снаружи или ESC — закрыть",
   "Open": "Открыть",
   "Open a .signalflow.json project": "Открыть проект .signalflow.json",
   "Save as": "Сохранить как",
@@ -1583,37 +1612,12 @@
   "+ LOGO": "+ ЛОГОТИП",
   "Click to move or resize the logo": "Щёлкните, чтобы переместить логотип или изменить его размер",
   "Fold the title block away — it is still drawn on every export": "Свернуть штамп — при экспорте он всё равно выводится",
-  "<0>{project}</0> — {devices} on {sheets}, auto-saved {ago}": "<0>{project}</0> — {devices}, {sheets}, автосохранение {ago}",
-  "UNTITLED": "БЕЗ НАЗВАНИЯ",
-  "{n} sheet|{n} sheets": {
-   "one": "{n} лист",
-   "few": "{n} листа",
-   "many": "{n} листов",
-   "other": "{n} листа"
-  },
-  "Restore": "Восстановить",
-  "Start a blank project — the auto-saved copy is deleted": "Начать пустой проект — автосохранённая копия будет удалена",
-  "Find device, port, IP, C012 or univ U2": "Найти устройство, порт, IP, C012 или юниверс U2",
-  "ESC": "ESC",
   "LINK TYPE · {label}": "ТИП КАБЕЛЯ · {label}",
   "Auto-routed elbow": "Автопрокладка с изломом",
   "Click paper to place bends, ENTER to finish": "Щёлкайте по листу, ставя изломы; ENTER — готово",
   "FLAGS": "ФЛАЖКИ",
   "Reference tags at each end, no line drawn": "Флажки-ссылки на обоих концах, без линии",
   "Note text — Ctrl+Enter to commit": "Текст заметки — Ctrl+Enter, чтобы применить",
-  "{n} SYMBOL BUILDING…|{n} SYMBOLS BUILDING…": {
-   "one": "СОЗДАЁТСЯ {n} СИМВОЛ…",
-   "few": "СОЗДАЮТСЯ {n} СИМВОЛА…",
-   "many": "СОЗДАЁТСЯ {n} СИМВОЛОВ…",
-   "other": "СОЗДАЁТСЯ {n} СИМВОЛА…"
-  },
-  "SYMBOL READY": "СИМВОЛ ГОТОВ",
-  "ANALYSIS FAILED": "АНАЛИЗ НЕ УДАЛСЯ",
-  "RESEARCH FAILED": "ПОИСК НЕ УДАЛСЯ",
-  "REVIEW": "ПРОСМОТР",
-  "DETAILS": "ПОДРОБНЕЕ",
-  "KEYBOARD SHORTCUTS": "СОЧЕТАНИЯ КЛАВИШ",
-  "? toggles this panel · click outside or ESC to close": "? — показать/скрыть эту панель · щелчок снаружи или ESC — закрыть",
   "Cable number — kept for good; Lists → Cables can renumber": "Номер кабеля — сохраняется навсегда; перенумеровать можно в «Списки → Кабели»",
   "ROUTE": "СДВИГ",
   "Shift channel 10px left / up": "Сдвинуть канал на 10px влево / вверх",
@@ -1633,7 +1637,7 @@
   "LOCKED": "ЗАКРЕПЛЕНО",
   "LOCK": "ЗАКРЕПИТЬ",
   "Back to the original shape": "Вернуть исходные пропорции",
-  "RACKS: drag a device between U rows or racks · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "СТОЙКИ: перетащите устройство на другой юнит или в другую стойку · бросьте мимо стойки = убрать · щелчок по порту = куда идёт кабель · двойной щелчок = изменить · DEL = убрать из стойки",
+  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "СТОЙКИ: перетащите устройство на другой юнит или в другую стойку · ↑ ↓ = на юнит выше или ниже · бросьте мимо стойки = убрать · щелчок по порту = куда идёт кабель · двойной щелчок = изменить · DEL = убрать из стойки",
   "ROUTED LINK: click paper to add bends · ENTER or ESC to finish": "РУЧНАЯ ПРОКЛАДКА: щёлкайте по листу, добавляя изломы · ENTER или ESC — готово",
   "CHOOSE LINK TYPE · ESC to cancel": "ВЫБЕРИТЕ ТИП КАБЕЛЯ · ESC — отмена",
   "OFF-PAGE LINK from {x}: click a port on this sheet · ESC to cancel": "КАБЕЛЬ С ЛИСТА {x}: щёлкните порт на этом листе · ESC — отмена",
@@ -1679,7 +1683,6 @@
    "many": "СОЗДАНО {n} КАБЕЛЕЙ",
    "other": "СОЗДАНО {n} КАБЕЛЯ"
   },
-  "Replace connection?": "Заменить подключение?",
-  "Apply name{x}{x2}": "Применить имя{x}{x2}"
+  "Replace connection?": "Заменить подключение?"
  }
 }

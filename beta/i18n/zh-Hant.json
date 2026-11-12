@@ -224,6 +224,8 @@
   "Go to the sheet with this cable selected": "前往該纜線所在圖紙並選取它",
   "Show on sheet": "在圖紙上顯示",
   "nothing plugged in": "未連接任何纜線",
+  "DOES NOT FIT": "放不下",
+  "OVERLAP": "重疊",
   "FRONT PANEL": "前面板",
   "REAR PANEL": "後面板",
   "DEPTH UNKNOWN": "深度未知",
@@ -329,6 +331,7 @@
   "which rack it goes in, the U it sits at, rear-facing": "放入哪個機櫃、位於哪個 U、是否反向安裝",
   "Drag in the rack view": "在機櫃檢視中拖曳",
   "another U, another rack · off the rack = out of it": "另一個 U、另一個機櫃 · 拖出機櫃 = 移出",
+  "in the rack view: the selected device a U up or down (Shift: 5), or along its row": "在機櫃檢視中：將所選設備上移或下移 1U（Shift：5U），或沿該列移動",
   "Click a port": "點選連接埠",
   "names its cable and the far end · rings that port when it is racked too": "顯示其纜線與另一端 · 若另一端也在機櫃中，則圈出該連接埠",
   "out of the rack (the symbol stays on its sheet)": "移出機櫃（符號仍留在圖紙上）",
@@ -1044,6 +1047,7 @@
    "other": "有 {n} 個檔案未放置：圖紙可放置圖片（PNG、JPEG、WebP、GIF、SVG），PDF 一次只能放一個"
   },
   "{taken} Replace with this connection?": "{taken} 要以此連接取代嗎？",
+  "The rack can't be lower than the highest device in it (U {u})": "機櫃不能低於其中最高的設備（U {u}）",
   "{taken} Replace with the new connection?": "{taken} 要以新的連接取代嗎？",
   "{end} already carries all {n} lane of a {label}.|{end} already carries all {n} lanes of a {label}.": {
    "other": "{end} 已用滿 {label} 的全部 {n} 個通道。"
@@ -1168,6 +1172,25 @@
   "switch port\u0004spare": "空閒",
   "Save — asks before overwriting {fileName}  Ctrl+S": "儲存 — 覆寫 {fileName} 前會先詢問  Ctrl+S",
   "Save the project file  Ctrl+S": "儲存專案檔  Ctrl+S",
+  "<0>{project}</0> — {devices} on {sheets}, auto-saved {ago}": "<0>{project}</0> — {sheets}，{devices}，最後自動儲存：{ago}",
+  "UNTITLED": "未命名",
+  "{n} sheet|{n} sheets": {
+   "other": "{n} 張圖紙"
+  },
+  "Restore": "還原",
+  "Start a blank project — the auto-saved copy is deleted": "開始空白專案 — 自動儲存的副本將被刪除",
+  "Find device, port, IP, C012 or univ U2": "尋找裝置、連接埠、IP、C012 或 univ U2",
+  "ESC": "ESC",
+  "{n} SYMBOL BUILDING…|{n} SYMBOLS BUILDING…": {
+   "other": "正在建立 {n} 個符號…"
+  },
+  "SYMBOL READY": "符號已完成",
+  "ANALYSIS FAILED": "分析失敗",
+  "RESEARCH FAILED": "研究失敗",
+  "REVIEW": "查看",
+  "DETAILS": "詳細資訊",
+  "KEYBOARD SHORTCUTS": "鍵盤快速鍵",
+  "? toggles this panel · click outside or ESC to close": "? 切換此面板 · 按一下外側或按 ESC 關閉",
   "Open": "開啟",
   "Open a .signalflow.json project": "開啟 .signalflow.json 專案",
   "Save as": "另存新檔",
@@ -1322,31 +1345,12 @@
   "+ LOGO": "+ LOGO",
   "Click to move or resize the logo": "按一下以移動 Logo 或調整其大小",
   "Fold the title block away — it is still drawn on every export": "收起標題欄 — 所有匯出中仍會繪製",
-  "<0>{project}</0> — {devices} on {sheets}, auto-saved {ago}": "<0>{project}</0> — {sheets}，{devices}，最後自動儲存：{ago}",
-  "UNTITLED": "未命名",
-  "{n} sheet|{n} sheets": {
-   "other": "{n} 張圖紙"
-  },
-  "Restore": "還原",
-  "Start a blank project — the auto-saved copy is deleted": "開始空白專案 — 自動儲存的副本將被刪除",
-  "Find device, port, IP, C012 or univ U2": "尋找裝置、連接埠、IP、C012 或 univ U2",
-  "ESC": "ESC",
   "LINK TYPE · {label}": "纜線類型 · {label}",
   "Auto-routed elbow": "自動路徑的直角折線",
   "Click paper to place bends, ENTER to finish": "在圖紙上按一下放置轉折點，按 ENTER 完成",
   "FLAGS": "旗標",
   "Reference tags at each end, no line drawn": "兩端各一個參照標籤，不繪製線條",
   "Note text — Ctrl+Enter to commit": "註記文字 — Ctrl+Enter 確認",
-  "{n} SYMBOL BUILDING…|{n} SYMBOLS BUILDING…": {
-   "other": "正在建立 {n} 個符號…"
-  },
-  "SYMBOL READY": "符號已完成",
-  "ANALYSIS FAILED": "分析失敗",
-  "RESEARCH FAILED": "研究失敗",
-  "REVIEW": "查看",
-  "DETAILS": "詳細資訊",
-  "KEYBOARD SHORTCUTS": "鍵盤快速鍵",
-  "? toggles this panel · click outside or ESC to close": "? 切換此面板 · 按一下外側或按 ESC 關閉",
   "Cable number — kept for good; Lists → Cables can renumber": "纜線編號 — 永久保留；可在「清單 → 纜線」中重新編號",
   "ROUTE": "走線",
   "Shift channel 10px left / up": "通道向左 / 上移 10px",
@@ -1366,7 +1370,7 @@
   "LOCKED": "已鎖定",
   "LOCK": "鎖定",
   "Back to the original shape": "恢復原始比例",
-  "RACKS: drag a device between U rows or racks · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "機櫃：在 U 位或機櫃之間拖曳設備 · 放到機櫃外 = 移出 · 點選連接埠 = 纜線去向 · 雙擊 = 編輯 · DEL = 移出機櫃",
+  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "機櫃：在 U 位或機櫃之間拖曳設備 · ↑ ↓ = 上移或下移 1U · 放到機櫃外 = 移出 · 點選連接埠 = 纜線去向 · 雙擊 = 編輯 · DEL = 移出機櫃",
   "ROUTED LINK: click paper to add bends · ENTER or ESC to finish": "自訂路徑纜線：在圖紙上按一下新增轉折點 · 按 ENTER 或 ESC 完成",
   "CHOOSE LINK TYPE · ESC to cancel": "選擇纜線類型 · 按 ESC 取消",
   "OFF-PAGE LINK from {x}: click a port on this sheet · ESC to cancel": "從 {x} 拉出的跨頁纜線：按一下此圖紙上的連接埠 · 按 ESC 取消",
@@ -1400,7 +1404,6 @@
   "{n} LINK CREATED|{n} LINKS CREATED": {
    "other": "已建立 {n} 條纜線"
   },
-  "Replace connection?": "要取代連接嗎？",
-  "Apply name{x}{x2}": "套用名稱{x}{x2}"
+  "Replace connection?": "要取代連接嗎？"
  }
 }

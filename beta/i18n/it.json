@@ -262,6 +262,8 @@
   "Go to the sheet with this cable selected": "Vai al foglio con questo cavo selezionato",
   "Show on sheet": "Mostra sul foglio",
   "nothing plugged in": "niente collegato",
+  "DOES NOT FIT": "NON CI STA",
+  "OVERLAP": "SOVRAPPOSTO",
   "FRONT PANEL": "PANNELLO FRONTALE",
   "REAR PANEL": "PANNELLO POSTERIORE",
   "DEPTH UNKNOWN": "PROFONDITÀ SCONOSCIUTA",
@@ -383,6 +385,7 @@
   "which rack it goes in, the U it sits at, rear-facing": "in quale rack va, a quale U, verso il retro",
   "Drag in the rack view": "Trascina nella vista rack",
   "another U, another rack · off the rack = out of it": "un'altra U, un altro rack · fuori dal rack = esce",
+  "in the rack view: the selected device a U up or down (Shift: 5), or along its row": "nella vista rack: l'apparato selezionato una U su o giù (Maiusc: 5), o lungo la sua fila",
   "Click a port": "Clic su una porta",
   "names its cable and the far end · rings that port when it is racked too": "nomina il suo cavo e l'altro capo · cerchia quella porta se anche lei è in un rack",
   "out of the rack (the symbol stays on its sheet)": "fuori dal rack (il simbolo resta sul suo foglio)",
@@ -1178,6 +1181,7 @@
    "other": "{n} file non sono stati inseriti: un foglio accetta immagini (PNG, JPEG, WebP, GIF, SVG) o un PDF alla volta"
   },
   "{taken} Replace with this connection?": "{taken} Sostituire con questo cavo?",
+  "The rack can't be lower than the highest device in it (U {u})": "Il rack non può essere più basso dell'apparato più alto che contiene (U {u})",
   "{taken} Replace with the new connection?": "{taken} Sostituire con il nuovo cavo?",
   "{end} already carries all {n} lane of a {label}.|{end} already carries all {n} lanes of a {label}.": {
    "one": "{end} occupa già {n} lane di un {label}.",
@@ -1338,6 +1342,29 @@
   "switch port\u0004spare": "libera",
   "Save — asks before overwriting {fileName}  Ctrl+S": "Salva — chiede prima di sovrascrivere {fileName}  Ctrl+S",
   "Save the project file  Ctrl+S": "Salva il file di progetto  Ctrl+S",
+  "<0>{project}</0> — {devices} on {sheets}, auto-saved {ago}": "<0>{project}</0> — {devices} su {sheets}, salvato automaticamente {ago}",
+  "UNTITLED": "SENZA TITOLO",
+  "{n} sheet|{n} sheets": {
+   "one": "{n} foglio",
+   "many": "{n} fogli",
+   "other": "{n} fogli"
+  },
+  "Restore": "Ripristina",
+  "Start a blank project — the auto-saved copy is deleted": "Inizia un progetto vuoto — la copia salvata automaticamente viene eliminata",
+  "Find device, port, IP, C012 or univ U2": "Trova dispositivo, porta, IP, C012 o univ U2",
+  "ESC": "ESC",
+  "{n} SYMBOL BUILDING…|{n} SYMBOLS BUILDING…": {
+   "one": "{n} SIMBOLO IN COSTRUZIONE…",
+   "many": "{n} SIMBOLI IN COSTRUZIONE…",
+   "other": "{n} SIMBOLI IN COSTRUZIONE…"
+  },
+  "SYMBOL READY": "SIMBOLO PRONTO",
+  "ANALYSIS FAILED": "ANALISI NON RIUSCITA",
+  "RESEARCH FAILED": "RICERCA NON RIUSCITA",
+  "REVIEW": "ESAMINA",
+  "DETAILS": "DETTAGLI",
+  "KEYBOARD SHORTCUTS": "SCORCIATOIE DA TASTIERA",
+  "? toggles this panel · click outside or ESC to close": "? apre e chiude questo pannello · fai clic fuori o ESC per chiudere",
   "Open": "Apri",
   "Open a .signalflow.json project": "Apri un progetto .signalflow.json",
   "Save as": "Salva come",
@@ -1496,35 +1523,12 @@
   "+ LOGO": "+ LOGO",
   "Click to move or resize the logo": "Fai clic per spostare o ridimensionare il logo",
   "Fold the title block away — it is still drawn on every export": "Chiudi il cartiglio — resta comunque in ogni esportazione",
-  "<0>{project}</0> — {devices} on {sheets}, auto-saved {ago}": "<0>{project}</0> — {devices} su {sheets}, salvato automaticamente {ago}",
-  "UNTITLED": "SENZA TITOLO",
-  "{n} sheet|{n} sheets": {
-   "one": "{n} foglio",
-   "many": "{n} fogli",
-   "other": "{n} fogli"
-  },
-  "Restore": "Ripristina",
-  "Start a blank project — the auto-saved copy is deleted": "Inizia un progetto vuoto — la copia salvata automaticamente viene eliminata",
-  "Find device, port, IP, C012 or univ U2": "Trova dispositivo, porta, IP, C012 o univ U2",
-  "ESC": "ESC",
   "LINK TYPE · {label}": "TIPO DI CAVO · {label}",
   "Auto-routed elbow": "Gomito automatico",
   "Click paper to place bends, ENTER to finish": "Fai clic sulla carta per le pieghe, ENTER per finire",
   "FLAGS": "RIMANDI",
   "Reference tags at each end, no line drawn": "Etichette di rimando a ogni capo, senza linea",
   "Note text — Ctrl+Enter to commit": "Testo della nota — Ctrl+Enter per confermare",
-  "{n} SYMBOL BUILDING…|{n} SYMBOLS BUILDING…": {
-   "one": "{n} SIMBOLO IN COSTRUZIONE…",
-   "many": "{n} SIMBOLI IN COSTRUZIONE…",
-   "other": "{n} SIMBOLI IN COSTRUZIONE…"
-  },
-  "SYMBOL READY": "SIMBOLO PRONTO",
-  "ANALYSIS FAILED": "ANALISI NON RIUSCITA",
-  "RESEARCH FAILED": "RICERCA NON RIUSCITA",
-  "REVIEW": "ESAMINA",
-  "DETAILS": "DETTAGLI",
-  "KEYBOARD SHORTCUTS": "SCORCIATOIE DA TASTIERA",
-  "? toggles this panel · click outside or ESC to close": "? apre e chiude questo pannello · fai clic fuori o ESC per chiudere",
   "Cable number — kept for good; Lists → Cables can renumber": "Numero del cavo — resta fisso; Liste → Cavi può rinumerare",
   "ROUTE": "PERCORSO",
   "Shift channel 10px left / up": "Sposta il canale di 10px a sinistra / in alto",
@@ -1544,7 +1548,7 @@
   "LOCKED": "BLOCCATA",
   "LOCK": "BLOCCA",
   "Back to the original shape": "Torna alla forma originale",
-  "RACKS: drag a device between U rows or racks · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "RACK: trascina un apparato tra U o rack · lascialo fuori da un rack = esce · clic su una porta = dove va il suo cavo · doppio clic = modifica · CANC = fuori dal rack",
+  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "RACK: trascina un apparato tra U o rack · ↑ ↓ = una U su o giù · lascialo fuori da un rack = esce · clic su una porta = dove va il suo cavo · doppio clic = modifica · CANC = fuori dal rack",
   "ROUTED LINK: click paper to add bends · ENTER or ESC to finish": "CAVO INSTRADATO: fai clic sulla carta per aggiungere pieghe · ENTER o ESC per finire",
   "CHOOSE LINK TYPE · ESC to cancel": "SCEGLI IL TIPO DI CAVO · ESC per annullare",
   "OFF-PAGE LINK from {x}: click a port on this sheet · ESC to cancel": "CAVO TRA FOGLI da {x}: fai clic su una porta di questo foglio · ESC per annullare",
@@ -1586,7 +1590,6 @@
    "many": "{n} CAVI CREATI",
    "other": "{n} CAVI CREATI"
   },
-  "Replace connection?": "Sostituire il cavo?",
-  "Apply name{x}{x2}": "Applica nome{x}{x2}"
+  "Replace connection?": "Sostituire il cavo?"
  }
 }

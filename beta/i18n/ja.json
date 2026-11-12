@@ -224,6 +224,8 @@
   "Go to the sheet with this cable selected": "このケーブルを選択した状態でシートへ移動",
   "Show on sheet": "シートで表示",
   "nothing plugged in": "何も接続されていません",
+  "DOES NOT FIT": "収まりません",
+  "OVERLAP": "重なり",
   "FRONT PANEL": "前面パネル",
   "REAR PANEL": "背面パネル",
   "DEPTH UNKNOWN": "奥行き不明",
@@ -329,6 +331,7 @@
   "which rack it goes in, the U it sits at, rear-facing": "どのラックに、どのUに、後ろ向きか",
   "Drag in the rack view": "ラック表示でドラッグ",
   "another U, another rack · off the rack = out of it": "別のU、別のラック · ラックの外 = 取り外し",
+  "in the rack view: the selected device a U up or down (Shift: 5), or along its row": "ラック表示で：選択した機器を 1U 上下へ（Shift で 5U）、または列に沿って移動",
   "Click a port": "ポートをクリック",
   "names its cable and the far end · rings that port when it is racked too": "そのケーブルと相手側を表示 · 相手もラック内ならそのポートを囲んで示す",
   "out of the rack (the symbol stays on its sheet)": "ラックから外す（シンボルはシートに残る）",
@@ -1044,6 +1047,7 @@
    "other": "{n}個のファイルを配置できませんでした。シートに置けるのは画像（PNG、JPEG、WebP、GIF、SVG）か、一度に1つのPDFです"
   },
   "{taken} Replace with this connection?": "{taken}この接続に置き換えますか？",
+  "The rack can't be lower than the highest device in it (U {u})": "ラックは中の最も高い機器（U {u}）より低くできません",
   "{taken} Replace with the new connection?": "{taken}新しい接続に置き換えますか？",
   "{end} already carries all {n} lane of a {label}.|{end} already carries all {n} lanes of a {label}.": {
    "other": "{end}は既に{label}の全{n}レーンを使用しています。"
@@ -1168,6 +1172,25 @@
   "switch port\u0004spare": "空き",
   "Save — asks before overwriting {fileName}  Ctrl+S": "保存 — {fileName}を上書きする前に確認します  Ctrl+S",
   "Save the project file  Ctrl+S": "プロジェクトファイルを保存  Ctrl+S",
+  "<0>{project}</0> — {devices} on {sheets}, auto-saved {ago}": "<0>{project}</0> — {sheets}に{devices}、自動保存：{ago}",
+  "UNTITLED": "無題",
+  "{n} sheet|{n} sheets": {
+   "other": "シート{n}枚"
+  },
+  "Restore": "復元",
+  "Start a blank project — the auto-saved copy is deleted": "空のプロジェクトを開始 — 自動保存されたコピーは削除されます",
+  "Find device, port, IP, C012 or univ U2": "機器、ポート、IP、C012、ユニバース（U2）を検索",
+  "ESC": "ESC",
+  "{n} SYMBOL BUILDING…|{n} SYMBOLS BUILDING…": {
+   "other": "シンボル{n}個を作成中…"
+  },
+  "SYMBOL READY": "シンボル完成",
+  "ANALYSIS FAILED": "解析に失敗",
+  "RESEARCH FAILED": "調査に失敗",
+  "REVIEW": "確認",
+  "DETAILS": "詳細",
+  "KEYBOARD SHORTCUTS": "キーボードショートカット",
+  "? toggles this panel · click outside or ESC to close": "?でこのパネルを表示/非表示 · 外側をクリックするかESCで閉じる",
   "Open": "開く",
   "Open a .signalflow.json project": ".signalflow.jsonプロジェクトを開く",
   "Save as": "名前を付けて保存",
@@ -1322,31 +1345,12 @@
   "+ LOGO": "+ ロゴ",
   "Click to move or resize the logo": "クリックしてロゴを移動・サイズ変更",
   "Fold the title block away — it is still drawn on every export": "表題欄を折りたたむ — 書き出しには常に描かれます",
-  "<0>{project}</0> — {devices} on {sheets}, auto-saved {ago}": "<0>{project}</0> — {sheets}に{devices}、自動保存：{ago}",
-  "UNTITLED": "無題",
-  "{n} sheet|{n} sheets": {
-   "other": "シート{n}枚"
-  },
-  "Restore": "復元",
-  "Start a blank project — the auto-saved copy is deleted": "空のプロジェクトを開始 — 自動保存されたコピーは削除されます",
-  "Find device, port, IP, C012 or univ U2": "機器、ポート、IP、C012、ユニバース（U2）を検索",
-  "ESC": "ESC",
   "LINK TYPE · {label}": "ケーブルの種類 · {label}",
   "Auto-routed elbow": "自動配線（L字）",
   "Click paper to place bends, ENTER to finish": "用紙をクリックして曲げ点を配置、ENTERで完了",
   "FLAGS": "フラグ",
   "Reference tags at each end, no line drawn": "両端に参照タグを表示し、線は描きません",
   "Note text — Ctrl+Enter to commit": "メモのテキスト — Ctrl+Enterで確定",
-  "{n} SYMBOL BUILDING…|{n} SYMBOLS BUILDING…": {
-   "other": "シンボル{n}個を作成中…"
-  },
-  "SYMBOL READY": "シンボル完成",
-  "ANALYSIS FAILED": "解析に失敗",
-  "RESEARCH FAILED": "調査に失敗",
-  "REVIEW": "確認",
-  "DETAILS": "詳細",
-  "KEYBOARD SHORTCUTS": "キーボードショートカット",
-  "? toggles this panel · click outside or ESC to close": "?でこのパネルを表示/非表示 · 外側をクリックするかESCで閉じる",
   "Cable number — kept for good; Lists → Cables can renumber": "ケーブル番号 — ずっと維持されます。「リスト → ケーブル」で振り直せます",
   "ROUTE": "経路",
   "Shift channel 10px left / up": "経路を10px左 / 上へずらす",
@@ -1366,7 +1370,7 @@
   "LOCKED": "ロック中",
   "LOCK": "ロック",
   "Back to the original shape": "元の縦横比に戻す",
-  "RACKS: drag a device between U rows or racks · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "ラック：機器をU間やラック間でドラッグ · ラックの外にドロップ = 取り外し · ポートをクリック = ケーブルの行き先 · ダブルクリック = 編集 · DEL = ラックから外す",
+  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "ラック：機器をU間やラック間でドラッグ · ↑ ↓ = 1U 上下に移動 · ラックの外にドロップ = 取り外し · ポートをクリック = ケーブルの行き先 · ダブルクリック = 編集 · DEL = ラックから外す",
   "ROUTED LINK: click paper to add bends · ENTER or ESC to finish": "経路指定ケーブル：用紙をクリックして曲げ点を追加 · ENTERかESCで完了",
   "CHOOSE LINK TYPE · ESC to cancel": "ケーブルの種類を選択 · ESCでキャンセル",
   "OFF-PAGE LINK from {x}: click a port on this sheet · ESC to cancel": "{x}からのページ外ケーブル：このシートのポートをクリック · ESCでキャンセル",
@@ -1400,7 +1404,6 @@
   "{n} LINK CREATED|{n} LINKS CREATED": {
    "other": "ケーブル{n}本を作成"
   },
-  "Replace connection?": "接続を置き換えますか？",
-  "Apply name{x}{x2}": "名前{x}{x2}を適用"
+  "Replace connection?": "接続を置き換えますか？"
  }
 }
