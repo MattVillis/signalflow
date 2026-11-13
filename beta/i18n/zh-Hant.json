@@ -232,7 +232,11 @@
   "quarter width": "四分之一寬",
   "Go to the sheet with this cable selected": "前往該纜線所在圖紙並選取它",
   "Show on sheet": "在圖紙上顯示",
+  "Remove this cable: it goes from the sheet too": "刪除這條纜線：圖紙上的也會一併刪除",
+  "Unplug": "拔除",
   "nothing plugged in": "未連接任何纜線",
+  "The other end can be on any device in any rack, front or rear (switch the view in between). The cable is drawn on the sheet as well; hold 3 as you click for flags instead of a line": "另一端可以是任何機櫃中的任何設備，前面或背面皆可（中途可切換檢視）。纜線也會畫在圖紙上；點選時按住 3 則以旗標取代連線",
+  "CABLE: click a second port · ESC to cancel": "纜線：按第二個連接埠 · 按 ESC 取消",
   "FRONT PANEL": "前面板",
   "REAR PANEL": "後面板",
   "DOES NOT FIT": "放不下",
@@ -347,6 +351,8 @@
   "in the rack view: the selected device a U up or down (Shift: 5), or along its row": "在機櫃檢視中：將所選設備上移或下移 1U（Shift：5U），或沿該列移動",
   "Click a port": "點選連接埠",
   "names its cable and the far end · rings that port when it is racked too": "顯示其纜線與另一端 · 若另一端也在機櫃中，則圈出該連接埠",
+  "Click a free port, then another": "按空閒連接埠，再按另一個",
+  "a cable between them, on the sheet as well · hold 3 as you click: flags": "在兩者之間連一條纜線，圖紙上同樣顯示 · 按住 3 點選：旗標",
   "out of the rack (the symbol stays on its sheet)": "移出機櫃（符號仍留在圖紙上）",
   " — off-page reference, double-click to go there": " — 跨頁參照，按兩下前往",
   "Show all ports ({hidden} hidden)": "顯示所有連接埠（已隱藏 {hidden} 個）",
@@ -1058,7 +1064,11 @@
   },
   "{taken} Replace with this connection?": "{taken} 要以此連接取代嗎？",
   "The rack can't be lower than the highest device in it (U {u})": "機櫃不能低於其中最高的設備（U {u}）",
+  "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "兩台設備位於不同圖紙，因此該纜線為跨頁參照：{a} 與 {b} 上各有一個旗標",
   "{taken} Replace with the new connection?": "{taken} 要以新的連接取代嗎？",
+  "{n} cable removed|{n} cables removed": {
+   "other": "已刪除 {n} 條纜線"
+  },
   "{end} already carries all {n} lane of a {label}.|{end} already carries all {n} lanes of a {label}.": {
    "other": "{end} 已用滿 {label} 的全部 {n} 個通道。"
   },
@@ -1380,7 +1390,8 @@
   "LOCKED": "已鎖定",
   "LOCK": "鎖定",
   "Back to the original shape": "恢復原始比例",
-  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "機櫃：在 U 位或機櫃之間拖曳設備 · ↑ ↓ = 上移或下移 1U · 放到機櫃外 = 移出 · 點選連接埠 = 纜線去向 · 雙擊 = 編輯 · DEL = 移出機櫃",
+  "CABLE: click the port at the other end, in any rack, front or rear · hold 3 = as flags · ESC to cancel": "纜線：按另一端的連接埠，任何機櫃、前面或背面皆可 · 按住 3 = 以旗標 · 按 ESC 取消",
+  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · click a port = see its cable · a free port, then another = a cable · dbl-click = edit · DEL = out of the rack": "機櫃：在 U 位或機櫃之間拖曳設備 · ↑ ↓ = 上移或下移 1U · 點選連接埠 = 查看纜線 · 空閒連接埠再按另一個 = 一條纜線 · 雙擊 = 編輯 · DEL = 移出機櫃",
   "ROUTED LINK: click paper to add bends · ENTER or ESC to finish": "自訂路徑纜線：在圖紙上按一下新增轉折點 · 按 ENTER 或 ESC 完成",
   "CHOOSE LINK TYPE · ESC to cancel": "選擇纜線類型 · 按 ESC 取消",
   "OFF-PAGE LINK from {x}: click a port on this sheet · ESC to cancel": "從 {x} 拉出的跨頁纜線：按一下此圖紙上的連接埠 · 按 ESC 取消",

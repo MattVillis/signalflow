@@ -232,7 +232,11 @@
   "quarter width": "1/4 너비",
   "Go to the sheet with this cable selected": "이 케이블이 선택된 시트로 이동",
   "Show on sheet": "시트에서 보기",
+  "Remove this cable: it goes from the sheet too": "이 케이블을 제거합니다. 시트에서도 사라집니다",
+  "Unplug": "분리",
   "nothing plugged in": "연결된 것 없음",
+  "The other end can be on any device in any rack, front or rear (switch the view in between). The cable is drawn on the sheet as well; hold 3 as you click for flags instead of a line": "반대쪽 끝은 어느 랙의 어느 장비든, 앞면이든 뒷면이든 됩니다(중간에 보기를 바꾸세요). 케이블은 시트에도 그려집니다. 선 대신 플래그로 하려면 3을 누른 채 클릭하세요",
+  "CABLE: click a second port · ESC to cancel": "케이블: 두 번째 포트를 클릭하세요 · ESC로 취소",
   "FRONT PANEL": "전면 패널",
   "REAR PANEL": "후면 패널",
   "DOES NOT FIT": "들어가지 않음",
@@ -347,6 +351,8 @@
   "in the rack view: the selected device a U up or down (Shift: 5), or along its row": "랙 보기에서: 선택한 장비를 1U 위아래로 (Shift: 5U), 또는 줄을 따라 이동",
   "Click a port": "포트 클릭",
   "names its cable and the far end · rings that port when it is racked too": "케이블과 반대쪽 끝을 표시 · 반대쪽도 랙에 있으면 그 포트를 표시",
+  "Click a free port, then another": "빈 포트를 클릭한 다음 다른 포트 클릭",
+  "a cable between them, on the sheet as well · hold 3 as you click: flags": "둘 사이에 케이블, 시트에도 그려짐 · 3을 누른 채 클릭: 플래그",
   "out of the rack (the symbol stays on its sheet)": "랙에서 빼기 (심볼은 시트에 남음)",
   " — off-page reference, double-click to go there": " — 시트 간 참조, 더블클릭하면 이동합니다",
   "Show all ports ({hidden} hidden)": "모든 포트 표시({hidden}개 숨김)",
@@ -1058,7 +1064,11 @@
   },
   "{taken} Replace with this connection?": "{taken} 이 연결로 교체할까요?",
   "The rack can't be lower than the highest device in it (U {u})": "랙은 안에 있는 가장 높은 장비(U {u})보다 낮출 수 없습니다",
+  "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "두 장비가 서로 다른 시트에 있어 케이블이 시트 간 참조가 되었습니다: {a}, {b}에 플래그가 하나씩",
   "{taken} Replace with the new connection?": "{taken} 새 연결로 교체할까요?",
+  "{n} cable removed|{n} cables removed": {
+   "other": "케이블 {n}개 제거됨"
+  },
   "{end} already carries all {n} lane of a {label}.|{end} already carries all {n} lanes of a {label}.": {
    "other": "{end}에는 이미 {label}의 레인 {n}개가 모두 연결되어 있습니다."
   },
@@ -1380,7 +1390,8 @@
   "LOCKED": "잠김",
   "LOCK": "잠그기",
   "Back to the original shape": "원래 비율로 되돌리기",
-  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "랙: 장비를 U 사이나 랙 사이로 드래그 · ↑ ↓ = 1U 위아래로 · 랙 밖에 놓기 = 빼기 · 포트 클릭 = 케이블이 가는 곳 · 더블클릭 = 편집 · DEL = 랙에서 빼기",
+  "CABLE: click the port at the other end, in any rack, front or rear · hold 3 = as flags · ESC to cancel": "케이블: 반대쪽 끝의 포트를 클릭하세요. 어느 랙이든, 앞면이든 뒷면이든 · 3을 누른 채 = 플래그로 · ESC로 취소",
+  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · click a port = see its cable · a free port, then another = a cable · dbl-click = edit · DEL = out of the rack": "랙: 장비를 U 사이나 랙 사이로 드래그 · ↑ ↓ = 1U 위아래로 · 포트 클릭 = 케이블 보기 · 빈 포트, 다음에 다른 포트 = 케이블 · 더블클릭 = 편집 · DEL = 랙에서 빼기",
   "ROUTED LINK: click paper to add bends · ENTER or ESC to finish": "경로 지정 케이블: 도면을 클릭해 꺾임점 추가 · ENTER 또는 ESC로 완료",
   "CHOOSE LINK TYPE · ESC to cancel": "케이블 종류 선택 · ESC로 취소",
   "OFF-PAGE LINK from {x}: click a port on this sheet · ESC to cancel": "{x}에서 온 시트 간 케이블: 이 시트의 포트를 클릭하세요 · ESC로 취소",

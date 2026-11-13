@@ -251,7 +251,11 @@
   "quarter width": "Viertelbreite",
   "Go to the sheet with this cable selected": "Zum Blatt mit diesem Kabel, ausgewählt",
   "Show on sheet": "Auf dem Blatt zeigen",
+  "Remove this cable: it goes from the sheet too": "Dieses Kabel entfernen: Es verschwindet auch vom Blatt",
+  "Unplug": "Trennen",
   "nothing plugged in": "nichts angeschlossen",
+  "The other end can be on any device in any rack, front or rear (switch the view in between). The cable is drawn on the sheet as well; hold 3 as you click for flags instead of a line": "Das andere Ende kann an jedem Gerät in jedem Rack sein, vorn oder hinten (dazwischen die Ansicht wechseln). Das Kabel wird auch auf dem Blatt gezeichnet; 3 beim Klicken halten für Verweise statt einer Linie",
+  "CABLE: click a second port · ESC to cancel": "KABEL: einen zweiten Port anklicken · ESC zum Abbrechen",
   "FRONT PANEL": "FRONT",
   "REAR PANEL": "RÜCKSEITE",
   "DOES NOT FIT": "PASST NICHT",
@@ -375,6 +379,8 @@
   "in the rack view: the selected device a U up or down (Shift: 5), or along its row": "in der Rack-Ansicht: das ausgewählte Gerät eine HE hoch oder runter (Umschalt: 5) oder entlang seiner Reihe",
   "Click a port": "Port anklicken",
   "names its cable and the far end · rings that port when it is racked too": "nennt sein Kabel und das andere Ende · markiert dort den Port, wenn das Gerät auch im Rack ist",
+  "Click a free port, then another": "Freien Port klicken, dann einen zweiten",
+  "a cable between them, on the sheet as well · hold 3 as you click: flags": "ein Kabel zwischen beiden, auch auf dem Blatt · 3 beim Klicken halten: Verweise",
   "out of the rack (the symbol stays on its sheet)": "aus dem Rack (das Symbol bleibt auf seinem Blatt)",
   " — off-page reference, double-click to go there": " — Verweis auf ein anderes Blatt, Doppelklick springt dorthin",
   "Show all ports ({hidden} hidden)": "Alle Ports zeigen ({hidden} ausgeblendet)",
@@ -1126,7 +1132,12 @@
   },
   "{taken} Replace with this connection?": "{taken} Durch diese Verbindung ersetzen?",
   "The rack can't be lower than the highest device in it (U {u})": "Das Rack kann nicht niedriger sein als das höchste Gerät darin (HE {u})",
+  "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "Die beiden Geräte liegen auf verschiedenen Blättern, daher ist das Kabel ein Verweis auf ein anderes Blatt: ein Verweis auf {a} und einer auf {b}",
   "{taken} Replace with the new connection?": "{taken} Durch die neue Verbindung ersetzen?",
+  "{n} cable removed|{n} cables removed": {
+   "one": "{n} Kabel entfernt",
+   "other": "{n} Kabel entfernt"
+  },
   "{end} already carries all {n} lane of a {label}.|{end} already carries all {n} lanes of a {label}.": {
    "one": "{end} führt bereits die {n} Lane eines {label}.",
    "other": "{end} führt bereits alle {n} Lanes eines {label}."
@@ -1470,7 +1481,8 @@
   "LOCKED": "FIXIERT",
   "LOCK": "FIXIEREN",
   "Back to the original shape": "Zurück zum ursprünglichen Seitenverhältnis",
-  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "RACKS: Gerät zwischen HE oder Racks ziehen · ↑ ↓ = eine HE hoch oder runter · neben ein Rack fallen lassen = heraus · Port anklicken = wohin sein Kabel geht · Doppelklick = bearbeiten · ENTF = aus dem Rack",
+  "CABLE: click the port at the other end, in any rack, front or rear · hold 3 = as flags · ESC to cancel": "KABEL: den Port am anderen Ende anklicken, in jedem Rack, vorn oder hinten · 3 halten = als Verweise · ESC zum Abbrechen",
+  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · click a port = see its cable · a free port, then another = a cable · dbl-click = edit · DEL = out of the rack": "RACKS: Gerät zwischen HE oder Racks ziehen · ↑ ↓ = eine HE hoch oder runter · Port anklicken = sein Kabel sehen · freien Port, dann einen zweiten = ein Kabel · Doppelklick = bearbeiten · ENTF = aus dem Rack",
   "ROUTED LINK: click paper to add bends · ENTER or ESC to finish": "GEROUTETES KABEL: aufs Papier klicken für Knicke · ENTER oder ESC zum Abschließen",
   "CHOOSE LINK TYPE · ESC to cancel": "KABELTYP WÄHLEN · ESC zum Abbrechen",
   "OFF-PAGE LINK from {x}: click a port on this sheet · ESC to cancel": "BLATTVERWEIS von {x}: Port auf diesem Blatt anklicken · ESC zum Abbrechen",

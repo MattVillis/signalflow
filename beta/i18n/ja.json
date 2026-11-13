@@ -232,7 +232,11 @@
   "quarter width": "1/4 幅",
   "Go to the sheet with this cable selected": "このケーブルを選択した状態でシートへ移動",
   "Show on sheet": "シートで表示",
+  "Remove this cable: it goes from the sheet too": "このケーブルを削除します。シートからも消えます",
+  "Unplug": "抜く",
   "nothing plugged in": "何も接続されていません",
+  "The other end can be on any device in any rack, front or rear (switch the view in between). The cable is drawn on the sheet as well; hold 3 as you click for flags instead of a line": "相手側はどのラックのどの機器でも、前面でも背面でも構いません（途中で表示を切り替えられます）。ケーブルはシートにも描かれます。線の代わりにフラグにするには 3 を押したままクリック",
+  "CABLE: click a second port · ESC to cancel": "ケーブル：2 つ目のポートをクリック · ESCでキャンセル",
   "FRONT PANEL": "前面パネル",
   "REAR PANEL": "背面パネル",
   "DOES NOT FIT": "収まりません",
@@ -347,6 +351,8 @@
   "in the rack view: the selected device a U up or down (Shift: 5), or along its row": "ラック表示で：選択した機器を 1U 上下へ（Shift で 5U）、または列に沿って移動",
   "Click a port": "ポートをクリック",
   "names its cable and the far end · rings that port when it is racked too": "そのケーブルと相手側を表示 · 相手もラック内ならそのポートを囲んで示す",
+  "Click a free port, then another": "空きポートをクリックし、次に別のポートをクリック",
+  "a cable between them, on the sheet as well · hold 3 as you click: flags": "その間にケーブル（シートにも描かれます）· 3 を押したままクリック：フラグ",
   "out of the rack (the symbol stays on its sheet)": "ラックから外す（シンボルはシートに残る）",
   " — off-page reference, double-click to go there": " — ページ外参照（ダブルクリックで移動）",
   "Show all ports ({hidden} hidden)": "すべてのポートを表示（{hidden}個を非表示中）",
@@ -1058,7 +1064,11 @@
   },
   "{taken} Replace with this connection?": "{taken}この接続に置き換えますか？",
   "The rack can't be lower than the highest device in it (U {u})": "ラックは中の最も高い機器（U {u}）より低くできません",
+  "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "2 台の機器が別々のシートにあるため、ケーブルはページ外参照になりました：{a} と {b} にそれぞれフラグ",
   "{taken} Replace with the new connection?": "{taken}新しい接続に置き換えますか？",
+  "{n} cable removed|{n} cables removed": {
+   "other": "ケーブルを {n} 本削除しました"
+  },
   "{end} already carries all {n} lane of a {label}.|{end} already carries all {n} lanes of a {label}.": {
    "other": "{end}は既に{label}の全{n}レーンを使用しています。"
   },
@@ -1380,7 +1390,8 @@
   "LOCKED": "ロック中",
   "LOCK": "ロック",
   "Back to the original shape": "元の縦横比に戻す",
-  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · drop it outside a rack = out · click a port = where its cable goes · dbl-click = edit · DEL = out of the rack": "ラック：機器をU間やラック間でドラッグ · ↑ ↓ = 1U 上下に移動 · ラックの外にドロップ = 取り外し · ポートをクリック = ケーブルの行き先 · ダブルクリック = 編集 · DEL = ラックから外す",
+  "CABLE: click the port at the other end, in any rack, front or rear · hold 3 = as flags · ESC to cancel": "ケーブル：相手側のポートをクリック（どのラックでも、前面でも背面でも）· 3 を押したまま = フラグで · ESCでキャンセル",
+  "RACKS: drag a device between U rows or racks · ↑ ↓ = a U up or down · click a port = see its cable · a free port, then another = a cable · dbl-click = edit · DEL = out of the rack": "ラック：機器をU間やラック間でドラッグ · ↑ ↓ = 1U 上下に移動 · ポートをクリック = ケーブルを表示 · 空きポート、次に別のポート = ケーブル · ダブルクリック = 編集 · DEL = ラックから外す",
   "ROUTED LINK: click paper to add bends · ENTER or ESC to finish": "経路指定ケーブル：用紙をクリックして曲げ点を追加 · ENTERかESCで完了",
   "CHOOSE LINK TYPE · ESC to cancel": "ケーブルの種類を選択 · ESCでキャンセル",
   "OFF-PAGE LINK from {x}: click a port on this sheet · ESC to cancel": "{x}からのページ外ケーブル：このシートのポートをクリック · ESCでキャンセル",
