@@ -69,6 +69,10 @@
   "It's a different device, submit": "這是不同的裝置，提交",
   "OK": "確定",
   "Don't submit": "不提交",
+  "not sent: that is a lot at once; try again in an hour": "未送出：一次太多；請一小時後再試",
+  "not sent: sending without GitHub is switched off; use the GitHub button": "未送出：免 GitHub 的送出已關閉；請用 GitHub 按鈕",
+  "not sent: it couldn't get through; try again later": "未送出：沒能送出；請稍後再試",
+  "not sent: {why}": "未送出：{why}",
   "Share your symbols": "分享您的符號",
   "Built a symbol that isn't in the library yet? Send it in. Once it has been checked against the spec sheet it is added to the shared library, and everyone gets it on their next sync.": "建立了符號庫中還沒有的符號嗎？歡迎提交。經規格表核對後，它會加入共用符號庫，所有人在下次同步時都會取得。",
   "HOW": "步驟",
@@ -77,10 +81,33 @@
   "Click <0>Submit new issue</0>. You need a free GitHub account.": "按一下 <0>Submit new issue</0>。您需要一個免費的 GitHub 帳號。",
   "Only the symbol is sent: its name, category and ports. No VLANs, IP addresses or drawings.": "只會送出符號本身：名稱、類別與連接埠。不含 VLAN、IP 位址或圖面。",
   "YOUR SYMBOLS ON THIS COMPUTER · {n}": "您在這台電腦上的符號 · {n}",
+  "Tick all": "全選",
+  "Untick all": "全不選",
+  "Tick it only if it is a different device: the reviewer is told you said so": "只有在它是另一台設備時才勾選：審核者會被告知這是您的判斷",
+  "looks like {names}": "看起來像 {names}",
+  "sent before · #{n}": "先前已送出 · #{n}",
+  "sent · #{n}": "已送出 · #{n}",
+  "Open it as a GitHub issue yourself instead (needs a free GitHub account)": "改為自己以 GitHub Issue 的形式開啟（需要免費的 GitHub 帳戶）",
+  "⇡ GitHub": "⇡ GitHub",
   "⇡ Submit": "⇡ 提交",
   "{n} more of your symbol isn't listed: already sent, turned down, or already in the library.|{n} more of your symbols aren't listed: already sent, turned down, or already in the library.": {
    "other": "另有 {n} 個您的符號未列出：已送出、已被退回，或已在符號庫中。"
   },
+  "YOUR NAME OR EMAIL (OPTIONAL)": "您的名字或電子郵件（選填）",
+  "e.g. Jo Bloggs, or jo@example.com": "例如：王小明，或 xiaoming@example.com",
+  "So the reviewer can credit you or ask about a symbol. It goes into the public issue: leave it empty to stay anonymous.": "方便審核者致謝或就某個符號向您詢問。它會出現在公開的 Issue 中：留空即可保持匿名。",
+  "Only the symbols are sent: names, categories, ports and rack data. No VLANs, IP addresses or drawings.": "只會送出符號本身：名稱、類別、連接埠與機櫃資料。不含 VLAN、IP 位址或圖面。",
+  "{n} sent for review. Once it is approved, everyone gets it on their next sync.|{n} sent for review. Once they are approved, everyone gets them on their next sync.": {
+   "other": "已送出 {n} 個供審核。核准後，所有人會在下次同步時收到。"
+  },
+  "{n} could not be sent: see the list.|{n} could not be sent: see the list.": {
+   "other": "{n} 個未能送出：請查看清單。"
+  },
+  "Sending {a} of {n}…": "正在送出第 {a} 個，共 {n} 個…",
+  "Send {n} symbol|Send {n} symbols": {
+   "other": "送出 {n} 個符號"
+  },
+  "No GitHub account needed": "不需要 GitHub 帳戶",
   "Don't show again": "不再顯示",
   "Close": "關閉",
   "Place a page of the PDF": "放置 PDF 的一頁",
@@ -363,6 +390,18 @@
   "+{n} HIDDEN|+{n} HIDDEN": {
    "other": "+{n} 隱藏"
   },
+  "{a} of {n} connector placed · dashed = place not known|{a} of {n} connectors placed · dashed = place not known": {
+   "other": "已放置：{n} 個接頭中的 {a} 個 · 虛線 = 位置不明"
+  },
+  "{n} connector picked|{n} connectors picked": {
+   "other": "已選 {n} 個接頭"
+  },
+  "Put the picked connectors on a line from the first to the last, evenly spaced": "將所選接頭從第一個到最後一個排成一條線，等距分布",
+  "Spread evenly": "均勻分布",
+  "Put the picked connectors in two rows, odd ones on the first row and even ones on the second, as a switch numbers them": "將所選接頭排成兩排：奇數在第一排，偶數在第二排，與交換器的編號方式相同",
+  "2 rows": "2 排",
+  "Drag a connector to where it sits, on either panel: it snaps to the grid, lines up with the others and keeps a row's spacing. Hold Alt to place it freely.": "把接頭拖到它實際所在的位置（前後面板皆可）：它會吸附到格線、與其他接頭對齊並保持一排的間距。按住 Alt 可自由放置。",
+  "Shift-click or drag a box to pick several and move them together.": "Shift+按一下或拖出選取框可選擇多個並一起移動。",
   "{x} failed: {error}.": "{x}失敗：{error}。",
   "Analysis": "分析",
   "Research": "研究",
@@ -396,9 +435,11 @@
   "Drop or choose a panel drawing (PNG / JPG / PDF)": "拖入或選擇面板圖（PNG / JPG / PDF）",
   "Optional hint — e.g. 'Lightware UBEX-PRO20 receiver'": "選填提示 — 例如「Lightware UBEX-PRO20 接收器」",
   "Analyze drawing — runs in background": "分析圖面 — 在背景執行",
+  "A picture with both the front and the rear (or a PDF page with both) places the connectors on both panels for the rack view.": "同時包含前面板與背板的圖片（或包含兩者的 PDF 頁面）可為機櫃視圖在兩面板上放置接頭。",
   "Product name — e.g. 'Lightware UBEX-PRO20-HDMI-F100'": "產品名稱 — 例如「Lightware UBEX-PRO20-HDMI-F100」",
   "Research + build symbol — runs in background": "研究並建立符號 — 在背景執行",
   "It reads manufacturer spec pages and builds the symbol directly — no drawing needed. Every port-bank count is checked back against a page that states it, and anything it cannot support with evidence is flagged rather than guessed.": "它會讀取製造商的規格頁面並直接建立符號 — 不需要圖面。每組連接埠的數量都會回頭與載明該數量的頁面核對，任何無法以證據支持的內容都會被標示出來，而不是用猜的。",
+  "It also brings back the rack size, weight and power, which panel each connector is on, and where, when it finds a picture of the panel.": "它還會帶回機櫃尺寸、重量與功率、每個接頭位於哪一面，找到面板圖片時還有具體位置。",
   "Product name — baked into the prompt": "產品名稱 — 會寫入提示詞中",
   "{x} agent prompt": "{x} AI 代理提示詞",
   "Hide": "隱藏",
@@ -408,6 +449,7 @@
   "Paste the agent's JSON output here…": "在此貼上 AI 代理輸出的 JSON…",
   "Validate + preview": "驗證並預覽",
   "Counts from: <0>{x}</0>{x2}": "數量來源：<0>{x}</0>{x2}",
+  "Size and power from: <0>{x}</0>": "尺寸與功率來源：<0>{x}</0>",
   "Check the analysis — fix anything wrong before adding:": "請檢查分析結果 — 加入前修正任何錯誤：",
   "Symbol width": "符號寬度",
   "left": "左",
@@ -416,6 +458,9 @@
   "out": "輸出",
   "bi": "雙向",
   "— none —": "— 無 —",
+  "The panel this connector is on: the rack view draws it there": "此接頭所在的面板：機櫃視圖會畫在那一面",
+  "front": "前面",
+  "rear": "背面",
   "Remove this port": "移除此連接埠",
   "{ports} · {category}": "{ports} · {category}",
   "Back": "返回",
@@ -709,7 +754,11 @@
   "Last sync {time} — {msg}": "上次同步：{time} — {msg}",
   "Shared symbol library": "共用符號庫",
   "Synced from <0>{REPO_GH}</0> when the app opens and every 30 minutes. New symbols are added; updated ones replace your copy unless that symbol is placed on a sheet.": "在應用程式開啟時以及每 30 分鐘從 <0>{REPO_GH}</0> 同步。新符號會被加入；已更新的符號會取代您的副本，除非該符號已放在圖紙上。",
+  "<0>To share symbols you made:</0> Share my symbols sends any number of them for review, no GitHub account needed. Each is checked, then published to everyone.": "<0>要分享您製作的符號：</0>「分享我的符號」可一次送出任意數量供審核，不需要 GitHub 帳戶。每個都會經過檢查，然後發布給所有人。",
   "<0>To share a symbol you made:</0> hover it in the library and click ⇡. That opens a pre-filled GitHub issue — press <1>Submit new issue</1> (a GitHub login is all you need). It is checked automatically, then reviewed and published to everyone.": "<0>分享您建立的符號：</0>在符號庫中將游標移到該符號上，按一下 ⇡。這會開啟預先填好的 GitHub Issue — 按下 <1>Submit new issue</1>（只需要登入 GitHub）。它會先經過自動檢查，再經審核後發佈給所有人。",
+  "Share my symbols… ({n} not in the library yet)|Share my symbols… ({n} not in the library yet)": {
+   "other": "分享我的符號…（{n} 個尚未收錄）"
+  },
   "Syncing…": "同步中…",
   "Sync now": "立即同步",
   "Review queue ↗": "審核佇列 ↗",
@@ -725,6 +774,7 @@
   "LABEL": "標籤",
   "DIR": "方向",
   "SIGNAL": "訊號",
+  "PANEL": "面板",
   "Remove the gap above this port": "移除此連接埠上方的間隔",
   "Add a gap above this port": "在此連接埠上方加入間隔",
   "Already the {x} port on its side": "已是該側{x}的連接埠",
@@ -921,6 +971,8 @@
   "Replace…": "取代…",
   "Throw away this device's own port edits and use the library symbol again. VLAN, trunk, LAG and IP settings on its ports are kept.": "捨棄此裝置自訂的連接埠編輯，改回使用符號庫中的符號。其連接埠上的 VLAN、Trunk、LAG 與 IP 設定會保留。",
   "↺ Library version": "↺ 符號庫版本",
+  "where each connector sits on the front and rear panels": "每個接頭在前後面板上的位置",
+  "PANELS": "面板",
   "No rack size on this symbol yet: it goes in as 1U until you set one under PHYSICAL": "該符號尚無機櫃尺寸：在「實體」中設定之前以 1U 放入",
   "desktop box, {w} mm wide": "桌上型設備，寬 {w} mm",
   "{w} mm wide": "寬 {w} mm",
@@ -1313,6 +1365,7 @@
   "Collapse": "收合",
   "class {cc}": "大類：{cc}",
   "mixed: each symbol has its own class": "混合：每個符號各有自己的大類",
+  "Share this symbol for review: no GitHub account needed": "分享此符號以供審核：不需要 GitHub 帳戶",
   "Share this symbol — opens a pre-filled GitHub issue for review": "分享此符號 — 開啟預先填好的 GitHub Issue 以供審核",
   "Remove from library (not placed on any sheet)": "從符號庫移除（未放在任何圖紙上）",
   "none yet": "尚無",

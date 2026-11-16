@@ -69,6 +69,10 @@
   "It's a different device, submit": "다른 장비이므로 제출",
   "OK": "확인",
   "Don't submit": "제출 안 함",
+  "not sent: that is a lot at once; try again in an hour": "보내지 못함: 한 번에 너무 많습니다. 한 시간 뒤에 다시 시도하세요",
+  "not sent: sending without GitHub is switched off; use the GitHub button": "보내지 못함: GitHub 없이 보내기가 꺼져 있습니다. GitHub 버튼을 쓰세요",
+  "not sent: it couldn't get through; try again later": "보내지 못함: 전송되지 않았습니다. 나중에 다시 시도하세요",
+  "not sent: {why}": "보내지 못함: {why}",
   "Share your symbols": "심볼 공유",
   "Built a symbol that isn't in the library yet? Send it in. Once it has been checked against the spec sheet it is added to the shared library, and everyone gets it on their next sync.": "라이브러리에 아직 없는 심볼을 만드셨나요? 제출해 주세요. 사양서와 대조해 확인되면 공유 라이브러리에 추가되고, 모든 사용자가 다음 동기화 때 받게 됩니다.",
   "HOW": "방법",
@@ -77,10 +81,33 @@
   "Click <0>Submit new issue</0>. You need a free GitHub account.": "<0>Submit new issue</0>를 클릭하세요. 무료 GitHub 계정이 필요합니다.",
   "Only the symbol is sent: its name, category and ports. No VLANs, IP addresses or drawings.": "심볼(이름, 카테고리, 포트)만 전송됩니다. VLAN, IP 주소, 도면은 전송되지 않습니다.",
   "YOUR SYMBOLS ON THIS COMPUTER · {n}": "이 컴퓨터의 내 심볼 · {n}",
+  "Tick all": "모두 선택",
+  "Untick all": "모두 해제",
+  "Tick it only if it is a different device: the reviewer is told you said so": "다른 장비일 때만 선택하세요: 검토자에게 사용자가 그렇게 밝혔다고 전달됩니다",
+  "looks like {names}": "{names}와 비슷함",
+  "sent before · #{n}": "이미 보냄 · #{n}",
+  "sent · #{n}": "보냄 · #{n}",
+  "Open it as a GitHub issue yourself instead (needs a free GitHub account)": "직접 GitHub 이슈로 열기 (무료 GitHub 계정 필요)",
+  "⇡ GitHub": "⇡ GitHub",
   "⇡ Submit": "⇡ 제출",
   "{n} more of your symbol isn't listed: already sent, turned down, or already in the library.|{n} more of your symbols aren't listed: already sent, turned down, or already in the library.": {
    "other": "그 밖의 내 심볼 {n}개는 표시되지 않습니다. 이미 제출했거나, 거절되었거나, 이미 라이브러리에 있는 심볼입니다."
   },
+  "YOUR NAME OR EMAIL (OPTIONAL)": "이름 또는 이메일 (선택)",
+  "e.g. Jo Bloggs, or jo@example.com": "예: 홍길동 또는 gildong@example.com",
+  "So the reviewer can credit you or ask about a symbol. It goes into the public issue: leave it empty to stay anonymous.": "검토자가 기여자로 표시하거나 심볼에 대해 물어볼 수 있게 하려는 것입니다. 공개 이슈에 들어가므로 익명으로 남으려면 비워 두세요.",
+  "Only the symbols are sent: names, categories, ports and rack data. No VLANs, IP addresses or drawings.": "심볼(이름, 카테고리, 포트, 랙 정보)만 전송됩니다. VLAN, IP 주소, 도면은 전송되지 않습니다.",
+  "{n} sent for review. Once it is approved, everyone gets it on their next sync.|{n} sent for review. Once they are approved, everyone gets them on their next sync.": {
+   "other": "{n}개를 검토용으로 보냈습니다. 승인되면 다음 동기화 때 모두가 받습니다."
+  },
+  "{n} could not be sent: see the list.|{n} could not be sent: see the list.": {
+   "other": "{n}개는 보내지 못했습니다: 목록을 확인하세요."
+  },
+  "Sending {a} of {n}…": "{n}개 중 {a}개 보내는 중…",
+  "Send {n} symbol|Send {n} symbols": {
+   "other": "심볼 {n}개 보내기"
+  },
+  "No GitHub account needed": "GitHub 계정 필요 없음",
   "Don't show again": "다시 표시 안 함",
   "Close": "닫기",
   "Place a page of the PDF": "PDF 페이지 배치",
@@ -363,6 +390,18 @@
   "+{n} HIDDEN|+{n} HIDDEN": {
    "other": "+{n} 숨김"
   },
+  "{a} of {n} connector placed · dashed = place not known|{a} of {n} connectors placed · dashed = place not known": {
+   "other": "배치됨: 커넥터 {n}개 중 {a}개 · 점선 = 위치 모름"
+  },
+  "{n} connector picked|{n} connectors picked": {
+   "other": "커넥터 {n}개 선택됨"
+  },
+  "Put the picked connectors on a line from the first to the last, evenly spaced": "선택한 커넥터를 첫 번째부터 마지막까지 한 줄로 같은 간격으로 놓습니다",
+  "Spread evenly": "균등 배치",
+  "Put the picked connectors in two rows, odd ones on the first row and even ones on the second, as a switch numbers them": "선택한 커넥터를 두 줄로 놓습니다. 스위치 번호처럼 홀수는 첫 줄, 짝수는 둘째 줄에 둡니다",
+  "2 rows": "2줄",
+  "Drag a connector to where it sits, on either panel: it snaps to the grid, lines up with the others and keeps a row's spacing. Hold Alt to place it freely.": "커넥터를 실제 위치로 끌어다 놓으세요(전면·후면 모두 가능). 그리드에 맞춰지고, 다른 커넥터와 정렬되며, 줄 간격을 유지합니다. Alt를 누르면 자유롭게 놓을 수 있습니다.",
+  "Shift-click or drag a box to pick several and move them together.": "Shift+클릭하거나 상자를 끌어 여러 개를 고르고 함께 옮길 수 있습니다.",
   "{x} failed: {error}.": "{x}에 실패했습니다: {error}.",
   "Analysis": "분석",
   "Research": "조사",
@@ -396,9 +435,11 @@
   "Drop or choose a panel drawing (PNG / JPG / PDF)": "패널 도면을 끌어다 놓거나 선택하세요(PNG / JPG / PDF)",
   "Optional hint — e.g. 'Lightware UBEX-PRO20 receiver'": "힌트(선택) — 예: “Lightware UBEX-PRO20 리시버”",
   "Analyze drawing — runs in background": "도면 분석 — 백그라운드에서 실행",
+  "A picture with both the front and the rear (or a PDF page with both) places the connectors on both panels for the rack view.": "전면과 후면이 모두 있는 그림(또는 둘 다 있는 PDF 페이지)이면 랙 보기에서 두 패널 모두에 커넥터를 배치합니다.",
   "Product name — e.g. 'Lightware UBEX-PRO20-HDMI-F100'": "제품 이름 — 예: “Lightware UBEX-PRO20-HDMI-F100”",
   "Research + build symbol — runs in background": "조사 + 심볼 생성 — 백그라운드에서 실행",
   "It reads manufacturer spec pages and builds the symbol directly — no drawing needed. Every port-bank count is checked back against a page that states it, and anything it cannot support with evidence is flagged rather than guessed.": "제조사 사양 페이지를 읽고 바로 심볼을 만듭니다 — 도면은 필요 없습니다. 포트 그룹별 개수는 모두 그 숫자가 적힌 페이지와 다시 대조하며, 근거로 뒷받침할 수 없는 내용은 추측하지 않고 경고로 표시합니다.",
+  "It also brings back the rack size, weight and power, which panel each connector is on, and where, when it finds a picture of the panel.": "랙 크기, 무게, 전력, 각 커넥터가 어느 패널에 있는지, 패널 그림을 찾으면 그 위치까지 가져옵니다.",
   "Product name — baked into the prompt": "제품 이름 — 프롬프트에 포함됩니다",
   "{x} agent prompt": "에이전트 프롬프트 {x}",
   "Hide": "숨기기",
@@ -408,6 +449,7 @@
   "Paste the agent's JSON output here…": "에이전트가 출력한 JSON을 여기에 붙여넣으세요…",
   "Validate + preview": "검증 + 미리보기",
   "Counts from: <0>{x}</0>{x2}": "개수 출처: <0>{x}</0>{x2}",
+  "Size and power from: <0>{x}</0>": "크기와 전력 출처: <0>{x}</0>",
   "Check the analysis — fix anything wrong before adding:": "분석 결과를 확인하세요 — 추가하기 전에 잘못된 부분을 고치세요:",
   "Symbol width": "심볼 너비",
   "left": "좌",
@@ -416,6 +458,9 @@
   "out": "출력",
   "bi": "양방향",
   "— none —": "— 없음 —",
+  "The panel this connector is on: the rack view draws it there": "이 커넥터가 있는 패널: 랙 보기에서 그 위치에 그려집니다",
+  "front": "전면",
+  "rear": "후면",
   "Remove this port": "이 포트 제거",
   "{ports} · {category}": "{ports} · {category}",
   "Back": "뒤로",
@@ -709,7 +754,11 @@
   "Last sync {time} — {msg}": "마지막 동기화 {time} — {msg}",
   "Shared symbol library": "공유 심볼 라이브러리",
   "Synced from <0>{REPO_GH}</0> when the app opens and every 30 minutes. New symbols are added; updated ones replace your copy unless that symbol is placed on a sheet.": "앱을 열 때와 30분마다 <0>{REPO_GH}</0>에서 동기화합니다. 새 심볼은 추가되고, 업데이트된 심볼은 시트에 배치되어 있지 않으면 내 사본을 대체합니다.",
+  "<0>To share symbols you made:</0> Share my symbols sends any number of them for review, no GitHub account needed. Each is checked, then published to everyone.": "<0>직접 만든 심볼을 공유하려면:</0> '내 심볼 공유'로 원하는 만큼 검토용으로 보낼 수 있습니다. GitHub 계정은 필요 없습니다. 하나씩 확인한 뒤 모두에게 공개됩니다.",
   "<0>To share a symbol you made:</0> hover it in the library and click ⇡. That opens a pre-filled GitHub issue — press <1>Submit new issue</1> (a GitHub login is all you need). It is checked automatically, then reviewed and published to everyone.": "<0>직접 만든 심볼을 공유하려면:</0> 라이브러리에서 심볼에 마우스를 올리고 ⇡를 클릭하세요. 내용이 미리 채워진 GitHub 이슈가 열리면 <1>Submit new issue</1>를 누르세요(GitHub 로그인만 있으면 됩니다). 자동 검사를 거친 뒤 검토되어 모든 사용자에게 게시됩니다.",
+  "Share my symbols… ({n} not in the library yet)|Share my symbols… ({n} not in the library yet)": {
+   "other": "내 심볼 공유… (라이브러리에 없는 {n}개)"
+  },
   "Syncing…": "동기화 중…",
   "Sync now": "지금 동기화",
   "Review queue ↗": "검토 대기열 ↗",
@@ -725,6 +774,7 @@
   "LABEL": "이름",
   "DIR": "방향",
   "SIGNAL": "신호",
+  "PANEL": "패널",
   "Remove the gap above this port": "이 포트 위의 간격 제거",
   "Add a gap above this port": "이 포트 위에 간격 추가",
   "Already the {x} port on its side": "이미 같은 쪽의 {x} 포트입니다",
@@ -921,6 +971,8 @@
   "Replace…": "교체…",
   "Throw away this device's own port edits and use the library symbol again. VLAN, trunk, LAG and IP settings on its ports are kept.": "이 장비에서만 편집한 포트 내용을 버리고 라이브러리 심볼로 되돌립니다. 포트의 VLAN, 트렁크, LAG, IP 설정은 유지됩니다.",
   "↺ Library version": "↺ 라이브러리 버전",
+  "where each connector sits on the front and rear panels": "각 커넥터가 전면·후면 패널의 어디에 있는지",
+  "PANELS": "패널",
   "No rack size on this symbol yet: it goes in as 1U until you set one under PHYSICAL": "이 심볼에는 아직 랙 크기가 없습니다: '물리'에서 설정할 때까지 1U로 들어갑니다",
   "desktop box, {w} mm wide": "탁상형 장비, 너비 {w} mm",
   "{w} mm wide": "너비 {w} mm",
@@ -1313,6 +1365,7 @@
   "Collapse": "접기",
   "class {cc}": "분야: {cc}",
   "mixed: each symbol has its own class": "혼합: 심볼마다 분야가 다름",
+  "Share this symbol for review: no GitHub account needed": "이 심볼을 검토용으로 공유: GitHub 계정 필요 없음",
   "Share this symbol — opens a pre-filled GitHub issue for review": "이 심볼 공유 — 검토용 GitHub 이슈를 미리 채워서 엽니다",
   "Remove from library (not placed on any sheet)": "라이브러리에서 제거(어느 시트에도 배치되지 않음)",
   "none yet": "아직 없음",

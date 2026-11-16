@@ -69,6 +69,10 @@
   "It's a different device, submit": "是不同设备，提交",
   "OK": "确定",
   "Don't submit": "不提交",
+  "not sent: that is a lot at once; try again in an hour": "未发送：一次太多；请一小时后再试",
+  "not sent: sending without GitHub is switched off; use the GitHub button": "未发送：无需 GitHub 的发送已关闭；请用 GitHub 按钮",
+  "not sent: it couldn't get through; try again later": "未发送：没能发出去；请稍后再试",
+  "not sent: {why}": "未发送：{why}",
   "Share your symbols": "分享你的符号",
   "Built a symbol that isn't in the library yet? Send it in. Once it has been checked against the spec sheet it is added to the shared library, and everyone gets it on their next sync.": "做了一个符号库里还没有的符号？提交上来吧。对照规格书核对后，它会加入共享符号库，所有人下次同步时都会获得。",
   "HOW": "操作步骤",
@@ -77,10 +81,33 @@
   "Click <0>Submit new issue</0>. You need a free GitHub account.": "点击 <0>Submit new issue</0>。需要一个免费的 GitHub 账号。",
   "Only the symbol is sent: its name, category and ports. No VLANs, IP addresses or drawings.": "只发送符号本身：名称、分类和端口。不含 VLAN、IP 地址或图纸。",
   "YOUR SYMBOLS ON THIS COMPUTER · {n}": "本机上的自建符号 · {n}",
+  "Tick all": "全选",
+  "Untick all": "全不选",
+  "Tick it only if it is a different device: the reviewer is told you said so": "仅当它是另一台设备时才勾选：审核者会被告知这是你的判断",
+  "looks like {names}": "看起来像 {names}",
+  "sent before · #{n}": "之前已发送 · #{n}",
+  "sent · #{n}": "已发送 · #{n}",
+  "Open it as a GitHub issue yourself instead (needs a free GitHub account)": "改为自己以 GitHub issue 的形式打开（需要免费的 GitHub 账户）",
+  "⇡ GitHub": "⇡ GitHub",
   "⇡ Submit": "⇡ 提交",
   "{n} more of your symbol isn't listed: already sent, turned down, or already in the library.|{n} more of your symbols aren't listed: already sent, turned down, or already in the library.": {
    "other": "另有 {n} 个你的符号未列出：已提交过、已被拒绝或已在符号库中。"
   },
+  "YOUR NAME OR EMAIL (OPTIONAL)": "你的名字或邮箱（可选）",
+  "e.g. Jo Bloggs, or jo@example.com": "例如：张三，或 zhangsan@example.com",
+  "So the reviewer can credit you or ask about a symbol. It goes into the public issue: leave it empty to stay anonymous.": "便于审核者致谢或就某个符号向你询问。它会出现在公开的 issue 中：留空即可保持匿名。",
+  "Only the symbols are sent: names, categories, ports and rack data. No VLANs, IP addresses or drawings.": "只发送符号本身：名称、分类、端口和机柜数据。不含 VLAN、IP 地址或图纸。",
+  "{n} sent for review. Once it is approved, everyone gets it on their next sync.|{n} sent for review. Once they are approved, everyone gets them on their next sync.": {
+   "other": "已发送 {n} 个供审核。获批后，所有人会在下次同步时收到。"
+  },
+  "{n} could not be sent: see the list.|{n} could not be sent: see the list.": {
+   "other": "{n} 个未能发送：请查看列表。"
+  },
+  "Sending {a} of {n}…": "正在发送第 {a} 个，共 {n} 个…",
+  "Send {n} symbol|Send {n} symbols": {
+   "other": "发送 {n} 个符号"
+  },
+  "No GitHub account needed": "无需 GitHub 账户",
   "Don't show again": "不再显示",
   "Close": "关闭",
   "Place a page of the PDF": "放置 PDF 的一页",
@@ -363,6 +390,18 @@
   "+{n} HIDDEN|+{n} HIDDEN": {
    "other": "+{n} 隐藏"
   },
+  "{a} of {n} connector placed · dashed = place not known|{a} of {n} connectors placed · dashed = place not known": {
+   "other": "已放置：{n} 个接口中的 {a} 个 · 虚线 = 位置未知"
+  },
+  "{n} connector picked|{n} connectors picked": {
+   "other": "已选 {n} 个接口"
+  },
+  "Put the picked connectors on a line from the first to the last, evenly spaced": "将所选接口从第一个到最后一个排成一条线，等距分布",
+  "Spread evenly": "均匀分布",
+  "Put the picked connectors in two rows, odd ones on the first row and even ones on the second, as a switch numbers them": "将所选接口排成两排：奇数在第一排，偶数在第二排，与交换机的编号方式相同",
+  "2 rows": "2 排",
+  "Drag a connector to where it sits, on either panel: it snaps to the grid, lines up with the others and keeps a row's spacing. Hold Alt to place it freely.": "把接口拖到它实际所在的位置（前后面板均可）：它会吸附到网格、与其他接口对齐并保持一排的间距。按住 Alt 可自由放置。",
+  "Shift-click or drag a box to pick several and move them together.": "Shift+点击或拖出选框可选择多个并一起移动。",
   "{x} failed: {error}.": "{x}失败：{error}。",
   "Analysis": "分析",
   "Research": "查询",
@@ -396,9 +435,11 @@
   "Drop or choose a panel drawing (PNG / JPG / PDF)": "拖入或选择面板图（PNG / JPG / PDF）",
   "Optional hint — e.g. 'Lightware UBEX-PRO20 receiver'": "可选提示，例如“Lightware UBEX-PRO20 接收端”",
   "Analyze drawing — runs in background": "分析图纸 — 在后台运行",
+  "A picture with both the front and the rear (or a PDF page with both) places the connectors on both panels for the rack view.": "一张同时包含前面板和后面板的图片（或包含两者的 PDF 页面）可为机柜视图在两个面板上放置接口。",
   "Product name — e.g. 'Lightware UBEX-PRO20-HDMI-F100'": "产品名称，例如“Lightware UBEX-PRO20-HDMI-F100”",
   "Research + build symbol — runs in background": "查询并生成符号 — 在后台运行",
   "It reads manufacturer spec pages and builds the symbol directly — no drawing needed. Every port-bank count is checked back against a page that states it, and anything it cannot support with evidence is flagged rather than guessed.": "它读取厂商的规格页面并直接生成符号，无需图纸。每组端口的数量都会对照写明该数量的页面复核；没有证据支持的内容会被标出，而不是靠猜测。",
+  "It also brings back the rack size, weight and power, which panel each connector is on, and where, when it finds a picture of the panel.": "它还会带回机柜尺寸、重量和功率、每个接口在哪个面板上，找到面板图片时还有具体位置。",
   "Product name — baked into the prompt": "产品名称（写入提示词）",
   "{x} agent prompt": "{x}智能体提示词",
   "Hide": "隐藏",
@@ -408,6 +449,7 @@
   "Paste the agent's JSON output here…": "在此粘贴智能体输出的 JSON…",
   "Validate + preview": "校验并预览",
   "Counts from: <0>{x}</0>{x2}": "数量来源：<0>{x}</0>{x2}",
+  "Size and power from: <0>{x}</0>": "尺寸和功率来源：<0>{x}</0>",
   "Check the analysis — fix anything wrong before adding:": "请检查分析结果，添加前修正错误之处：",
   "Symbol width": "符号宽度",
   "left": "左",
@@ -416,6 +458,9 @@
   "out": "出",
   "bi": "双向",
   "— none —": "— 无 —",
+  "The panel this connector is on: the rack view draws it there": "此接口所在的面板：机柜视图会画在那一面",
+  "front": "前面",
+  "rear": "后面",
   "Remove this port": "删除此端口",
   "{ports} · {category}": "{ports} · {category}",
   "Back": "返回",
@@ -709,7 +754,11 @@
   "Last sync {time} — {msg}": "上次同步 {time} — {msg}",
   "Shared symbol library": "共享符号库",
   "Synced from <0>{REPO_GH}</0> when the app opens and every 30 minutes. New symbols are added; updated ones replace your copy unless that symbol is placed on a sheet.": "应用打开时以及之后每 30 分钟从 <0>{REPO_GH}</0> 同步。新符号会被添加；有更新的符号会替换你的副本，除非该符号已放在图纸上。",
+  "<0>To share symbols you made:</0> Share my symbols sends any number of them for review, no GitHub account needed. Each is checked, then published to everyone.": "<0>要分享你制作的符号：</0>“分享我的符号”可一次发送任意数量供审核，无需 GitHub 账户。每个都会被检查，然后发布给所有人。",
   "<0>To share a symbol you made:</0> hover it in the library and click ⇡. That opens a pre-filled GitHub issue — press <1>Submit new issue</1> (a GitHub login is all you need). It is checked automatically, then reviewed and published to everyone.": "<0>分享自建符号：</0>在符号库中将鼠标悬停在符号上，点击 ⇡。这会打开一个预填好的 GitHub issue，点击 <1>Submit new issue</1>（只需登录 GitHub）。提交后会自动检查，再经审核发布给所有人。",
+  "Share my symbols… ({n} not in the library yet)|Share my symbols… ({n} not in the library yet)": {
+   "other": "分享我的符号…（{n} 个尚未入库）"
+  },
   "Syncing…": "正在同步…",
   "Sync now": "立即同步",
   "Review queue ↗": "审核队列 ↗",
@@ -725,6 +774,7 @@
   "LABEL": "标签",
   "DIR": "方向",
   "SIGNAL": "信号",
+  "PANEL": "面板",
   "Remove the gap above this port": "去掉此端口上方的间隔",
   "Add a gap above this port": "在此端口上方添加间隔",
   "Already the {x} port on its side": "已是该侧{x}的端口",
@@ -921,6 +971,8 @@
   "Replace…": "替换…",
   "Throw away this device's own port edits and use the library symbol again. VLAN, trunk, LAG and IP settings on its ports are kept.": "丢弃此设备自身的端口修改，重新使用库符号。端口上的 VLAN、Trunk、LAG 和 IP 设置会保留。",
   "↺ Library version": "↺ 库版本",
+  "where each connector sits on the front and rear panels": "每个接口在前后面板上的位置",
+  "PANELS": "面板",
   "No rack size on this symbol yet: it goes in as 1U until you set one under PHYSICAL": "该符号还没有机柜尺寸：在“物理”中设置之前按 1U 放入",
   "desktop box, {w} mm wide": "桌面式设备，宽 {w} mm",
   "{w} mm wide": "宽 {w} mm",
@@ -1313,6 +1365,7 @@
   "Collapse": "折叠",
   "class {cc}": "大类：{cc}",
   "mixed: each symbol has its own class": "混合：每个符号有各自的大类",
+  "Share this symbol for review: no GitHub account needed": "分享此符号以供审核：无需 GitHub 账户",
   "Share this symbol — opens a pre-filled GitHub issue for review": "分享此符号：打开一个预填好的 GitHub issue 以供审核",
   "Remove from library (not placed on any sheet)": "从符号库中删除（未放在任何图纸上）",
   "none yet": "暂无",

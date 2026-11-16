@@ -69,6 +69,10 @@
   "It's a different device, submit": "別の機器として投稿",
   "OK": "OK",
   "Don't submit": "投稿しない",
+  "not sent: that is a lot at once; try again in an hour": "未送信：一度に多すぎます。1 時間後にもう一度お試しください",
+  "not sent: sending without GitHub is switched off; use the GitHub button": "未送信：GitHub なしの送信はオフです。GitHub ボタンを使ってください",
+  "not sent: it couldn't get through; try again later": "未送信：送れませんでした。後でもう一度お試しください",
+  "not sent: {why}": "未送信：{why}",
   "Share your symbols": "シンボルを共有",
   "Built a symbol that isn't in the library yet? Send it in. Once it has been checked against the spec sheet it is added to the shared library, and everyone gets it on their next sync.": "ライブラリにまだないシンボルを作りましたか？ぜひ送ってください。仕様書と照合して確認されると共有ライブラリに追加され、次回の同期で全員に届きます。",
   "HOW": "手順",
@@ -77,10 +81,33 @@
   "Click <0>Submit new issue</0>. You need a free GitHub account.": "<0>Submit new issue</0>をクリックします。無料のGitHubアカウントが必要です。",
   "Only the symbol is sent: its name, category and ports. No VLANs, IP addresses or drawings.": "送信されるのはシンボル（名前、カテゴリ、ポート）だけです。VLAN、IPアドレス、図面は送信されません。",
   "YOUR SYMBOLS ON THIS COMPUTER · {n}": "このコンピューターの自作シンボル · {n}",
+  "Tick all": "すべて選択",
+  "Untick all": "すべて解除",
+  "Tick it only if it is a different device: the reviewer is told you said so": "別の機器である場合だけ選択してください：あなたがそう判断したことがレビュー担当者に伝わります",
+  "looks like {names}": "{names} に似ています",
+  "sent before · #{n}": "送信済み · #{n}",
+  "sent · #{n}": "送信しました · #{n}",
+  "Open it as a GitHub issue yourself instead (needs a free GitHub account)": "自分で GitHub Issue として開く（無料の GitHub アカウントが必要）",
+  "⇡ GitHub": "⇡ GitHub",
   "⇡ Submit": "⇡ 投稿",
   "{n} more of your symbol isn't listed: already sent, turned down, or already in the library.|{n} more of your symbols aren't listed: already sent, turned down, or already in the library.": {
    "other": "ほかに自作シンボルが{n}個ありますが、送信済み・却下済み・ライブラリに登録済みのため表示していません。"
   },
+  "YOUR NAME OR EMAIL (OPTIONAL)": "お名前またはメールアドレス（任意）",
+  "e.g. Jo Bloggs, or jo@example.com": "例：山田 太郎、または taro@example.com",
+  "So the reviewer can credit you or ask about a symbol. It goes into the public issue: leave it empty to stay anonymous.": "レビュー担当者がクレジットを付けたり、シンボルについて質問したりできるようにするためです。公開の Issue に載るので、匿名にしたい場合は空欄のままにしてください。",
+  "Only the symbols are sent: names, categories, ports and rack data. No VLANs, IP addresses or drawings.": "送信されるのはシンボル（名前、カテゴリ、ポート、ラックの情報）だけです。VLAN、IPアドレス、図面は送信されません。",
+  "{n} sent for review. Once it is approved, everyone gets it on their next sync.|{n} sent for review. Once they are approved, everyone gets them on their next sync.": {
+   "other": "{n} 件をレビューに送りました。承認されると、次回の同期で全員に届きます。"
+  },
+  "{n} could not be sent: see the list.|{n} could not be sent: see the list.": {
+   "other": "{n} 件は送信できませんでした：一覧を確認してください。"
+  },
+  "Sending {a} of {n}…": "{n} 件中 {a} 件を送信中…",
+  "Send {n} symbol|Send {n} symbols": {
+   "other": "{n} 件のシンボルを送信"
+  },
+  "No GitHub account needed": "GitHub アカウントは不要",
   "Don't show again": "今後表示しない",
   "Close": "閉じる",
   "Place a page of the PDF": "PDFのページを配置",
@@ -363,6 +390,18 @@
   "+{n} HIDDEN|+{n} HIDDEN": {
    "other": "+{n}個非表示"
   },
+  "{a} of {n} connector placed · dashed = place not known|{a} of {n} connectors placed · dashed = place not known": {
+   "other": "配置済み：{n} 個中 {a} 個 · 破線 = 位置不明"
+  },
+  "{n} connector picked|{n} connectors picked": {
+   "other": "{n} 個のコネクターを選択中"
+  },
+  "Put the picked connectors on a line from the first to the last, evenly spaced": "選択したコネクターを最初から最後まで一直線に等間隔で並べます",
+  "Spread evenly": "均等に配置",
+  "Put the picked connectors in two rows, odd ones on the first row and even ones on the second, as a switch numbers them": "選択したコネクターを 2 段に並べます。スイッチの番号順と同じく、奇数を 1 段目、偶数を 2 段目に置きます",
+  "2 rows": "2 段",
+  "Drag a connector to where it sits, on either panel: it snaps to the grid, lines up with the others and keeps a row's spacing. Hold Alt to place it freely.": "コネクターを実際の位置へドラッグします（前面・背面どちらへも）。グリッドにスナップし、他のコネクターと揃い、列の間隔を保ちます。Alt を押しながらで自由に配置。",
+  "Shift-click or drag a box to pick several and move them together.": "Shift+クリックまたは枠のドラッグで複数を選び、まとめて移動できます。",
   "{x} failed: {error}.": "{x}に失敗しました：{error}。",
   "Analysis": "解析",
   "Research": "調査",
@@ -396,9 +435,11 @@
   "Drop or choose a panel drawing (PNG / JPG / PDF)": "パネルの図面をドロップまたは選択（PNG / JPG / PDF）",
   "Optional hint — e.g. 'Lightware UBEX-PRO20 receiver'": "ヒント（任意） — 例：「Lightware UBEX-PRO20 receiver」",
   "Analyze drawing — runs in background": "図面を解析 — バックグラウンドで実行",
+  "A picture with both the front and the rear (or a PDF page with both) places the connectors on both panels for the rack view.": "前面と背面の両方が写った画像（または両方を含む PDF のページ）なら、ラック表示用に両方のパネルへコネクターを配置します。",
   "Product name — e.g. 'Lightware UBEX-PRO20-HDMI-F100'": "製品名 — 例：「Lightware UBEX-PRO20-HDMI-F100」",
   "Research + build symbol — runs in background": "調査してシンボルを作成 — バックグラウンドで実行",
   "It reads manufacturer spec pages and builds the symbol directly — no drawing needed. Every port-bank count is checked back against a page that states it, and anything it cannot support with evidence is flagged rather than guessed.": "メーカーの仕様ページを読んでシンボルを直接作成します。図面は不要です。各ポート群の数はそれを明記したページと照合され、根拠を示せないものは推測せずに警告として示されます。",
+  "It also brings back the rack size, weight and power, which panel each connector is on, and where, when it finds a picture of the panel.": "ラック寸法・重量・消費電力、各コネクターがどちらのパネルにあるか、さらにパネルの画像が見つかればその位置も取得します。",
   "Product name — baked into the prompt": "製品名 — プロンプトに埋め込まれます",
   "{x} agent prompt": "エージェント用プロンプトを{x}",
   "Hide": "隠す",
@@ -408,6 +449,7 @@
   "Paste the agent's JSON output here…": "エージェントが出力したJSONをここに貼り付け…",
   "Validate + preview": "検証してプレビュー",
   "Counts from: <0>{x}</0>{x2}": "ポート数の出典：<0>{x}</0>{x2}",
+  "Size and power from: <0>{x}</0>": "寸法と電力の出典：<0>{x}</0>",
   "Check the analysis — fix anything wrong before adding:": "解析結果を確認し、追加する前に誤りを修正してください：",
   "Symbol width": "シンボルの幅",
   "left": "左",
@@ -416,6 +458,9 @@
   "out": "出力",
   "bi": "双方向",
   "— none —": "— なし —",
+  "The panel this connector is on: the rack view draws it there": "このコネクターがあるパネル：ラック表示ではそこに描かれます",
+  "front": "前面",
+  "rear": "背面",
   "Remove this port": "このポートを削除",
   "{ports} · {category}": "{ports} · {category}",
   "Back": "戻る",
@@ -709,7 +754,11 @@
   "Last sync {time} — {msg}": "前回の同期：{time} — {msg}",
   "Shared symbol library": "共有シンボルライブラリ",
   "Synced from <0>{REPO_GH}</0> when the app opens and every 30 minutes. New symbols are added; updated ones replace your copy unless that symbol is placed on a sheet.": "アプリの起動時と30分ごとに<0>{REPO_GH}</0>から同期します。新しいシンボルは追加され、更新されたシンボルは、シートに配置されていない限り手元のコピーを置き換えます。",
+  "<0>To share symbols you made:</0> Share my symbols sends any number of them for review, no GitHub account needed. Each is checked, then published to everyone.": "<0>自作シンボルを共有するには：</0>「シンボルを共有」で好きなだけまとめてレビューに送れます。GitHub アカウントは不要です。それぞれ確認のうえ、全員に公開されます。",
   "<0>To share a symbol you made:</0> hover it in the library and click ⇡. That opens a pre-filled GitHub issue — press <1>Submit new issue</1> (a GitHub login is all you need). It is checked automatically, then reviewed and published to everyone.": "<0>自作シンボルを共有するには：</0>ライブラリでシンボルにカーソルを合わせ、⇡をクリックします。入力済みのGitHub Issueが開くので、<1>Submit new issue</1>を押してください（GitHubにログインするだけで十分です）。自動チェックの後、レビューを経て全員に公開されます。",
+  "Share my symbols… ({n} not in the library yet)|Share my symbols… ({n} not in the library yet)": {
+   "other": "シンボルを共有…（ライブラリ未登録 {n} 件）"
+  },
   "Syncing…": "同期中…",
   "Sync now": "今すぐ同期",
   "Review queue ↗": "レビュー待ち一覧 ↗",
@@ -725,6 +774,7 @@
   "LABEL": "ラベル",
   "DIR": "方向",
   "SIGNAL": "信号",
+  "PANEL": "パネル",
   "Remove the gap above this port": "このポートの上の隙間を削除",
   "Add a gap above this port": "このポートの上に隙間を追加",
   "Already the {x} port on its side": "既にこの側で{x}のポートです",
@@ -921,6 +971,8 @@
   "Replace…": "置き換え…",
   "Throw away this device's own port edits and use the library symbol again. VLAN, trunk, LAG and IP settings on its ports are kept.": "この機器独自のポート編集を破棄し、ライブラリのシンボルに戻します。ポートのVLAN、トランク、LAG、IPの設定は維持されます。",
   "↺ Library version": "↺ ライブラリ版",
+  "where each connector sits on the front and rear panels": "各コネクターが前面・背面パネルのどこにあるか",
+  "PANELS": "パネル",
   "No rack size on this symbol yet: it goes in as 1U until you set one under PHYSICAL": "このシンボルにはまだラック寸法がありません：「物理」で設定するまで 1U として入ります",
   "desktop box, {w} mm wide": "卓上機器、幅 {w} mm",
   "{w} mm wide": "幅 {w} mm",
@@ -1313,6 +1365,7 @@
   "Collapse": "折りたたむ",
   "class {cc}": "クラス：{cc}",
   "mixed: each symbol has its own class": "混在：シンボルごとにクラスがあります",
+  "Share this symbol for review: no GitHub account needed": "このシンボルをレビューに送る：GitHub アカウント不要",
   "Share this symbol — opens a pre-filled GitHub issue for review": "このシンボルを共有 — レビュー用に入力済みのGitHub Issueを開きます",
   "Remove from library (not placed on any sheet)": "ライブラリから削除（どのシートにも配置されていません）",
   "none yet": "まだありません",
