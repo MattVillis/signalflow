@@ -195,6 +195,15 @@ footer a { color: var(--muted); }
 .sy-d .facts label { font: 600 9px var(--mono); letter-spacing: .14em; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
 .sy-d .facts select { font-size: 12px; padding: 6px; }
 .sy-edit { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* the panel kit (2.0.2): the app's own front / rear panel editor and PHYSICAL row, mounted into these. Kept light in the
+   dark theme too: the kit is drawn in the app's paper-and-ink colours, like a sheet of the drawing */
+.kitrow { border-top: 1px solid var(--rule); padding: 10px 14px 12px; background: #FAFAF7; color: #1A1A18; }
+.kitrow > summary, .kit-h { font: 600 9.5px var(--mono); letter-spacing: .14em; color: #6B6A63; cursor: pointer; }
+.kit-h { cursor: default; margin-bottom: 6px; }
+.kitrow [data-kit="panels"] { margin-top: 8px; }
+.kitrow .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.kitphys { padding: 2px 0; }
+.sy-d .kitrow { grid-column: 1 / -1; }
 .sy-bulk { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 10px; border: 1.2px solid var(--ink); background: var(--panel); margin-bottom: 8px; font-size: 11.5px; }
 .sy-foot { position: sticky; bottom: 0; z-index: 3; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 12px; background: var(--panel); border: 1.2px solid var(--ink); box-shadow: 0 -6px 14px -10px rgba(0,0,0,.35); margin-top: 10px; }
 .sy-cats { margin-bottom: 14px; }
@@ -340,13 +349,24 @@ footer a { color: var(--muted); }
     const o = state.sy.optimistic;
     if (o && Date.now() - o.at < 600000 && !caughtUp(fresh, o)) catalog = o.catalog;
     else { catalog = fresh; state.sy.optimistic = null; }
-    return j.library || [];
+    // a panel update this page just published wins until library.json has it (its rev reaches the published one), 10 min at most
+    const lo = state.sy.libOpt, list = j.library || [];
+    if (!lo) return list;
+    const f = list.find(d => d.id === lo.sym.id);
+    if (Date.now() - lo.at < 600000 && (!f || (f.rev || 1) < lo.sym.rev)) return list.map(d => d.id === lo.sym.id ? lo.sym : d);
+    state.sy.libOpt = null; return list;
   }
   const canon = v => v && typeof v === "object" && !Array.isArray(v) ? JSON.stringify(Object.keys(v).sort().map(k => [k, v[k]])) : JSON.stringify(v ?? null);
   const caughtUp = (fresh, o) => o.ids.every(id => canon(fresh.defs?.[id] || {}) === canon(o.catalog.defs?.[id] || {}))
     && o.keys.every(k => (fresh.catClass?.[k] || "") === (o.catalog.catClass?.[k] || ""));
   const isCatIssue = i => /^\[category\]/i.test(i.title || "") || (i.body || "").includes(CAT_MARK) || i.labels.some(l => l.name === "category");
   const isSubmission = i => !i.pull_request && (/^\[(symbol|fix|category)\]/i.test(i.title) || (i.body || "").includes(MARK) || (i.body || "").includes(FIX_MARK) || (i.body || "").includes(CAT_MARK) || i.labels.some(l => l.name === "symbol" || l.name === "fix" || l.name === "category"));
+  // a symbol sent from the app WITHOUT a GitHub account (app 2.0.2): the live-session Worker files the issue with its own
+  // token, so GitHub names the token's owner as the author; the person who sent it is in the body, as inline code
+  const sentBy = body => { const m = /\*\*Sent by:\*\* (?:`([^`\n]*)`|someone who left no name), from the SignalFlow app[^\n]*without a GitHub account/.exec(body || ""); return m ? { name: m[1] || "" } : null; };
+  const fromHtml = (i, plain) => { const sb = sentBy(i.body);
+    if (sb) return `sent ${sb.name ? `by <b>${esc(sb.name)}</b>` : "anonymously"} <span title="Sent from the app without a GitHub account; filed on GitHub as ${esc(i.user.login)}">without a GitHub account</span>`;
+    return plain ? `from ${esc(i.user.login)}` : `from <a href="${esc(i.user.html_url)}" target="_blank" rel="noopener">${esc(i.user.login)}</a>`; };
   const plainTitle = t => String(t || "").replace(/^\[(symbol|fix|category)\]\s*/i, "");
   const T3 = "\x60\x60\x60";
   // a correction: target + the symbol as it is now (folded away in the issue) + the user's note
@@ -675,6 +695,9 @@ footer a { color: var(--muted); }
     else if (k === "publish") return publishCatalog();
     else if (k === "retry") return retryCatalog(+b.dataset.n);
     else if (k === "close") return closeCatalog(+b.dataset.n);
+    else if (k === "pedit") { const d = (lib || []).find(x => x.id === b.dataset.id); if (d) { sy.panel = { id: d.id, sym: clone(d), orig: clone(d) }; sy.pstat = null; } }
+    else if (k === "pcancel") sy.panel = null;
+    else if (k === "ppub") return publishPanel();
     render();
   }
   function onSyChange(el) {
@@ -775,8 +798,144 @@ footer a { color: var(--muted); }
         <dl><dt>ID</dt><dd>${esc(r.id)}</dd><dt>SOURCE</dt><dd>${r.src === "built-in" ? "built into the app" : `shared library · rev ${esc(r.d.rev || 1)}`}</dd>
           <dt>FILED</dt><dd>${esc(r.category)}${r.category !== r.own ? ` (its own category is ${esc(r.own)})` : ""}</dd><dt>PORTS</dt><dd>${P.length}</dd></dl>
         <p class="note" style="margin:0">A new category goes in <b>Categories and their class</b> above.</p>
-      </div></div>`;
+      </div>${kitRowSym(r)}</div>`;
     return html;
+  }
+
+  /* ---------- panels and rack size (2.0.2) ----------
+     Matt 2026-11-16: "can we also add a panel update and editor to the symbols desk". The app's own panel editor and
+     PHYSICAL row come from panelkit.js next to this page (admin/build-panelkit.mjs builds it from App.jsx), loaded the first
+     time a card has a place for them. Cards are drawn as HTML; after each draw mountKits() mounts the kit into every
+     [data-kit] element: "phys" = the PHYSICAL row, "panels" = the front and rear panels (an editor where data-edit is set).
+     data-src says whose: q:<issue> a submission as sent, e:<issue> one being edited (written into the issue by Save, like
+     every other edit), s:<id> a shared symbol (an editor while sy.panel holds it: Publish opens an approved "[symbol]"
+     issue with the updated symbol, the publish workflow replaces it in library.json with rev + 1), b:<id> a built-in
+     (read-only: it is part of the app). A change re-renders the kit and the counts in place, never the whole card, so a
+     field keeps its focus and the panel editor what is picked. */
+  let kit = null, kitP = null;
+  // fetched and checked first, then run: a host that answers a missing file with a page (a dev server, a test) would
+  // otherwise run HTML as a script and throw
+  const loadKit = () => kitP = kitP || (async () => {
+    const r = await fetch("panelkit.js", { cache: "no-cache" }).catch(() => null);
+    if (!r?.ok || !/javascript/i.test(r.headers.get("content-type") || "")) { kitP = null; throw new Error("Couldn't load panelkit.js (the panel editor). Check it was copied next to this page."); }
+    const sc = document.createElement("script"); sc.textContent = await r.text(); document.head.appendChild(sc);
+    if (!window.SFPanel) { kitP = null; throw new Error("panelkit.js loaded but did not set up the panel editor."); }
+    return kit = window.SFPanel;
+  })();
+  function kitSrc(key) {
+    const i = key.indexOf(":"), k = key.slice(0, i), v = key.slice(i + 1);
+    if (k === "q") { const a = state.queue.find(x => x.issue.number === +v), s = a && (a.sym || a.raw); return s ? { def: s } : null; }
+    if (k === "e") { const n = +v, ed = state.edit[n]; return ed ? { def: ed.sym, set: ph => { if (ph) ed.sym.phys = ph; else delete ed.sym.phys; liveUpdate(n); mountKits(); } } : null; }
+    if (k === "s") {
+      const p = sy.panel?.id === v ? sy.panel : null, d = p ? p.sym : (lib || []).find(x => x.id === v);
+      return d ? { def: d, set: p ? ph => { if (ph) p.sym.phys = ph; else delete p.sym.phys; livePanel(); mountKits(); } : null } : null;
+    }
+    if (k === "b") { const d = kit.builtin(v); return d ? { def: d } : null; }
+    return null;
+  }
+  function mountKits() {
+    const els = [...document.querySelectorAll("[data-kit]")];
+    if (!els.length) return;
+    if (!kit) { loadKit().then(() => mountKits(), err => els.forEach(el => { if (el.isConnected) el.innerHTML = `<div class="msg warn">${esc(err.message)}</div>`; })); return; }
+    kit.sweep();
+    els.forEach(el => {
+      const src = kitSrc(el.dataset.src || ""); if (!src) return;
+      if (el.dataset.kit === "phys") kit.phys(el, src.def.phys || null, src.set);
+      else kit.panels(el, src.def, el.dataset.edit ? src.set : null);
+    });
+  }
+  const PHYS_WN = { full: "full width", half: "half width", third: "third width", quarter: "quarter width" };
+  // a symbol's rack size, depth, weight and power in one line ("not given" without a size)
+  function physLine(s) {
+    const p = s?.phys; if (!p?.mount) return "not given";
+    const btu = p.btu || (p.watts ? Math.round(p.watts * 3.412) : 0);
+    return [p.mount === "rack" ? `${p.ru || 1}U ${PHYS_WN[p.width] || "full width"}` : p.mount === "shelf" ? "desktop box" : "not rack-mountable",
+      p.mm?.d ? `${p.mm.d} mm deep` : "", p.kg ? `${p.kg} kg` : "", p.watts ? `${p.watts} W · ${btu} BTU/h` : ""].filter(Boolean).join(" · ");
+  }
+  const hasPlaces = s => Object.values(s?.phys?.at || {}).some(v => v.length >= 3) || Object.values(s?.phys?.bays || {}).some(v => v.length >= 4);
+  // what changed in the physical block: the size, the figures, and how many connectors were placed, moved or let go of
+  function physDiff(a, b) {
+    const out = [], pa = a?.phys || {}, pb = b?.phys || {};
+    const size = p => !p.mount ? "not given" : p.mount === "rack" ? `${p.ru || 1}U ${PHYS_WN[p.width] || "full width"}` : p.mount === "shelf" ? "desktop box" : "not rack-mountable";
+    if (size(pa) !== size(pb)) out.push(`rack size ${size(pa)} → ${size(pb)}`);
+    [["size", p => p.mm ? [p.mm.w, p.mm.h, p.mm.d].map(v => v || "?").join(" × ") + " mm" : "none"], ["weight", p => p.kg ? p.kg + " kg" : "none"],
+      ["power", p => p.watts ? p.watts + " W" : "none"], ["heat", p => p.btu ? p.btu + " BTU/h" : "none"]]
+      .forEach(([lab, f]) => { if (f(pa) !== f(pb)) out.push(`${lab} ${f(pa)} → ${f(pb)}`); });
+    const count = (A, B, full) => { let placed = 0, moved = 0, gone = 0;
+      new Set([...Object.keys(A || {}), ...Object.keys(B || {})]).forEach(id => { const x = (A || {})[id], y = (B || {})[id];
+        if (JSON.stringify(x) === JSON.stringify(y)) return;
+        if (!y || y.length < full) gone++; else if (!x || x.length < full) placed++; else moved++; });
+      return [placed, moved, gone]; };
+    const [p1, m1, g1] = count(pa.at, pb.at, 3), [p2, m2, g2] = count(pa.bays, pb.bays, 4);
+    const say = (n, what) => n ? out.push(`${n} ${n === 1 ? what[0] : what[1]}`) : 0;
+    say(p1, ["connector placed", "connectors placed"]); say(m1, ["connector moved", "connectors moved"]); say(g1, ["connector's place cleared", "connectors' places cleared"]);
+    say(p2 + m2, ["card bay placed or moved", "card bays placed or moved"]); say(g2, ["card bay's place cleared", "card bays' places cleared"]);
+    return out;
+  }
+  // the repo's own normalise keeps the connectors' places (its scripts/symbol.js is from SignalFlow 2.0.2 or later)
+  function placesSurvive(sym) {
+    if (!sym?.phys?.at && !sym?.phys?.bays) return true;
+    try { const n = L.normalise(sym); return !!(!sym.phys.at || n.phys?.at) && !!(!sym.phys.bays || n.phys?.bays); } catch { return true; }
+  }
+  // the Symbols tab's row for one symbol's panels: a built-in's read-only, a shared one's with Edit, then Publish
+  function kitRowSym(r) {
+    if (r.src === "built-in") return `<div class="kitrow"><div class="kit-h">PANELS <span style="letter-spacing:0;text-transform:none">· researched from the maker's documents; part of the app, so a correction is a change to the app</span></div><div data-kit="panels" data-src="b:${esc(r.id)}"></div></div>`;
+    const p = sy.panel?.id === r.id ? sy.panel : null, d = p ? p.sym : r.d, st = sy.pstat?.id === r.id ? sy.pstat : null;
+    const ch = p ? physDiff(p.orig, p.sym) : [];
+    return `<div class="kitrow"><div class="kit-h">PANELS AND RACK SIZE <span data-pline style="letter-spacing:0">· ${esc(physLine(d))}</span></div>
+      ${p ? `<div class="kitphys" data-kit="phys" data-src="s:${esc(r.id)}"></div>` : ""}
+      <div data-kit="panels" data-src="s:${esc(r.id)}" ${p ? 'data-edit="1"' : ""}></div>
+      <div class="row" style="margin-top:8px">${p
+        ? `<button class="primary" data-sy="ppub" ${ch.length && !st?.busy ? "" : "disabled"}>Publish update to the shared library</button>
+           <button data-sy="pcancel" ${st?.busy ? "disabled" : ""}>Cancel</button><span class="note" data-pnote>${esc(changeNote(ch))}</span>`
+        : `<button data-sy="pedit" data-id="${esc(r.id)}" ${sy.panel || !L?.normalise ? "disabled" : ""}>✎ Edit panels and rack size</button>`}
+        ${st ? `<span class="status ${st.kind}">${st.kind === "busy" ? '<span class="spin"></span> ' : ""}${esc(st.text)}</span>` : ""}</div></div>`;
+  }
+  const changeNote = ch => ch.length ? `${ch.length} change${ch.length > 1 ? "s" : ""}: ${ch.slice(0, 3).join("; ")}${ch.length > 3 ? "…" : ""}` : "No changes yet.";
+  // after a change in the kit: the line, the note and Publish, in place
+  function livePanel() {
+    const p = sy.panel; if (!p) return;
+    const ch = physDiff(p.orig, p.sym), note = $("[data-pnote]"), btn = $('[data-sy="ppub"]'), line = $("[data-pline]");
+    if (note) note.textContent = changeNote(ch);
+    if (btn) btn.disabled = !ch.length || sy.pstat?.busy;
+    if (line) line.textContent = "· " + physLine(p.sym);
+  }
+  /* A shared symbol's new panels and rack size go out the way a submission does: an issue with the whole symbol (same
+     id, so the workflow REPLACES it, rev + 1) opened and labelled approved by this page in a separate call (so
+     "labeled" fires), then watched until the workflow closes it or says why not. */
+  async function publishPanel() {
+    const p = sy.panel; if (!p) return;
+    const changes = physDiff(p.orig, p.sym);
+    let sym; try { sym = L.normalise(clone(p.sym)); } catch (e) { sy.pstat = { id: p.id, kind: "bad", text: e.message }; return render(); }
+    const errs = L.validate(sym);
+    if (errs.length) { sy.pstat = { id: p.id, kind: "bad", text: errs[0] }; return render(); }
+    if (!placesSurvive(p.sym)) { sy.pstat = { id: p.id, kind: "bad", text: "The symbols repo's scripts/symbol.js predates connector places (SignalFlow 2.0.2): push it first, or they are dropped." }; return render(); }
+    const body = `${MARK}.\n\n_Panels and rack size updated from the symbol desk by @${me.login}:_\n\n${changes.map(c => "- " + c).join("\n")}\n\n${T3}json\n${JSON.stringify(sym)}\n${T3}\n`;
+    sy.pstat = { id: p.id, kind: "busy", busy: true, text: "Opening the update on GitHub…" }; render();
+    try {
+      const iss = await gh(`/repos/${OWNER}/${REPO}/issues`, { method: "POST", body: JSON.stringify({ title: `[symbol] ${sym.name}`, body }) });
+      const t0 = Date.now();
+      await gh(`/repos/${OWNER}/${REPO}/issues/${iss.number}/labels`, { method: "POST", body: JSON.stringify({ labels: ["approved"] }) });
+      sy.pstat = { id: p.id, kind: "busy", busy: true, text: `Publishing #${iss.number}… (the workflow takes about 30 s)` }; render();
+      while (Date.now() - t0 < 180000) {
+        await new Promise(r => setTimeout(r, 5000));
+        const [now, comments] = await Promise.all([gh(`/repos/${OWNER}/${REPO}/issues/${iss.number}`), gh(`/repos/${OWNER}/${REPO}/issues/${iss.number}/comments?per_page=100`)]);
+        const fail = comments.find(c => /Not published/.test(c.body));
+        if (fail) { sy.pstat = { id: p.id, kind: "bad", text: `#${iss.number} not published: ` + fail.body.replace(/^.*?—\s*/, "").slice(0, 200) }; await refresh(); return render(); }
+        if (now.state === "closed") {
+          noteClosed(now);
+          // until library.json is read again, this page shows what it just published
+          lib = (lib || []).map(d => d.id === sym.id ? { ...sym, rev: Math.max(d.rev || 1, sym.rev || 1) + 1 } : d);
+          sy.libOpt = { sym: lib.find(d => d.id === sym.id), at: t0 };
+          sy.panel = null;
+          sy.pstat = { id: sym.id, kind: "ok", text: `✓ Published (#${iss.number}). Every app picks it up on its next sync, within 30 minutes.` };
+          render(); refresh().then(render).catch(() => {});
+          return;
+        }
+      }
+      sy.pstat = { id: p.id, kind: "bad", text: `#${iss.number} still not published after 3 minutes. Check the workflow runs; it waits in the queue to approve again.` };
+      await refresh(); render();
+    } catch (e) { sy.pstat = { id: p.id, kind: "bad", text: e.status === 403 || e.status === 404 ? "The token can't create or label issues. Give it Issues: Read and write." : e.message }; render(); }
   }
 
   /* ---------- views ---------- */
@@ -881,7 +1040,7 @@ footer a { color: var(--muted); }
       <div class="card-h">
         <div style="min-width:0">
           <div class="t">${ed ? "EDITING · " : ""}${esc(target || plainTitle(i.title))}</div>
-          <div class="meta">#${n} · from <a href="${esc(i.user.html_url)}" target="_blank" rel="noopener">${esc(i.user.login)}</a> · ${ago(i.created_at)} · <a href="${esc(i.html_url)}" target="_blank" rel="noopener">open on GitHub ↗</a></div>
+          <div class="meta">#${n} · ${fromHtml(i)} · ${ago(i.created_at)} · <a href="${esc(i.html_url)}" target="_blank" rel="noopener">open on GitHub ↗</a></div>
         </div>
         <div class="chips">${chips.join("")}</div>
       </div>
@@ -961,7 +1120,7 @@ footer a { color: var(--muted); }
       <div class="card-h">
         <div style="min-width:0">
           <div class="t">${esc(s?.name || i.title.replace(/^\[(symbol|fix)\]\s*/i, ""))}</div>
-          <div class="meta">#${n} · from <a href="${esc(i.user.html_url)}" target="_blank" rel="noopener">${esc(i.user.login)}</a> · ${ago(i.created_at)} · <a href="${esc(i.html_url)}" target="_blank" rel="noopener">open on GitHub ↗</a></div>
+          <div class="meta">#${n} · ${fromHtml(i)} · ${ago(i.created_at)} · <a href="${esc(i.html_url)}" target="_blank" rel="noopener">open on GitHub ↗</a></div>
         </div>
         <div class="chips">${chipsFor(a, dupes)}</div>
       </div>
@@ -974,6 +1133,7 @@ footer a { color: var(--muted); }
             <dt>PORTS</dt><dd>${ports.length} · ${Object.entries(counts).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>
             ${s.slots?.length ? `<dt>MODULAR</dt><dd>${s.slots.length} slots · ${s.cards.length} cards</dd>` : ""}
             <dt>WIDTH</dt><dd>${esc(s.width)}</dd>
+            <dt>RACK</dt><dd>${esc(physLine(s))}</dd>
             <dt>ID</dt><dd>${esc(s.id)} · rev ${esc(s.rev)}</dd>
           </dl>` : ""}
           <div class="msgs">${msgs.join("")}</div>
@@ -983,6 +1143,7 @@ footer a { color: var(--muted); }
           <details><summary>ISSUE TEXT</summary><pre>${esc(i.body || "")}</pre></details>
         </div>
       </div>
+      ${s && a.fix?.target !== "builtin" ? `<details class="kitrow" ${hasPlaces(s) ? "open" : ""}><summary>PANELS${hasPlaces(s) ? "" : " · no connector places in this submission"}</summary><div data-kit="panels" data-src="q:${n}"></div></details>` : ""}
       ${state.fixing[n] ? `<div class="reject">
           <label class="note" for="ver${n}">Which app version has the fix? (posted on the issue)</label>
           <input id="ver${n}" placeholder="e.g. 1.27.0" maxlength="20" style="max-width:200px">
@@ -1045,6 +1206,7 @@ footer a { color: var(--muted); }
     const ed = state.edit[n], v = editIssues(ed.sym), m = [...dupeMsgs(findDupes(ed.sym, n), expand(ed.sym).length)];
     v.errs.forEach(e => m.push(`<div class="msg bad">${esc(e)}</div>`));
     v.warns.forEach(w => m.push(`<div class="msg warn">${esc(w)}</div>`));
+    if (!placesSurvive(ed.sym)) m.push(`<div class="msg warn">The symbols repo's scripts/symbol.js on GitHub predates connector places (SignalFlow 2.0.2), so publishing would drop them. Push the symbols repo first.</div>`);
     const d = diffSym(ed.orig, ed.sym);
     m.push(d.length ? `<div class="msg">${d.length} change${d.length > 1 ? "s" : ""}: ${esc(d.slice(0, 4).join("; "))}${d.length > 4 ? "…" : ""}</div>` : `<div class="msg">No changes yet.</div>`);
     return { html: m.join(""), ok: !v.errs.length && d.length > 0 };
@@ -1057,7 +1219,7 @@ footer a { color: var(--muted); }
       <div class="card-h">
         <div style="min-width:0">
           <div class="t">EDITING · ${esc(s.name)}</div>
-          <div class="meta">#${n} · from ${esc(i.user.login)} · your changes replace the symbol in the issue; the original is kept there</div>
+          <div class="meta">#${n} · ${fromHtml(i, true)} · your changes replace the symbol in the issue; the original is kept there</div>
         </div>
       </div>
       <div class="card-b edit">
@@ -1068,12 +1230,14 @@ footer a { color: var(--muted); }
             <label>CATEGORY<select class="${catUnk ? "unk" : ""}" data-e="category" data-n="${n}" ${catUnk ? 'title="A new category: approving creates it"' : ""}>${cats.map(c => `<option ${c === s.category ? "selected" : ""}>${esc(c)}</option>`).join("")}${catUnk ? `<option selected>${esc(s.category)}</option>` : ""}</select></label>
             <label>WIDTH<input data-e="width" data-n="${n}" type="number" min="130" max="280" step="10" value="${esc(s.width)}"></label>
           </div>
+          <div class="kitphys" data-kit="phys" data-src="e:${n}"></div>
           ${s.slots?.length ? `<div class="msg">This is a modular symbol. Its slots and cards aren't editable here; edit them in the issue on GitHub.</div>` : ""}
           <div class="msgs" data-msgs="${n}">${mm.html}</div>
           <div class="sides">${sideHtml(s, n, "left", ed.orig)}${sideHtml(s, n, "right", ed.orig)}</div>
           <div class="row"><button class="link" data-e="revert" data-n="${n}">Undo all changes</button></div>
         </div>
       </div>
+      <div class="kitrow"><div class="kit-h">PANELS · drag a connector to where it sits on the front or rear panel</div><div data-kit="panels" data-src="e:${n}" data-edit="1"></div></div>
       <div class="actions sticky">
         <button class="primary" data-act="edit-save" data-n="${n}" ${mm.ok && !st?.busy ? "" : "disabled"}>Save changes to the submission</button>
         <button data-act="edit-cancel" data-n="${n}" ${st?.busy ? "disabled" : ""}>Cancel</button>
@@ -1100,6 +1264,7 @@ footer a { color: var(--muted); }
     });
     const kept = b.ports.filter(p => ai.has(p.id)).map(p => p.id), was = a.ports.filter(p => bi.has(p.id)).map(p => p.id);
     if (kept.join() !== was.join()) d.push("ports reordered");
+    d.push(...physDiff(a, b));
     return d;
   }
   // a text edit updates the preview and checks in place, so the field keeps focus while typing
@@ -1115,6 +1280,7 @@ footer a { color: var(--muted); }
     markEditing();
     const a = state.queue.find(x => x.issue.number === n), el = document.getElementById("i" + n);
     if (a && el) el.outerHTML = cardHtml(a); else render();
+    mountKits();
   }
   function startEdit(n) {
     const a = state.queue.find(x => x.issue.number === n); const src = a.sym || a.raw; if (!src) return;
@@ -1211,6 +1377,7 @@ footer a { color: var(--muted); }
       body = symbolsTabHtml();
     }
     $("#app").innerHTML = tabsHtml() + body;
+    mountKits();
   }
 
   /* ---------- actions ---------- */
@@ -1382,7 +1549,7 @@ footer a { color: var(--muted); }
   let lastQuiet = Date.now();
   // (not while class / category changes wait to be published, or a field on the Symbols tab has the focus)
   const quietRefresh = async () => { if (token && L && document.visibilityState === "visible" && !Object.values(state.status).some(s => s.busy) && !Object.values(state.rejecting).some(Boolean) && !Object.values(state.fixing).some(Boolean) && !Object.keys(state.edit).length && !Object.keys(state.catEdit).length
-    && !pendCount() && sy.pub?.kind !== "busy" && !(tab === "sym" && document.activeElement?.closest?.("#app") && /INPUT|SELECT/.test(document.activeElement.tagName))) { lastQuiet = Date.now(); try { await refresh(); render(); } catch {} } };
+    && !pendCount() && sy.pub?.kind !== "busy" && !sy.panel && !(tab === "sym" && document.activeElement?.closest?.("#app") && /INPUT|SELECT/.test(document.activeElement.tagName))) { lastQuiet = Date.now(); try { await refresh(); render(); } catch {} } };
   // the categories panel stays open or shut across redraws ("toggle" does not bubble, so listen while it travels down)
   document.addEventListener("toggle", e => { if (e.target.matches?.("[data-sy-cats]")) sy.showCats = e.target.open; }, true);
   setInterval(quietRefresh, 120000);
