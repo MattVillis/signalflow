@@ -330,6 +330,7 @@
   "ROW {n}": "РЯД {n}",
   "Apply": "Применить",
   "{name} (hidden)": "{name} (скрыто)",
+  "No room for a {name} in {rack}": "Нет места для «{name}» в {rack}",
   "That space is taken by {name}": "Это место занято: {name}",
   "Add a rack frame (42U; change its height and depth once it is selected)": "Добавить стойку (42U; высоту и глубину можно изменить, когда она выбрана)",
   "Rack": "Стойка",
@@ -1485,8 +1486,13 @@
   "{taken} Replace with this connection?": "{taken} Заменить на это подключение?",
   "The rack can't be lower than the highest accessory in it (U {u})": "Стойка не может быть ниже самого верхнего аксессуара в ней (юнит {u})",
   "The rack can't be lower than the highest device in it (U {u})": "Стойка не может быть ниже самого верхнего устройства в ней (юнит {u})",
+  "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
+   "one": "На прежнем месте нет места для {n}U: перемещено на юнит {u}",
+   "few": "На прежнем месте нет места для {n}U: перемещено на юнит {u}",
+   "many": "На прежнем месте нет места для {n}U: перемещено на юнит {u}",
+   "other": "На прежнем месте нет места для {n}U: перемещено на юнит {u}"
+  },
   "Add a rack first (+ Rack), then put accessories in it": "Сначала добавьте стойку (+ Стойка), затем ставьте в неё аксессуары",
-  "No room for a {name} in {rack}": "Нет места для «{name}» в {rack}",
   "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "Устройства на разных листах, поэтому кабель стал ссылкой на другой лист: флажок на листе {a} и ещё один на {b}",
   "{taken} Replace with the new connection?": "{taken} Заменить на новое подключение?",
   "{n} cable removed|{n} cables removed": {

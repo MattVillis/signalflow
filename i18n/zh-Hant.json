@@ -258,6 +258,7 @@
   "ROW {n}": "第 {n} 列",
   "Apply": "套用",
   "{name} (hidden)": "{name}（已隱藏）",
+  "No room for a {name} in {rack}": "{rack} 中沒有空間放 {name}",
   "That space is taken by {name}": "該位置已被 {name} 佔用",
   "Add a rack frame (42U; change its height and depth once it is selected)": "新增機櫃（42U；選取後可更改高度與深度）",
   "Rack": "機櫃",
@@ -1236,8 +1237,10 @@
   "{taken} Replace with this connection?": "{taken} 要以此連接取代嗎？",
   "The rack can't be lower than the highest accessory in it (U {u})": "機櫃不能低於其中最高的配件（U {u}）",
   "The rack can't be lower than the highest device in it (U {u})": "機櫃不能低於其中最高的設備（U {u}）",
+  "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
+   "other": "原位置沒有 {n}U 的空間：已移到 U {u}"
+  },
   "Add a rack first (+ Rack), then put accessories in it": "請先新增機櫃（+ 機櫃），再放入配件",
-  "No room for a {name} in {rack}": "{rack} 中沒有空間放 {name}",
   "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "兩台設備位於不同圖紙，因此該纜線為跨頁參照：{a} 與 {b} 上各有一個旗標",
   "{taken} Replace with the new connection?": "{taken} 要以新的連接取代嗎？",
   "{n} cable removed|{n} cables removed": {

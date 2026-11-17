@@ -330,6 +330,7 @@
   "ROW {n}": "RZĄD {n}",
   "Apply": "Zastosuj",
   "{name} (hidden)": "{name} (ukryte)",
+  "No room for a {name} in {rack}": "Brak miejsca na {name} w {rack}",
   "That space is taken by {name}": "To miejsce zajmuje {name}",
   "Add a rack frame (42U; change its height and depth once it is selected)": "Dodaj szafę rack (42U; wysokość i głębokość zmienisz po jej zaznaczeniu)",
   "Rack": "Szafa",
@@ -1485,8 +1486,13 @@
   "{taken} Replace with this connection?": "{taken} Zastąpić tym połączeniem?",
   "The rack can't be lower than the highest accessory in it (U {u})": "Szafa nie może być niższa niż najwyżej umieszczone akcesorium (U {u})",
   "The rack can't be lower than the highest device in it (U {u})": "Szafa nie może być niższa niż najwyżej umieszczone urządzenie (U {u})",
+  "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
+   "one": "Brak miejsca na {n}U w dotychczasowym miejscu: przeniesiono na U {u}",
+   "few": "Brak miejsca na {n}U w dotychczasowym miejscu: przeniesiono na U {u}",
+   "many": "Brak miejsca na {n}U w dotychczasowym miejscu: przeniesiono na U {u}",
+   "other": "Brak miejsca na {n}U w dotychczasowym miejscu: przeniesiono na U {u}"
+  },
   "Add a rack first (+ Rack), then put accessories in it": "Najpierw dodaj szafę (+ Szafa), potem włóż do niej akcesoria",
-  "No room for a {name} in {rack}": "Brak miejsca na {name} w {rack}",
   "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "Oba urządzenia są na różnych arkuszach, więc kabel jest odnośnikiem do innego arkusza: flaga na {a} i druga na {b}",
   "{taken} Replace with the new connection?": "{taken} Zastąpić nowym połączeniem?",
   "{n} cable removed|{n} cables removed": {

@@ -306,6 +306,7 @@
   "ROW {n}": "RANGÉE {n}",
   "Apply": "Appliquer",
   "{name} (hidden)": "{name} (masqué)",
+  "No room for a {name} in {rack}": "Pas de place pour {name} dans {rack}",
   "That space is taken by {name}": "Cet emplacement est occupé par {name}",
   "Add a rack frame (42U; change its height and depth once it is selected)": "Ajouter une baie (42U ; hauteur et profondeur modifiables une fois sélectionnée)",
   "Rack": "Baie",
@@ -1402,8 +1403,12 @@
   "{taken} Replace with this connection?": "{taken} Remplacer par cette connexion ?",
   "The rack can't be lower than the highest accessory in it (U {u})": "La baie ne peut pas être plus basse que l'accessoire le plus haut qu'elle contient (U {u})",
   "The rack can't be lower than the highest device in it (U {u})": "La baie ne peut pas être plus basse que l'appareil le plus haut qu'elle contient (U {u})",
+  "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
+   "one": "Pas de place pour {n}U là où il était : il a été déplacé en U {u}",
+   "many": "Pas de place pour {n}U là où il était : il a été déplacé en U {u}",
+   "other": "Pas de place pour {n}U là où il était : il a été déplacé en U {u}"
+  },
   "Add a rack first (+ Rack), then put accessories in it": "Ajoutez d'abord une baie (+ Baie), puis des accessoires dedans",
-  "No room for a {name} in {rack}": "Pas de place pour {name} dans {rack}",
   "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "Les deux appareils sont sur des feuilles différentes : le câble est donc un renvoi hors feuille, un renvoi sur {a} et un sur {b}",
   "{taken} Replace with the new connection?": "{taken} Remplacer par la nouvelle connexion ?",
   "{n} cable removed|{n} cables removed": {

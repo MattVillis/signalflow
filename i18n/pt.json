@@ -306,6 +306,7 @@
   "ROW {n}": "FILEIRA {n}",
   "Apply": "Aplicar",
   "{name} (hidden)": "{name} (oculto)",
+  "No room for a {name} in {rack}": "Não há espaço para {name} em {rack}",
   "That space is taken by {name}": "Esse espaço está ocupado por {name}",
   "Add a rack frame (42U; change its height and depth once it is selected)": "Adicionar um rack (42U; altura e profundidade mudam depois de selecionado)",
   "Rack": "Rack",
@@ -1402,8 +1403,12 @@
   "{taken} Replace with this connection?": "{taken} Substituir por esta conexão?",
   "The rack can't be lower than the highest accessory in it (U {u})": "O rack não pode ser mais baixo que o acessório mais alto nele (U {u})",
   "The rack can't be lower than the highest device in it (U {u})": "O rack não pode ser mais baixo que o equipamento mais alto nele (U {u})",
+  "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
+   "one": "Não há espaço para {n}U onde estava: foi movido para a U {u}",
+   "many": "Não há espaço para {n}U onde estava: foi movido para a U {u}",
+   "other": "Não há espaço para {n}U onde estava: foi movido para a U {u}"
+  },
   "Add a rack first (+ Rack), then put accessories in it": "Adicione um rack primeiro (+ Rack) e depois coloque acessórios nele",
-  "No room for a {name} in {rack}": "Não há espaço para {name} em {rack}",
   "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "Os dois equipamentos estão em folhas diferentes, então o cabo é uma referência fora da folha: uma bandeira em {a} e outra em {b}",
   "{taken} Replace with the new connection?": "{taken} Substituir pela nova conexão?",
   "{n} cable removed|{n} cables removed": {

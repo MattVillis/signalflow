@@ -282,6 +282,7 @@
   "ROW {n}": "REIHE {n}",
   "Apply": "Übernehmen",
   "{name} (hidden)": "{name} (ausgeblendet)",
+  "No room for a {name} in {rack}": "Kein Platz für {name} in {rack}",
   "That space is taken by {name}": "Dieser Platz ist von {name} belegt",
   "Add a rack frame (42U; change its height and depth once it is selected)": "Rack-Rahmen hinzufügen (42 HE; Höhe und Tiefe lassen sich ändern, sobald er ausgewählt ist)",
   "Rack": "Rack",
@@ -1319,8 +1320,11 @@
   "{taken} Replace with this connection?": "{taken} Durch diese Verbindung ersetzen?",
   "The rack can't be lower than the highest accessory in it (U {u})": "Das Rack kann nicht niedriger sein als das höchste Zubehörteil darin (HE {u})",
   "The rack can't be lower than the highest device in it (U {u})": "Das Rack kann nicht niedriger sein als das höchste Gerät darin (HE {u})",
+  "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
+   "one": "An der bisherigen Stelle ist kein Platz für {n} HE: es wurde auf HE {u} verschoben",
+   "other": "An der bisherigen Stelle ist kein Platz für {n} HE: es wurde auf HE {u} verschoben"
+  },
   "Add a rack first (+ Rack), then put accessories in it": "Erst ein Rack hinzufügen (+ Rack), dann Zubehör hinein",
-  "No room for a {name} in {rack}": "Kein Platz für {name} in {rack}",
   "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "Die beiden Geräte liegen auf verschiedenen Blättern, daher ist das Kabel ein Verweis auf ein anderes Blatt: ein Verweis auf {a} und einer auf {b}",
   "{taken} Replace with the new connection?": "{taken} Durch die neue Verbindung ersetzen?",
   "{n} cable removed|{n} cables removed": {

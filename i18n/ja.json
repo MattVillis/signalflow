@@ -258,6 +258,7 @@
   "ROW {n}": "{n} 段目",
   "Apply": "適用",
   "{name} (hidden)": "{name}（非表示）",
+  "No room for a {name} in {rack}": "{rack} に {name} を入れる空きがありません",
   "That space is taken by {name}": "その位置は {name} が使用中です",
   "Add a rack frame (42U; change its height and depth once it is selected)": "ラックフレームを追加（42U。選択後に高さと奥行きを変更できます）",
   "Rack": "ラック",
@@ -1236,8 +1237,10 @@
   "{taken} Replace with this connection?": "{taken}この接続に置き換えますか？",
   "The rack can't be lower than the highest accessory in it (U {u})": "ラックは中の最も高いアクセサリー（U {u}）より低くできません",
   "The rack can't be lower than the highest device in it (U {u})": "ラックは中の最も高い機器（U {u}）より低くできません",
+  "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
+   "other": "元の位置には {n}U の空きがないため、U {u} に移動しました"
+  },
   "Add a rack first (+ Rack), then put accessories in it": "先にラックを追加（+ ラック）してから、アクセサリーを入れてください",
-  "No room for a {name} in {rack}": "{rack} に {name} を入れる空きがありません",
   "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "2 台の機器が別々のシートにあるため、ケーブルはページ外参照になりました：{a} と {b} にそれぞれフラグ",
   "{taken} Replace with the new connection?": "{taken}新しい接続に置き換えますか？",
   "{n} cable removed|{n} cables removed": {

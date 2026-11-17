@@ -258,6 +258,7 @@
   "ROW {n}": "{n}번째 줄",
   "Apply": "적용",
   "{name} (hidden)": "{name} (숨김)",
+  "No room for a {name} in {rack}": "{rack}에 {name}을(를) 넣을 자리가 없습니다",
   "That space is taken by {name}": "그 자리는 {name}이(가) 차지하고 있습니다",
   "Add a rack frame (42U; change its height and depth once it is selected)": "랙 프레임 추가 (42U, 선택한 뒤 높이와 깊이를 바꿀 수 있음)",
   "Rack": "랙",
@@ -1236,8 +1237,10 @@
   "{taken} Replace with this connection?": "{taken} 이 연결로 교체할까요?",
   "The rack can't be lower than the highest accessory in it (U {u})": "랙은 안에 있는 가장 높은 액세서리(U {u})보다 낮출 수 없습니다",
   "The rack can't be lower than the highest device in it (U {u})": "랙은 안에 있는 가장 높은 장비(U {u})보다 낮출 수 없습니다",
+  "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
+   "other": "원래 자리에 {n}U를 넣을 공간이 없어 U {u}(으)로 옮겼습니다"
+  },
   "Add a rack first (+ Rack), then put accessories in it": "먼저 랙을 추가(+ 랙)한 뒤 액세서리를 넣으세요",
-  "No room for a {name} in {rack}": "{rack}에 {name}을(를) 넣을 자리가 없습니다",
   "The two devices are on different sheets, so the cable is an off-page reference: a flag on {a} and one on {b}": "두 장비가 서로 다른 시트에 있어 케이블이 시트 간 참조가 되었습니다: {a}, {b}에 플래그가 하나씩",
   "{taken} Replace with the new connection?": "{taken} 새 연결로 교체할까요?",
   "{n} cable removed|{n} cables removed": {
