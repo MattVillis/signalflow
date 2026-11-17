@@ -1291,6 +1291,9 @@
   " (+{x} more)": " (외 {x}개)",
   "This patch panel is no longer in a rack, so there is no design to open": "이 패치 패널은 더 이상 랙에 없으므로 열 디자인이 없습니다",
   "A patch panel's symbol is made from its design: change it in its designer (double-click it)": "패치 패널의 심볼은 디자인으로 만들어집니다: 디자인에서 바꾸세요 (더블클릭)",
+  "{n} patch panel now has its symbol on a sheet, to cable (delete the symbol to leave it off)|{n} patch panels now have their symbols on the sheets, to cable (delete a symbol to leave that panel off)": {
+   "other": "패치 패널 {n}개의 심볼을 시트에 놓았습니다. 케이블을 연결할 수 있습니다 (빼려면 심볼을 삭제하세요)"
+  },
   "An off-page reference joins two sheets, so it can only be drawn as flags.": "시트 간 참조는 두 시트를 잇기 때문에 플래그로만 그릴 수 있습니다.",
   "This cable goes off the drawing, so it can only be a flag.": "이 케이블은 도면 밖으로 나가므로 플래그로만 그릴 수 있습니다.",
   "Not placed in the rack: that space is taken by {name}": "랙에 배치되지 않음: 그 자리는 {name}이(가) 차지하고 있습니다",

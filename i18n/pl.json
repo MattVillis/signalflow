@@ -1564,6 +1564,12 @@
   " (+{x} more)": " (+{x} więcej)",
   "This patch panel is no longer in a rack, so there is no design to open": "Ten patch panel nie jest już w żadnej szafie, więc nie ma projektu do otwarcia",
   "A patch panel's symbol is made from its design: change it in its designer (double-click it)": "Symbol patch panelu powstaje z jego projektu: zmień go, projektując panel (kliknij go dwukrotnie)",
+  "{n} patch panel now has its symbol on a sheet, to cable (delete the symbol to leave it off)|{n} patch panels now have their symbols on the sheets, to cable (delete a symbol to leave that panel off)": {
+   "one": "{n} patch panel ma teraz swój symbol na arkuszu, do okablowania (usuń symbol, by go pominąć)",
+   "few": "{n} patch panele mają teraz swoje symbole na arkuszach, do okablowania (usuń symbol, by pominąć ten panel)",
+   "many": "{n} patch paneli ma teraz swoje symbole na arkuszach, do okablowania (usuń symbol, by pominąć ten panel)",
+   "other": "{n} patch panelu ma teraz swoje symbole na arkuszach, do okablowania (usuń symbol, by pominąć ten panel)"
+  },
   "An off-page reference joins two sheets, so it can only be drawn as flags.": "Odnośnik do innego arkusza łączy dwa arkusze, więc można go narysować tylko jako flagi.",
   "This cable goes off the drawing, so it can only be a flag.": "Ten kabel wychodzi poza rysunek, więc może być tylko flagą.",
   "Not placed in the rack: that space is taken by {name}": "Nie umieszczono w szafie: to miejsce zajmuje {name}",

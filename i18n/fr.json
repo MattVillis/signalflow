@@ -1473,6 +1473,11 @@
   " (+{x} more)": " (et {x} de plus)",
   "This patch panel is no longer in a rack, so there is no design to open": "Ce panneau de brassage n'est plus dans une baie : il n'y a pas de conception à ouvrir",
   "A patch panel's symbol is made from its design: change it in its designer (double-click it)": "Le symbole d'un panneau de brassage découle de sa conception : modifiez-le en le concevant (double-clic dessus)",
+  "{n} patch panel now has its symbol on a sheet, to cable (delete the symbol to leave it off)|{n} patch panels now have their symbols on the sheets, to cable (delete a symbol to leave that panel off)": {
+   "one": "{n} panneau de brassage a maintenant son symbole sur une feuille, à câbler (supprimez le symbole pour l'en retirer)",
+   "many": "{n} panneaux de brassage ont maintenant leurs symboles sur les feuilles, à câbler (supprimez un symbole pour en retirer ce panneau)",
+   "other": "{n} panneaux de brassage ont maintenant leurs symboles sur les feuilles, à câbler (supprimez un symbole pour en retirer ce panneau)"
+  },
   "An off-page reference joins two sheets, so it can only be drawn as flags.": "Un renvoi vers une autre feuille relie deux feuilles : il ne peut être dessiné qu'en renvois.",
   "This cable goes off the drawing, so it can only be a flag.": "Ce câble sort du schéma : il ne peut être qu'un renvoi.",
   "Not placed in the rack: that space is taken by {name}": "Non placé en baie : cet emplacement est occupé par {name}",

@@ -1291,6 +1291,9 @@
   " (+{x} more)": "（另有 {x} 处）",
   "This patch panel is no longer in a rack, so there is no design to open": "这块配线架已不在任何机柜中，没有可打开的设计",
   "A patch panel's symbol is made from its design: change it in its designer (double-click it)": "配线架的符号由其设计生成：请在设计中修改（双击它）",
+  "{n} patch panel now has its symbol on a sheet, to cable (delete the symbol to leave it off)|{n} patch panels now have their symbols on the sheets, to cable (delete a symbol to leave that panel off)": {
+   "other": "{n} 个配线架现已在图纸上有了符号，可以连线（删除符号即可不放）"
+  },
   "An off-page reference joins two sheets, so it can only be drawn as flags.": "跨图纸引用连接两张图纸，因此只能绘制为旗标。",
   "This cable goes off the drawing, so it can only be a flag.": "这条线缆通往图纸之外，因此只能是旗标。",
   "Not placed in the rack: that space is taken by {name}": "未放入机柜：该位置已被 {name} 占用",

@@ -1473,6 +1473,11 @@
   " (+{x} more)": " (+{x} más)",
   "This patch panel is no longer in a rack, so there is no design to open": "Este panel de parcheo ya no está en un rack, así que no hay diseño que abrir",
   "A patch panel's symbol is made from its design: change it in its designer (double-click it)": "El símbolo de un panel de parcheo sale de su diseño: cámbialo al diseñarlo (doble clic sobre él)",
+  "{n} patch panel now has its symbol on a sheet, to cable (delete the symbol to leave it off)|{n} patch panels now have their symbols on the sheets, to cable (delete a symbol to leave that panel off)": {
+   "one": "{n} panel de parcheo tiene ya su símbolo en una hoja, para cablear (borra el símbolo para dejarlo fuera)",
+   "many": "{n} paneles de parcheo tienen ya sus símbolos en las hojas, para cablear (borra un símbolo para dejar fuera ese panel)",
+   "other": "{n} paneles de parcheo tienen ya sus símbolos en las hojas, para cablear (borra un símbolo para dejar fuera ese panel)"
+  },
   "An off-page reference joins two sheets, so it can only be drawn as flags.": "Una referencia a otra hoja une dos hojas, así que solo puede dibujarse como banderas.",
   "This cable goes off the drawing, so it can only be a flag.": "Este cable sale del dibujo, así que solo puede ser una bandera.",
   "Not placed in the rack: that space is taken by {name}": "No colocado en el rack: ese espacio lo ocupa {name}",

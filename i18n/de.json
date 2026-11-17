@@ -1382,6 +1382,10 @@
   " (+{x} more)": " (+{x} weitere)",
   "This patch panel is no longer in a rack, so there is no design to open": "Dieses Patchfeld ist in keinem Rack mehr, daher gibt es keine Gestaltung zu öffnen",
   "A patch panel's symbol is made from its design: change it in its designer (double-click it)": "Das Symbol eines Patchfelds entsteht aus seiner Gestaltung: Ändern Sie es beim Gestalten (Doppelklick darauf)",
+  "{n} patch panel now has its symbol on a sheet, to cable (delete the symbol to leave it off)|{n} patch panels now have their symbols on the sheets, to cable (delete a symbol to leave that panel off)": {
+   "one": "{n} Patchfeld hat jetzt sein Symbol auf einem Blatt, zum Verkabeln (das Symbol löschen, um es wegzulassen)",
+   "other": "{n} Patchfelder haben jetzt ihre Symbole auf den Blättern, zum Verkabeln (ein Symbol löschen, um dieses Patchfeld wegzulassen)"
+  },
   "An off-page reference joins two sheets, so it can only be drawn as flags.": "Ein Verweis auf ein anderes Blatt verbindet zwei Blätter und kann daher nur als Verweise gezeichnet werden.",
   "This cable goes off the drawing, so it can only be a flag.": "Dieses Kabel führt aus der Zeichnung hinaus und kann daher nur ein Verweis sein.",
   "Not placed in the rack: that space is taken by {name}": "Nicht ins Rack gesetzt: dieser Platz ist von {name} belegt",
