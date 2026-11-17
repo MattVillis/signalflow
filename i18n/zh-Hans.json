@@ -199,6 +199,8 @@
   "{VERSION} · build {BUILD}": "{VERSION} · 构建 {BUILD}",
   "Earlier versions": "早期版本",
   "Full history": "完整更新记录",
+  "panel side\u0004REAR": "背面",
+  "panel side\u0004FRONT": "正面",
   "Servers": "服务器",
   "Computers": "计算机",
   "Processing": "视频处理",
@@ -236,6 +238,12 @@
   },
   "Empty hole (D size)": "空孔（D 型）",
   "Blank cover (D size)": "盲盖（D 型）",
+  "Its {n} cable comes off {sheet} with it|Its {n} cables come off {sheet} with it": {
+   "other": "它的 {n} 条线缆会随之从 {sheet} 移除"
+  },
+  "{n} cable is on a connector taken out: it comes off the sheet|{n} cables are on connectors taken out: they come off the sheet": {
+   "other": "{n} 条线缆接在已拆除的接口上：将从图纸上移除"
+  },
   "Patch panel": "配线架",
   "NAME": "名称",
   "e.g. STAGE TIES": "例如：舞台线路",
@@ -256,6 +264,10 @@
   "prefix": "前缀",
   "Number them": "依次编号",
   "ROW {n}": "第 {n} 行",
+  "SHEET": "图纸",
+  "The sheet its symbol is drawn on: a port each side of every connector, to cable": "绘制其符号的图纸：每个接口两侧各有一个端口，可供连线",
+  "Not on a sheet": "不在任何图纸上",
+  "Which side of its symbol is the panel's front: click to swap them": "符号的哪一侧是配线架正面：点击互换",
   "Apply": "应用",
   "{name} (hidden)": "{name}（已隐藏）",
   "No room for a {name} in {rack}": "{rack} 中没有空间放 {name}",
@@ -314,12 +326,13 @@
   "How many fans across it": "横向排列的风扇数量",
   "Its connectors, their labels, its rows and its height (or double-click it)": "它的接口、接口标签、行数和高度（或双击它）",
   "Design…": "设计…",
+  "Its symbol is on {sheet}: go there with it selected": "其符号在 {sheet} 上：转到那里并选中它",
+  "Show on sheet": "在图纸上显示",
   "Another one like it, in the nearest free space": "再放一个同样的，放在最近的空位",
   "Duplicate": "复制",
   "Take it out  DEL": "移除  DEL",
   "Remove": "移除",
   "Go to the sheet with this cable selected": "转到该线缆所在图纸并选中它",
-  "Show on sheet": "在图纸上显示",
   "Remove this cable: it goes from the sheet too  DEL": "删除这条线缆：图纸上的也会一并删除  DEL",
   "Unplug": "断开",
   "nothing plugged in": "未连接任何线缆",
@@ -1219,6 +1232,7 @@
   "the panel is too dense for one pass — crop the image to one section, or add a hint naming the device": "面板内容太密，一次无法处理完：请把图片裁剪成一个区域，或添加注明设备的提示",
   "could not parse the analysis": "无法解析分析结果",
   "no connectors were identified — try a clearer image or add a hint": "未识别出任何接口，请换一张更清晰的图片或添加提示",
+  "A patch panel's symbol is not copied: it stands for its panel in a rack (Duplicate the panel on the Racks tab)": "配线架的符号不会被复制：它代表机柜中的那块配线架（请在机柜标签页中复制配线架）",
   "mains outputs": "市电输出",
   "Categories: {list}. Plus symbols set to {cls} on the symbol desk, and those in mixed categories (Control, Custom, your own) whose ports are mostly {mostly}.": "分类：{list}。另外还包括在符号审核台上设为“{cls}”的符号，以及混合分类（控制、自定义、你自己的分类）中端口大多为“{mostly}”的符号。",
   "Symbols set to {cls} on the symbol desk, and those in mixed categories (Control, Custom, your own) whose ports are mostly {mostly}.": "在符号审核台上设为“{cls}”的符号，以及混合分类（控制、自定义、你自己的分类）中端口大多为“{mostly}”的符号。",
@@ -1237,6 +1251,15 @@
   "{taken} Replace with this connection?": "{taken}是否替换为此连接？",
   "The rack can't be lower than the highest accessory in it (U {u})": "机柜不能低于其中最高的配件（U {u}）",
   "The rack can't be lower than the highest device in it (U {u})": "机柜不能低于其中最高的设备（U {u}）",
+  "{name} came off {sheet} with {n} cable|{name} came off {sheet} with {n} cables": {
+   "other": "{name} 的符号已连同 {n} 条线缆从 {sheet} 移除"
+  },
+  "{name} came off {sheet}": "{name} 的符号已从 {sheet} 移除",
+  "NOT IN A RACK": "不在机柜中",
+  "{name} is on {sheet} now": "{name} 的符号现在在 {sheet} 上",
+  "{n} cable came off the sheet: its connector is gone|{n} cables came off the sheet: their connectors are gone": {
+   "other": "{n} 条线缆已从图纸上移除：其接口已不存在"
+  },
   "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
    "other": "原位置没有 {n}U 的空间：已移到 U {u}"
   },
@@ -1266,6 +1289,8 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "VLAN 不一致 — {x}{x2}。保持不变。",
   " (+{x} more)": "（另有 {x} 处）",
+  "This patch panel is no longer in a rack, so there is no design to open": "这块配线架已不在任何机柜中，没有可打开的设计",
+  "A patch panel's symbol is made from its design: change it in its designer (double-click it)": "配线架的符号由其设计生成：请在设计中修改（双击它）",
   "An off-page reference joins two sheets, so it can only be drawn as flags.": "跨图纸引用连接两张图纸，因此只能绘制为旗标。",
   "This cable goes off the drawing, so it can only be a flag.": "这条线缆通往图纸之外，因此只能是旗标。",
   "Not placed in the rack: that space is taken by {name}": "未放入机柜：该位置已被 {name} 占用",
@@ -1363,7 +1388,6 @@
   "Could not open {src} ({message})": "无法打开 {src}（{message}）",
   "DRAWN BY": "制图",
   "DATE": "日期",
-  "SHEET": "图纸",
   "{i} OF {n}": "第 {i}/{n} 张",
   "PDF saved · {page} · {name}{x}": "PDF 已保存 · {page} · {name}{x}",
   " · {cff} can't be embedded in a PDF (a PostScript-flavoured OpenType font), so the PDF uses the default font there; Print > Save as PDF keeps it": " · {cff} 无法嵌入 PDF（PostScript 轮廓的 OpenType 字体），因此 PDF 中改用默认字体；使用“打印 > 另存为 PDF”可保留该字体",

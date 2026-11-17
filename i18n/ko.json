@@ -199,6 +199,8 @@
   "{VERSION} · build {BUILD}": "{VERSION} · 빌드 {BUILD}",
   "Earlier versions": "이전 버전",
   "Full history": "전체 내역",
+  "panel side\u0004REAR": "후면",
+  "panel side\u0004FRONT": "전면",
   "Servers": "서버",
   "Computers": "컴퓨터",
   "Processing": "프로세싱",
@@ -236,6 +238,12 @@
   },
   "Empty hole (D size)": "빈 구멍 (D 사이즈)",
   "Blank cover (D size)": "블랭크 커버 (D 사이즈)",
+  "Its {n} cable comes off {sheet} with it|Its {n} cables come off {sheet} with it": {
+   "other": "케이블 {n}개도 함께 {sheet}에서 빠집니다"
+  },
+  "{n} cable is on a connector taken out: it comes off the sheet|{n} cables are on connectors taken out: they come off the sheet": {
+   "other": "뺀 커넥터에 케이블 {n}개가 연결되어 있습니다: 시트에서 빠집니다"
+  },
   "Patch panel": "패치 패널",
   "NAME": "이름",
   "e.g. STAGE TIES": "예: 무대 회선",
@@ -256,6 +264,10 @@
   "prefix": "접두어",
   "Number them": "번호 매기기",
   "ROW {n}": "{n}번째 줄",
+  "SHEET": "시트",
+  "The sheet its symbol is drawn on: a port each side of every connector, to cable": "심볼이 그려지는 시트: 커넥터마다 양쪽에 포트가 있어 케이블을 연결할 수 있습니다",
+  "Not on a sheet": "시트에 두지 않음",
+  "Which side of its symbol is the panel's front: click to swap them": "심볼의 어느 쪽이 패널 전면인지: 클릭하면 바뀝니다",
   "Apply": "적용",
   "{name} (hidden)": "{name} (숨김)",
   "No room for a {name} in {rack}": "{rack}에 {name}을(를) 넣을 자리가 없습니다",
@@ -314,12 +326,13 @@
   "How many fans across it": "가로로 놓이는 팬 개수",
   "Its connectors, their labels, its rows and its height (or double-click it)": "커넥터, 라벨, 줄 수, 높이 (또는 더블클릭)",
   "Design…": "디자인…",
+  "Its symbol is on {sheet}: go there with it selected": "심볼이 {sheet}에 있습니다: 선택된 상태로 그곳으로 이동",
+  "Show on sheet": "시트에서 보기",
   "Another one like it, in the nearest free space": "같은 것을 하나 더, 가장 가까운 빈 자리에",
   "Duplicate": "복제",
   "Take it out  DEL": "빼기  DEL",
   "Remove": "제거",
   "Go to the sheet with this cable selected": "이 케이블이 선택된 시트로 이동",
-  "Show on sheet": "시트에서 보기",
   "Remove this cable: it goes from the sheet too  DEL": "이 케이블을 제거합니다. 시트에서도 사라집니다  DEL",
   "Unplug": "분리",
   "nothing plugged in": "연결된 것 없음",
@@ -1219,6 +1232,7 @@
   "the panel is too dense for one pass — crop the image to one section, or add a hint naming the device": "패널이 너무 복잡해 한 번에 분석할 수 없습니다 — 이미지를 한 부분만 잘라 내거나 장비 이름을 힌트로 추가하세요",
   "could not parse the analysis": "분석 결과를 해석하지 못했습니다",
   "no connectors were identified — try a clearer image or add a hint": "커넥터를 찾지 못했습니다 — 더 선명한 이미지를 쓰거나 힌트를 추가하세요",
+  "A patch panel's symbol is not copied: it stands for its panel in a rack (Duplicate the panel on the Racks tab)": "패치 패널의 심볼은 복사되지 않습니다: 랙에 있는 그 패널을 나타내기 때문입니다 (패널은 랙 탭에서 복제하세요)",
   "mains outputs": "전원 출력",
   "Categories: {list}. Plus symbols set to {cls} on the symbol desk, and those in mixed categories (Control, Custom, your own) whose ports are mostly {mostly}.": "카테고리: {list}. 그리고 심볼 데스크에서 {cls} 분야로 지정된 심볼과, 혼합 카테고리(제어, 사용자 정의, 직접 만든 카테고리)에서 포트가 대부분 {mostly}인 심볼.",
   "Symbols set to {cls} on the symbol desk, and those in mixed categories (Control, Custom, your own) whose ports are mostly {mostly}.": "심볼 데스크에서 {cls} 분야로 지정된 심볼과, 혼합 카테고리(제어, 사용자 정의, 직접 만든 카테고리)에서 포트가 대부분 {mostly}인 심볼.",
@@ -1237,6 +1251,15 @@
   "{taken} Replace with this connection?": "{taken} 이 연결로 교체할까요?",
   "The rack can't be lower than the highest accessory in it (U {u})": "랙은 안에 있는 가장 높은 액세서리(U {u})보다 낮출 수 없습니다",
   "The rack can't be lower than the highest device in it (U {u})": "랙은 안에 있는 가장 높은 장비(U {u})보다 낮출 수 없습니다",
+  "{name} came off {sheet} with {n} cable|{name} came off {sheet} with {n} cables": {
+   "other": "{name}의 심볼을 케이블 {n}개와 함께 {sheet}에서 뺐습니다"
+  },
+  "{name} came off {sheet}": "{name}의 심볼을 {sheet}에서 뺐습니다",
+  "NOT IN A RACK": "랙에 없음",
+  "{name} is on {sheet} now": "{name}의 심볼이 이제 {sheet}에 있습니다",
+  "{n} cable came off the sheet: its connector is gone|{n} cables came off the sheet: their connectors are gone": {
+   "other": "케이블 {n}개를 시트에서 뺐습니다: 커넥터가 없어졌습니다"
+  },
   "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
    "other": "원래 자리에 {n}U를 넣을 공간이 없어 U {u}(으)로 옮겼습니다"
   },
@@ -1266,6 +1289,8 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "VLAN 불일치 — {x}{x2}. 그대로 두었습니다.",
   " (+{x} more)": " (외 {x}개)",
+  "This patch panel is no longer in a rack, so there is no design to open": "이 패치 패널은 더 이상 랙에 없으므로 열 디자인이 없습니다",
+  "A patch panel's symbol is made from its design: change it in its designer (double-click it)": "패치 패널의 심볼은 디자인으로 만들어집니다: 디자인에서 바꾸세요 (더블클릭)",
   "An off-page reference joins two sheets, so it can only be drawn as flags.": "시트 간 참조는 두 시트를 잇기 때문에 플래그로만 그릴 수 있습니다.",
   "This cable goes off the drawing, so it can only be a flag.": "이 케이블은 도면 밖으로 나가므로 플래그로만 그릴 수 있습니다.",
   "Not placed in the rack: that space is taken by {name}": "랙에 배치되지 않음: 그 자리는 {name}이(가) 차지하고 있습니다",
@@ -1363,7 +1388,6 @@
   "Could not open {src} ({message})": "열 수 없습니다: {src} ({message})",
   "DRAWN BY": "작성자",
   "DATE": "일자",
-  "SHEET": "시트",
   "{i} OF {n}": "{i} / {n}",
   "PDF saved · {page} · {name}{x}": "PDF 저장됨 · {page} · {name}{x}",
   " · {cff} can't be embedded in a PDF (a PostScript-flavoured OpenType font), so the PDF uses the default font there; Print > Save as PDF keeps it": " · {cff} 글꼴은 PDF에 포함할 수 없어(PostScript 방식 OpenType 글꼴) PDF에서는 기본 글꼴을 사용합니다. 인쇄 > PDF로 저장을 쓰면 유지됩니다",

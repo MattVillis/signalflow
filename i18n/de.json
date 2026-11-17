@@ -221,6 +221,8 @@
   "{VERSION} · build {BUILD}": "{VERSION} · Build {BUILD}",
   "Earlier versions": "Frühere Versionen",
   "Full history": "Gesamter Verlauf",
+  "panel side\u0004REAR": "HINTEN",
+  "panel side\u0004FRONT": "VORNE",
   "Servers": "Server",
   "Computers": "Computer",
   "Processing": "Verarbeitung",
@@ -259,6 +261,14 @@
   },
   "Empty hole (D size)": "Leerer Ausschnitt (D-Format)",
   "Blank cover (D size)": "Blindabdeckung (D-Format)",
+  "Its {n} cable comes off {sheet} with it|Its {n} cables come off {sheet} with it": {
+   "one": "Damit verschwindet {n} Kabel von {sheet}",
+   "other": "Damit verschwinden {n} Kabel von {sheet}"
+  },
+  "{n} cable is on a connector taken out: it comes off the sheet|{n} cables are on connectors taken out: they come off the sheet": {
+   "one": "{n} Kabel steckt an einem entfernten Stecker: es verschwindet vom Blatt",
+   "other": "{n} Kabel stecken an entfernten Steckern: sie verschwinden vom Blatt"
+  },
   "Patch panel": "Patchfeld",
   "NAME": "NAME",
   "e.g. STAGE TIES": "z. B. BÜHNENLEITUNGEN",
@@ -280,6 +290,10 @@
   "prefix": "Präfix",
   "Number them": "Nummerieren",
   "ROW {n}": "REIHE {n}",
+  "SHEET": "BLATT",
+  "The sheet its symbol is drawn on: a port each side of every connector, to cable": "Das Blatt, auf dem sein Symbol steht: ein Anschluss auf jeder Seite jedes Steckers, zum Verkabeln",
+  "Not on a sheet": "Auf keinem Blatt",
+  "Which side of its symbol is the panel's front: click to swap them": "Welche Seite seines Symbols die Vorderseite des Patchfelds ist: klicken zum Tauschen",
   "Apply": "Übernehmen",
   "{name} (hidden)": "{name} (ausgeblendet)",
   "No room for a {name} in {rack}": "Kein Platz für {name} in {rack}",
@@ -338,12 +352,13 @@
   "How many fans across it": "Wie viele Lüfter nebeneinander",
   "Its connectors, their labels, its rows and its height (or double-click it)": "Seine Stecker, ihre Beschriftungen, seine Reihen und seine Höhe (oder doppelklicken)",
   "Design…": "Gestalten…",
+  "Its symbol is on {sheet}: go there with it selected": "Sein Symbol ist auf {sheet}: dorthin, mit dem Symbol ausgewählt",
+  "Show on sheet": "Auf dem Blatt zeigen",
   "Another one like it, in the nearest free space": "Noch eins wie dieses, im nächsten freien Platz",
   "Duplicate": "Duplizieren",
   "Take it out  DEL": "Entfernen  ENTF",
   "Remove": "nicht mehr getaggt führen",
   "Go to the sheet with this cable selected": "Zum Blatt mit diesem Kabel, ausgewählt",
-  "Show on sheet": "Auf dem Blatt zeigen",
   "Remove this cable: it goes from the sheet too  DEL": "Dieses Kabel entfernen: Es verschwindet auch vom Blatt  ENTF",
   "Unplug": "Trennen",
   "nothing plugged in": "nichts angeschlossen",
@@ -1299,6 +1314,7 @@
   "the panel is too dense for one pass — crop the image to one section, or add a hint naming the device": "das Anschlussfeld ist zu dicht für einen Durchlauf — schneiden Sie das Bild auf einen Abschnitt zu oder geben Sie einen Hinweis mit dem Gerätenamen",
   "could not parse the analysis": "Analyse konnte nicht gelesen werden",
   "no connectors were identified — try a clearer image or add a hint": "es wurden keine Stecker erkannt — versuchen Sie ein klareres Bild oder geben Sie einen Hinweis",
+  "A patch panel's symbol is not copied: it stands for its panel in a rack (Duplicate the panel on the Racks tab)": "Das Symbol eines Patchfelds wird nicht kopiert: Es steht für sein Patchfeld in einem Rack (das Patchfeld auf dem Racks-Tab duplizieren)",
   "mains outputs": "Netzausgänge",
   "Categories: {list}. Plus symbols set to {cls} on the symbol desk, and those in mixed categories (Control, Custom, your own) whose ports are mostly {mostly}.": "Kategorien: {list}. Dazu Symbole, die am Symbol-Desk auf {cls} gesetzt sind, und solche aus gemischten Kategorien (Steuerung, Eigene, selbst angelegte), deren Ports überwiegend {mostly} sind.",
   "Symbols set to {cls} on the symbol desk, and those in mixed categories (Control, Custom, your own) whose ports are mostly {mostly}.": "Symbole, die am Symbol-Desk auf {cls} gesetzt sind, und solche aus gemischten Kategorien (Steuerung, Eigene, selbst angelegte), deren Ports überwiegend {mostly} sind.",
@@ -1320,6 +1336,17 @@
   "{taken} Replace with this connection?": "{taken} Durch diese Verbindung ersetzen?",
   "The rack can't be lower than the highest accessory in it (U {u})": "Das Rack kann nicht niedriger sein als das höchste Zubehörteil darin (HE {u})",
   "The rack can't be lower than the highest device in it (U {u})": "Das Rack kann nicht niedriger sein als das höchste Gerät darin (HE {u})",
+  "{name} came off {sheet} with {n} cable|{name} came off {sheet} with {n} cables": {
+   "one": "Das Symbol von {name} wurde mit {n} Kabel von {sheet} entfernt",
+   "other": "Das Symbol von {name} wurde mit {n} Kabeln von {sheet} entfernt"
+  },
+  "{name} came off {sheet}": "Das Symbol von {name} wurde von {sheet} entfernt",
+  "NOT IN A RACK": "IN KEINEM RACK",
+  "{name} is on {sheet} now": "Das Symbol von {name} ist jetzt auf {sheet}",
+  "{n} cable came off the sheet: its connector is gone|{n} cables came off the sheet: their connectors are gone": {
+   "one": "{n} Kabel wurde vom Blatt entfernt: sein Stecker ist weg",
+   "other": "{n} Kabel wurden vom Blatt entfernt: ihre Stecker sind weg"
+  },
   "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
    "one": "An der bisherigen Stelle ist kein Platz für {n} HE: es wurde auf HE {u} verschoben",
    "other": "An der bisherigen Stelle ist kein Platz für {n} HE: es wurde auf HE {u} verschoben"
@@ -1353,6 +1380,8 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "VLAN-Abweichung — {x}{x2}. Unverändert gelassen.",
   " (+{x} more)": " (+{x} weitere)",
+  "This patch panel is no longer in a rack, so there is no design to open": "Dieses Patchfeld ist in keinem Rack mehr, daher gibt es keine Gestaltung zu öffnen",
+  "A patch panel's symbol is made from its design: change it in its designer (double-click it)": "Das Symbol eines Patchfelds entsteht aus seiner Gestaltung: Ändern Sie es beim Gestalten (Doppelklick darauf)",
   "An off-page reference joins two sheets, so it can only be drawn as flags.": "Ein Verweis auf ein anderes Blatt verbindet zwei Blätter und kann daher nur als Verweise gezeichnet werden.",
   "This cable goes off the drawing, so it can only be a flag.": "Dieses Kabel führt aus der Zeichnung hinaus und kann daher nur ein Verweis sein.",
   "Not placed in the rack: that space is taken by {name}": "Nicht ins Rack gesetzt: dieser Platz ist von {name} belegt",
@@ -1467,7 +1496,6 @@
   "Could not open {src} ({message})": "{src} konnte nicht geöffnet werden ({message})",
   "DRAWN BY": "GEZEICHNET",
   "DATE": "DATUM",
-  "SHEET": "BLATT",
   "{i} OF {n}": "{i} VON {n}",
   "PDF saved · {page} · {name}{x}": "PDF gespeichert · {page} · {name}{x}",
   " · {cff} can't be embedded in a PDF (a PostScript-flavoured OpenType font), so the PDF uses the default font there; Print > Save as PDF keeps it": " · {cff} lässt sich nicht in ein PDF einbetten (OpenType-Schrift mit PostScript-Konturen), daher nutzt das PDF dort die Standardschrift; Drucken > Als PDF speichern behält sie",

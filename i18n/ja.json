@@ -199,6 +199,8 @@
   "{VERSION} · build {BUILD}": "{VERSION} · ビルド{BUILD}",
   "Earlier versions": "以前のバージョン",
   "Full history": "すべての履歴",
+  "panel side\u0004REAR": "背面",
+  "panel side\u0004FRONT": "前面",
   "Servers": "サーバー",
   "Computers": "コンピューター",
   "Processing": "映像処理",
@@ -236,6 +238,12 @@
   },
   "Empty hole (D size)": "空き穴（Dサイズ）",
   "Blank cover (D size)": "ブランクカバー（Dサイズ）",
+  "Its {n} cable comes off {sheet} with it|Its {n} cables come off {sheet} with it": {
+   "other": "ケーブル{n}本も一緒に {sheet} から外れます"
+  },
+  "{n} cable is on a connector taken out: it comes off the sheet|{n} cables are on connectors taken out: they come off the sheet": {
+   "other": "取り外したコネクターにケーブル{n}本がつながっています：シートから外れます"
+  },
   "Patch panel": "パッチパネル",
   "NAME": "名前",
   "e.g. STAGE TIES": "例：ステージ回線",
@@ -256,6 +264,10 @@
   "prefix": "接頭辞",
   "Number them": "番号を振る",
   "ROW {n}": "{n} 段目",
+  "SHEET": "シート",
+  "The sheet its symbol is drawn on: a port each side of every connector, to cable": "シンボルを描くシート：コネクターごとに両側にポートがあり、配線できます",
+  "Not on a sheet": "シートに置かない",
+  "Which side of its symbol is the panel's front: click to swap them": "シンボルのどちら側をパネルの前面にするか：クリックで入れ替え",
   "Apply": "適用",
   "{name} (hidden)": "{name}（非表示）",
   "No room for a {name} in {rack}": "{rack} に {name} を入れる空きがありません",
@@ -314,12 +326,13 @@
   "How many fans across it": "横に並ぶファンの数",
   "Its connectors, their labels, its rows and its height (or double-click it)": "コネクター、そのラベル、段数、高さ（またはダブルクリック）",
   "Design…": "デザイン…",
+  "Its symbol is on {sheet}: go there with it selected": "シンボルは {sheet} にあります：選択した状態でそこへ移動",
+  "Show on sheet": "シートで表示",
   "Another one like it, in the nearest free space": "同じものをもう1つ、いちばん近い空き位置へ",
   "Duplicate": "複製",
   "Take it out  DEL": "取り外す  DEL",
   "Remove": "外す",
   "Go to the sheet with this cable selected": "このケーブルを選択した状態でシートへ移動",
-  "Show on sheet": "シートで表示",
   "Remove this cable: it goes from the sheet too  DEL": "このケーブルを削除します。シートからも消えます  DEL",
   "Unplug": "抜く",
   "nothing plugged in": "何も接続されていません",
@@ -1219,6 +1232,7 @@
   "the panel is too dense for one pass — crop the image to one section, or add a hint naming the device": "パネルが込み入っていて一度に処理できません — 画像を一部分に切り抜くか、機器名をヒントに追加してください",
   "could not parse the analysis": "解析結果を読み取れませんでした",
   "no connectors were identified — try a clearer image or add a hint": "コネクターを特定できませんでした — より鮮明な画像を使うか、ヒントを追加してください",
+  "A patch panel's symbol is not copied: it stands for its panel in a rack (Duplicate the panel on the Racks tab)": "パッチパネルのシンボルはコピーされません：ラック内のパネルそのものを表すためです（パネルはラックタブで複製してください）",
   "mains outputs": "電源出力",
   "Categories: {list}. Plus symbols set to {cls} on the symbol desk, and those in mixed categories (Control, Custom, your own) whose ports are mostly {mostly}.": "カテゴリ：{list}。さらに、シンボルデスクで{cls}に設定されたシンボルと、混在カテゴリ（制御、カスタム、自作）のうちポートの大半が{mostly}のシンボル。",
   "Symbols set to {cls} on the symbol desk, and those in mixed categories (Control, Custom, your own) whose ports are mostly {mostly}.": "シンボルデスクで{cls}に設定されたシンボルと、混在カテゴリ（制御、カスタム、自作）のうちポートの大半が{mostly}のシンボル。",
@@ -1237,6 +1251,15 @@
   "{taken} Replace with this connection?": "{taken}この接続に置き換えますか？",
   "The rack can't be lower than the highest accessory in it (U {u})": "ラックは中の最も高いアクセサリー（U {u}）より低くできません",
   "The rack can't be lower than the highest device in it (U {u})": "ラックは中の最も高い機器（U {u}）より低くできません",
+  "{name} came off {sheet} with {n} cable|{name} came off {sheet} with {n} cables": {
+   "other": "{name} のシンボルをケーブル{n}本とともに {sheet} から外しました"
+  },
+  "{name} came off {sheet}": "{name} のシンボルを {sheet} から外しました",
+  "NOT IN A RACK": "ラック外",
+  "{name} is on {sheet} now": "{name} のシンボルは {sheet} にあります",
+  "{n} cable came off the sheet: its connector is gone|{n} cables came off the sheet: their connectors are gone": {
+   "other": "ケーブル{n}本をシートから外しました：コネクターがなくなったためです"
+  },
   "No room for {n}U where it was: it moved to U {u}|No room for {n}U where it was: it moved to U {u}": {
    "other": "元の位置には {n}U の空きがないため、U {u} に移動しました"
   },
@@ -1266,6 +1289,8 @@
   },
   "VLAN mismatch — {x}{x2}. Left as it is.": "VLANの不一致 — {x}{x2}。そのままにしました。",
   " (+{x} more)": "（ほか{x}件）",
+  "This patch panel is no longer in a rack, so there is no design to open": "このパッチパネルはもうラックにないため、開くデザインがありません",
+  "A patch panel's symbol is made from its design: change it in its designer (double-click it)": "パッチパネルのシンボルはデザインから作られます：デザインで変更してください（ダブルクリック）",
   "An off-page reference joins two sheets, so it can only be drawn as flags.": "ページ外参照は 2 つのシートをつなぐため、フラグとしてしか描けません。",
   "This cable goes off the drawing, so it can only be a flag.": "このケーブルは図面の外へ出るため、フラグとしてしか描けません。",
   "Not placed in the rack: that space is taken by {name}": "ラックに配置できません：その位置は {name} が使用中です",
@@ -1363,7 +1388,6 @@
   "Could not open {src} ({message})": "{src}を開けませんでした（{message}）",
   "DRAWN BY": "作成者",
   "DATE": "日付",
-  "SHEET": "シート",
   "{i} OF {n}": "{i} / {n}",
   "PDF saved · {page} · {name}{x}": "PDFを保存しました · {page} · {name}{x}",
   " · {cff} can't be embedded in a PDF (a PostScript-flavoured OpenType font), so the PDF uses the default font there; Print > Save as PDF keeps it": " · {cff}はPDFに埋め込めない（PostScriptベースのOpenTypeフォント）ため、PDFではデフォルトのフォントを使いました。印刷 > PDFとして保存なら維持されます",
