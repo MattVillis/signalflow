@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SignalFlow — project file format</title>
+<meta name="description" content="The SignalFlow project file (.signalflow.json, version 4): every key, what the app fills in, and what stays compatible, for scripts that write drawings.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<!-- Source: D:/signalflow/site/file-format.html, with signalflow-project.schema.json beside it. build.mjs --deploy copies
+     both to the site root. Written from src/App.jsx as of 2.0.12 (projectSnap writes the file, applyProject reads it):
+     when the format grows, this page and the schema grow with it, in the same commit. -->
+<style>
+:root{--paper:#FAFAF7;--panel:#F1F0EB;--rule:#C9C8BF;--ink:#1A1A18;--muted:#6B6A63;--accent:#0E7490;
+--mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;--sans:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;--cond:'Barlow Condensed','Arial Narrow',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15.5px/1.6 var(--sans);
+background-image:linear-gradient(var(--panel) 1px,transparent 1px),linear-gradient(90deg,var(--panel) 1px,transparent 1px);background-size:24px 24px}
+.wrap{max-width:900px;margin:0 auto;padding:40px 20px 72px}
+header{border-bottom:1.5px solid var(--ink);padding-bottom:14px;margin-bottom:8px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+h1{font:600 26px/1.1 var(--cond);letter-spacing:.14em;text-transform:uppercase;margin:0}
+h1 span{color:var(--accent)}
+.sub{font:400 12px var(--mono);color:var(--muted)}
+nav{margin-left:auto;display:flex;gap:14px;font:500 12px var(--mono)}
+nav a{color:var(--ink)}
+section{border-bottom:1px solid var(--rule);padding:22px 0}
+section:last-of-type{border-bottom:0}
+h2{font:600 13px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+h3{font:600 14px var(--mono);letter-spacing:.06em;margin:18px 0 6px}
+p{margin:0 0 10px}
+ul{margin:0 0 10px;padding-left:20px}
+li{margin:0 0 5px}
+b{font-weight:600}
+a{color:var(--accent)}
+code{font:500 13px var(--mono);background:var(--panel);padding:0 3px}
+pre{font:400 12.5px/1.5 var(--mono);background:#fff;border:1px solid var(--rule);padding:12px 14px;overflow-x:auto;margin:0 0 12px}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:0 0 12px;background:#fff;font-size:14px}
+th,td{border:1px solid var(--rule);padding:5px 8px;text-align:left;vertical-align:top}
+th{background:var(--panel);font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+td code{white-space:nowrap}
+.lede{color:var(--muted);font-size:15px;margin-top:14px}
+.note{border-left:3px solid var(--accent);padding:2px 0 2px 12px;margin:0 0 12px}
+.toc{font:400 13px var(--mono);columns:2;margin:0}
+footer{margin-top:28px;font:400 12px var(--mono);color:var(--muted)}
+</style></head>
+<body><div class="wrap">
+<header>
+  <h1>Signal<span>flow</span></h1>
+  <div class="sub">project file format · version 4</div>
+  <nav><a href="./">Open the app</a><a href="./changelog.html">What's new</a><a href="./site/">About</a></nav>
+</header>
+<p class="lede">A SignalFlow project is one JSON file, <code>&lt;name&gt;.signalflow.json</code>. This page describes it for anyone who
+writes drawings from a script: an equipment database, a patch list, a spreadsheet. It covers every key the app reads, what the
+app fills in for you, and what will stay compatible. It describes SignalFlow 2.0.12 and later. A
+<a href="./signalflow-project.schema.json">JSON Schema</a> sits next to it, and <a href="./builtins.json">builtins.json</a> lists
+every built-in symbol with its port ids.</p>
+
+<section>
+<h2>Contents</h2>
+<ol class="toc">
+  <li><a href="#promise">What stays compatible</a></li>
+  <li><a href="#example">A first file</a></li>
+  <li><a href="#top">The top level</a></li>
+  <li><a href="#ids">Ids</a></li>
+  <li><a href="#meta">meta</a></li>
+  <li><a href="#library">library: symbols</a></li>
+  <li><a href="#ports">Ports</a></li>
+  <li><a href="#builtins">Built-in symbols and their port ids</a></li>
+  <li><a href="#sheets">Sheets</a></li>
+  <li><a href="#devices">Devices</a></li>
+  <li><a href="#links">Cables</a></li>
+  <li><a href="#notes">Text notes and zones</a></li>
+  <li><a href="#images">Pictures</a></li>
+  <li><a href="#vlans">VLANs</a></li>
+  <li><a href="#styles">Drawing conventions</a></li>
+  <li><a href="#racks">Racks and accessories</a></li>
+  <li><a href="#fills">What the app does with a file</a></li>
+  <li><a href="#history">Version history</a></li>
+</ol>
+</section>
+
+<section id="promise">
+<h2>1. What stays compatible</h2>
+<ul>
+  <li><b>The major version is the file format.</b> SignalFlow 2.x writes <code>"version": 4</code>. A change that would make a 2.x
+    file mean something different, or would stop an older 2.x build reading a newer file, waits for SignalFlow 3.0 and
+    <code>"version": 5</code>.</li>
+  <li><b>Within 2.x the format only grows.</b> New releases add optional keys. A key on this page is not renamed, removed or given
+    a new meaning before 3.0.</li>
+  <li><b>An older 2.x build keeps what it does not know.</b> Unknown keys on <code>meta</code>, sheets, devices and cables pass
+    through its load and its save untouched.</li>
+  <li><b>Write <code>"version": 4</code>, but do not rely on it.</b> The app reads a file by the keys it finds and refuses no file
+    for its version number. A version 3 file from SignalFlow 1.x opens too.</li>
+  <li><b>Leave out what you do not need.</b> Almost everything is optional, and <a href="#fills">section 17</a> lists what the app
+    fills in. A file that sticks to the keys on this page, with the types given here, opens in every 2.x build from 2.0.12 on.</li>
+</ul>
+</section>
+
+<section id="example">
+<h2>2. A first file</h2>
+<p>A laptop sending HDMI to a projector, both on a switch, on one sheet. Every symbol here is built in, so the library is empty:
+the app supplies its own built-ins by their ids. Cable numbers, routes and the sheet's page frame are left for the app to fill in.</p>
+<pre><code>{
+  "version": 4,
+  "meta": { "project": "CONFERENCE ROOM", "drawnBy": "SCRIPT" },
+  "library": [],
+  "sheets": [{
+    "id": "s1", "name": "ROOM",
+    "devices": [
+      { "id": "d-laptop", "defId": "pc-generic-laptop", "label": "PRESENTER", "x": 80, "y": 80 },
+      { "id": "d-pj",     "defId": "epson",             "label": "PJ 1",      "x": 480, "y": 80, "ip": "10.0.10.21" },
+      { "id": "d-sw",     "defId": "switch8",           "label": "ROOM SWITCH", "x": 480, "y": 264 }
+    ],
+    "links": [
+      { "id": "l1", "a": { "dev": "d-laptop", "port": "p1" }, "b": { "dev": "d-pj", "port": "p0" }, "signal": "video" },
+      { "id": "l2", "a": { "dev": "d-laptop", "port": "p3" }, "b": { "dev": "d-sw", "port": "p0" }, "signal": "network" },
+      { "id": "l3", "a": { "dev": "d-pj",     "port": "p1" }, "b": { "dev": "d-sw", "port": "p1" }, "signal": "network" }
+    ]
+  }]
+}</code></pre>
+<p><code>p1</code> on the laptop is its HDMI OUT and <code>p0</code> on the projector its HDMI IN. Those ids come from
+<a href="#builtins">builtins.json</a>. Open the file with File &gt; Open in the app, or put it on a web server and open
+<code>https://mattvillis.github.io/signalflow/?open=&lt;its url&gt;</code>. The server must allow cross-origin requests.</p>
+</section>
+
+<section id="top">
+<h2>3. The top level</h2>
+<table>
+<tr><th>Key</th><th>Type</th><th>When it is missing</th></tr>
+<tr><td><code>version</code></td><td>number</td><td>Not read. Write <code>4</code>.</td></tr>
+<tr><td><code>meta</code></td><td>object</td><td>The drawing keeps the title block it had before the file was opened. Write it. See <a href="#meta">meta</a>.</td></tr>
+<tr><td><code>library</code></td><td>array of symbols</td><td>The built-ins only. Write your own symbols here; <code>[]</code> is fine.</td></tr>
+<tr><td><code>sheets</code></td><td>array of sheets</td><td>One empty sheet called SHEET 1.</td></tr>
+<tr><td><code>active</code></td><td>number</td><td>The first sheet. This is the index of the sheet that opens.</td></tr>
+<tr><td><code>view</code></td><td><code>{x, y, k}</code></td><td>The view does not move. Screen = canvas × k + (x, y); k is the zoom, from 0.25 to 3.</td></tr>
+<tr><td><code>vlans</code></td><td>array</td><td>This machine's saved VLAN scheme, if there is one. See <a href="#vlans">VLANs</a>.</td></tr>
+<tr><td><code>styles</code></td><td>object</td><td>The standard drawing conventions. See <a href="#styles">Drawing conventions</a>.</td></tr>
+<tr><td><code>focus</code></td><td>array of signal kinds</td><td>No ghosting. With kinds listed, the drawing opens showing only those, the rest faded.</td></tr>
+<tr><td><code>racks</code></td><td>array</td><td>No racks. See <a href="#racks">Racks</a>.</td></tr>
+<tr><td><code>imageData</code></td><td>object</td><td>No pictures. See <a href="#images">Pictures</a>.</td></tr>
+</table>
+<p>Unknown top-level keys are ignored. Write the file as UTF-8. Coordinates are canvas units: at 100% a canvas unit is one screen
+pixel, and on a page frame 3 units are 1 mm of paper. y grows downwards.</p>
+</section>
+
+<section id="ids">
+<h2>4. Ids</h2>
+<p>An id is any string. The app's own ids look like <code>d1xk2f3a</code>: a prefix, then base-36 time and a counter. Nothing
+reads that pattern, and the app does not re-key a file's ids.</p>
+<ul>
+  <li><b>Devices and cables:</b> unique across the whole project, not just their sheet. A cable between sheets names a device
+    on another sheet, and the lists number cables project-wide.</li>
+  <li><b>Sheets, racks and symbols:</b> unique among their own kind. A rack accessory's id should be unique across every rack.</li>
+  <li><b>Notes and pictures:</b> unique on their sheet.</li>
+  <li><b>Ports:</b> unique on their device. A cable names a port by its id.</li>
+  <li><b>VLANs:</b> <code>num</code> unique.</li>
+</ul>
+<p class="note">The app does not repair duplicate ids. Two devices with one id make it pick one of them for every cable.</p>
+</section>
+
+<section id="meta">
+<h2>5. meta: the project and its title block</h2>
+<table>
+<tr><th>Key</th><th>Type</th><th>Meaning</th></tr>
+<tr><td><code>project</code></td><td>string</td><td><b>Required when <code>meta</code> is written.</b> The project name in the title block and in every file name.</td></tr>
+<tr><td><code>drawnBy</code></td><td>string</td><td>The title block's DRAWN BY.</td></tr>
+<tr><td><code>rev</code></td><td>string, ≤8</td><td>The revision (2.0.11).</td></tr>
+<tr><td><code>status</code></td><td>string, ≤32</td><td>The title block's STATUS (2.0.11). The app offers PRELIMINARY, FOR COMMENT, FOR CONSTRUCTION and AS BUILT; any text is allowed.</td></tr>
+<tr><td><code>revDate</code></td><td><code>"YYYY-MM-DD"</code></td><td>The title block's DATE (2.0.11). Without it, DATE is the day of the export.</td></tr>
+<tr><td><code>page</code></td><td>object or absent</td><td>The paper. Absent or <code>null</code> = no page frame. See below.</td></tr>
+<tr><td><code>units</code></td><td><code>"ft"</code> or absent</td><td>Shows cable lengths in feet. Lengths are always stored in metres.</td></tr>
+<tr><td><code>logo</code></td><td>data URL</td><td>A client logo in the title block: PNG, JPEG or SVG as a <code>data:</code> URL. Keep it small: about 520 × 200 pixels is what the app stores.</td></tr>
+<tr><td><code>logoPos</code></td><td><code>"top"</code>, <code>"left"</code>, <code>"right"</code></td><td>Where the logo sits; default top.</td></tr>
+<tr><td><code>logoSize</code></td><td>number, 24–180</td><td>The strip's height (top) or the column's width (left, right), in title-block units. Default 40 for top, 90 for left and right.</td></tr>
+<tr><td><code>logoAlign</code></td><td><code>"start"</code>, <code>"center"</code>, <code>"end"</code></td><td>For a top logo; default center.</td></tr>
+</table>
+<h3>The paper: meta.page</h3>
+<ul>
+  <li><b><code>size</code>:</b> <code>"A4"</code>, <code>"A3"</code> or <code>"A2"</code>. <b>A1 and A0</b> are written as
+    <code>{"size": "A2", "paper": "A1"}</code> and <code>{"size": "A2", "paper": "A0"}</code>, so a build from before 2.0.8 can still open
+    the file; it prints them scaled onto A2.</li>
+  <li><b><code>orient</code>:</b> <code>"portrait"</code>, or absent for landscape.</li>
+</ul>
+<p>Each sheet then has its own frame on that paper. See <a href="#sheets">Sheets</a>.</p>
+</section>
+
+<section id="library">
+<h2>6. library: symbols</h2>
+<p>A symbol is a kind of device: its name, size and ports. A device on a sheet names its symbol by <code>defId</code>.</p>
+<ul>
+  <li><b>Built-in symbols:</b> leave them out. The app supplies its current built-ins by id. A copy in the file replaces the built-in
+    for that project, which freezes it as it was.</li>
+  <li><b>Your own symbols:</b> must be in the file. A device whose <code>defId</code> is neither built in nor in the file's library is
+    dropped when the file opens, with a note saying how many.</li>
+</ul>
+<table>
+<tr><th>Key</th><th>Type</th><th>Meaning</th></tr>
+<tr><td><code>id</code></td><td>string</td><td><b>Required.</b> Unique in the library. Avoid the built-ins' ids unless you mean to replace one.</td></tr>
+<tr><td><code>name</code></td><td>string, ≤36</td><td><b>Required.</b> Drawn in capitals in the symbol header. A make and model, e.g. <code>"BARCO E2 GEN 2"</code>.</td></tr>
+<tr><td><code>ports</code></td><td>array of ports</td><td><b>Required</b> (it may be empty). See <a href="#ports">Ports</a>.</td></tr>
+<tr><td><code>width</code></td><td>number</td><td>The symbol's width in canvas units. The editors keep it between 130 and 280. Default 160.</td></tr>
+<tr><td><code>category</code></td><td>string</td><td>The library sidebar's folder. Default Custom. The built-in categories are Servers, Computers, Processing, LED, Extenders, KVM, Display, Cameras, Network, Audio, Control, Lighting, Power and Custom; any other name makes a new one. <code>Network</code> also turns off auto-IP for the device and offers the switch's CLI port pattern.</td></tr>
+<tr><td><code>class</code></td><td>string</td><td>The department in the sidebar's class filter: video, audio, lighting, network, control or power. Without it the class comes from the category, then from the ports.</td></tr>
+<tr><td><code>rev</code></td><td>integer</td><td>Bumped by the app on every change to the symbol.</td></tr>
+<tr><td><code>slots</code>, <code>cards</code></td><td>arrays</td><td>A modular chassis. See below.</td></tr>
+<tr><td><code>phys</code></td><td>object</td><td>Physical size and power, for the Racks tab. See below.</td></tr>
+</table>
+<h3>Modular symbols: slots and cards</h3>
+<ul>
+  <li><b><code>slots</code>:</b> <code>[{id, label, accepts, card}]</code>.
+    <ul>
+      <li><code>accepts</code> is <code>"in"</code>, <code>"out"</code>, <code>"link"</code>, <code>"aux"</code> or <code>"any"</code>, or an array of those.</li>
+      <li><code>card</code> is the card fitted by default, by card id, or <code>null</code> for an empty slot.</li>
+    </ul></li>
+  <li><b><code>cards</code>:</b> <code>[{id, name, kind, ports}]</code>.
+    <ul>
+      <li><code>kind</code> is one of the <code>accepts</code> values.</li>
+      <li><code>ports</code> is a list like a symbol's.</li>
+    </ul></li>
+  <li><b>How the ports come out:</b> the fitted cards' ports come first, each with the id <code>&lt;slot id&gt;.&lt;card port id&gt;</code>,
+    then the chassis's own ports.</li>
+</ul>
+<h3>Physical data: phys</h3>
+<ul>
+  <li><b><code>mount</code>:</b> <code>"rack"</code>, <code>"shelf"</code> or <code>"none"</code>.</li>
+  <li><b>Rack units:</b> <code>ru</code> is 1–60, and <code>width</code> is <code>"full"</code>, <code>"half"</code>, <code>"third"</code>
+    or <code>"quarter"</code>.</li>
+  <li><b>Size and power:</b> <code>mm</code> is <code>{w, h, d}</code> in millimetres; <code>kg</code> is a number; <code>watts</code> and
+    <code>btu</code> are whole numbers.</li>
+  <li><b>Where each connector is on the panels:</b> <code>at</code> is <code>{&lt;port id&gt;: ["f"|"r", x, y]}</code>, with x and y in
+    percent of that face as seen looking at it. A card's bay goes in <code>bays</code>: <code>{&lt;slot id&gt;: ["f"|"r", x, y, width]}</code>.</li>
+</ul>
+</section>
+
+<section id="ports">
+<h2>7. Ports</h2>
+<table>
+<tr><th>Key</th><th>Type</th><th>Meaning</th></tr>
+<tr><td><code>id</code></td><td>string</td><td>Unique on the symbol. On a library symbol it may be left out: the app numbers ports <code>p0</code>, <code>p1</code> … in list order. <b>On a device's <code>override</code> give every port its id</b>; since 2.0.12 one without is numbered the same way.</td></tr>
+<tr><td><code>label</code></td><td>string, ≤24</td><td><b>Required.</b> Drawn as written; the app's editors write capitals.</td></tr>
+<tr><td><code>side</code></td><td><code>"left"</code>, <code>"right"</code></td><td><b>Required.</b> Which side of the symbol. Each side lists its ports top to bottom in array order. Before 2.0.12 any other value stopped the drawing; it now reads as left.</td></tr>
+<tr><td><code>dir</code></td><td><code>"in"</code>, <code>"out"</code>, <code>"bi"</code></td><td>Signal direction; default bi. Sets the arrowheads and what may be cabled to what.</td></tr>
+<tr><td><code>signal</code></td><td>signal kind</td><td><code>"video"</code>, <code>"fiber"</code>, <code>"network"</code>, <code>"audio"</code>, <code>"control"</code> or <code>"power"</code>. Note the spelling <code>fiber</code>.</td></tr>
+<tr><td><code>conn</code></td><td>string</td><td>The connector, from the list below, or <code>""</code>.</td></tr>
+<tr><td><code>gap</code></td><td><code>true</code></td><td>Leaves a gap above this port, to group ports.</td></tr>
+<tr><td><code>vlan</code>, <code>tagged</code>, <code>trunk</code>, <code>lag</code></td><td>string, string[], <code>true</code>, string ≤8</td><td>Network and fibre ports only. <code>vlan</code> is the untagged VLAN (a trunk's native) by its number. <code>tagged</code> lists VLAN numbers carried tagged. <code>trunk</code> marks a trunk. Ports sharing a <code>lag</code> label are one aggregated link.</td></tr>
+<tr><td><code>ip</code></td><td>string</td><td>An address on this port, for a device with more than one network port.</td></tr>
+<tr><td><code>universe</code>, <code>protocol</code></td><td>digit string, <code>"SACN"</code> / <code>"ART-NET"</code></td><td>A DMX output's universe (no leading zeros): 1–63999, or 0–32767 for Art-Net.</td></tr>
+</table>
+<h3>Connectors, by signal kind</h3>
+<table>
+<tr><th>signal</th><th>conn</th></tr>
+<tr><td><code>video</code></td><td>HDMI, DP, 12G SDI, 6G SDI, 3G SDI, HD SDI, DVI, VGA, BNC, HD-BNC, RJ45, SFP+, SFP28, USB-C</td></tr>
+<tr><td><code>fiber</code></td><td>OPTICALCON DUO, OPTICALCON QUAD, LC, SC, SFP, SFP+, SFP28, QSFP+, QSFP28, SM FIBER, MM FIBER</td></tr>
+<tr><td><code>network</code></td><td>RJ45, ETHERCON, SFP, SFP+, SFP28, QSFP+, QSFP28, RJ45 10G</td></tr>
+<tr><td><code>audio</code></td><td>XLR, TRS, AES3, MADI, ANALOG, SPDIF, DIN 1.0/2.3, RJ45, ETHERCON, USB-A, USB-B, USB-C, NL4, NL8, CA-COM, PA-COM, SC32, SPEAKER TERMINAL, TERMINAL, AES50, ULTRANET, RJ45 AUDIO, TOSLINK, ANTENNA, BNC, DB25, RCA, 3.5MM</td></tr>
+<tr><td><code>control</code></td><td>DMX 5PIN, DMX 3PIN, DMX RJ45, DMX TERMINAL, RS-232, GPIO, MIDI, LTC, XLR, BNC, D-SUB 9, D-SUB 15, D-SUB 26, TRS, CAN, USB-A, USB-B, USB-C, OCULINK</td></tr>
+<tr><td><code>power</code></td><td>POWERCON, POWERCON 32A, TRUE1, IEC C13, IEC C14, IEC C19, IEC C20, DC, XLR 4-PIN, USB-C, CEE 16A 1P, CEE 32A 1P, CEE 16A 3P, CEE 32A 3P, CEE 63A 3P, CEE 125A 3P, SOCAPEX, POWERLOCK, CAMLOK, SCHUKO</td></tr>
+</table>
+<p>Another connector name loads and is drawn, but the editor will refuse to cable it to any different connector. A new
+release may add connectors to these lists; it will not take one away.</p>
+</section>
+
+<section id="builtins">
+<h2>8. Built-in symbols and their port ids</h2>
+<p><a href="./builtins.json">builtins.json</a> lists every built-in symbol of the current release:</p>
+<pre><code>{ "version": "2.0.12",
+  "symbols": [ {
+    "id": "epson", "name": "EPSON PROJECTOR", "category": "Display", "width": 160, "ports": 3,
+    "ids":  ["p0", "p1", "p2"],
+    "list": [["HDMI IN", "left", "in", "video", "HDMI", 0, -1], ["LAN", "left", "bi", "network", "RJ45", 0, -1], …],
+    …
+  }, … ] }</code></pre>
+<ul>
+  <li><b><code>ids</code> and <code>list</code>:</b> the symbol's ports with its default cards fitted, in the order the app expands them.
+    <code>ids[i]</code> is the id of the port <code>list[i]</code> describes. Each <code>list</code> entry is
+    <code>[label, side, dir, signal, conn, gap, group]</code>.</li>
+  <li><b>Modular symbols</b> also have <code>slots</code>, <code>[[id, label, accepts, default card id], …]</code>, and <code>cards</code>,
+    <code>[{id, name, kind, ports: [[id, label, side, dir, signal, conn], …]}]</code>. They let a script fit other cards and work out
+    their port ids.</li>
+</ul>
+<p class="note">Take port ids from builtins.json rather than counting. Most built-ins number their ports <code>p0</code>, <code>p1</code> …
+in order, but card ports are <code>&lt;slot&gt;.&lt;port&gt;</code> and come first, and a few symbols name their own ports (the grandMA3
+desks, so that cables on older drawings stay put). A port id on a built-in is not changed in a later release.</p>
+</section>
+
+<section id="sheets">
+<h2>9. Sheets</h2>
+<table>
+<tr><th>Key</th><th>Type</th><th>Meaning</th></tr>
+<tr><td><code>id</code></td><td>string</td><td><b>Required.</b> Unique.</td></tr>
+<tr><td><code>name</code></td><td>string</td><td><b>Required.</b> The sheet's tab. The app's own renaming stops at 18 characters; longer names load.</td></tr>
+<tr><td><code>title</code></td><td>string, ≤48</td><td>The title block's DRAWING for this sheet (2.0.11). Without it, the sheet's name.</td></tr>
+<tr><td><code>devices</code></td><td>array</td><td>See <a href="#devices">Devices</a>. Later entries draw on top.</td></tr>
+<tr><td><code>links</code></td><td>array</td><td>See <a href="#links">Cables</a>.</td></tr>
+<tr><td><code>notes</code></td><td>array</td><td>Text notes and zones. See <a href="#notes">Notes</a>.</td></tr>
+<tr><td><code>images</code></td><td>array</td><td>See <a href="#images">Pictures</a>.</td></tr>
+<tr><td><code>page</code></td><td><code>{x, y, w?}</code></td><td>The page frame: its top-left corner in canvas units and its width (none = the paper at 100%, 3 units a millimetre). Leave it out and the app places it round the drawing the first time the sheet is shown with a paper size set.</td></tr>
+</table>
+</section>
+
+<section id="devices">
+<h2>10. Devices</h2>
+<table>
+<tr><th>Key</th><th>Type</th><th>Meaning</th></tr>
+<tr><td><code>id</code></td><td>string</td><td><b>Required.</b> Unique across the project.</td></tr>
+<tr><td><code>defId</code></td><td>string</td><td><b>Required.</b> The symbol: a built-in's id, or one in the file's library.</td></tr>
+<tr><td><code>x</code>, <code>y</code></td><td>number</td><td><b>Required.</b> The symbol's top-left corner. The app's grid is 8; nothing needs to sit on it.</td></tr>
+<tr><td><code>label</code></td><td>string</td><td>This device's name: PJ 1, MAIN SERVER. Without it, the symbol's name is shown.</td></tr>
+<tr><td><code>ip</code></td><td>string</td><td>The device's address, shown under its name when the symbol has one network port.</td></tr>
+<tr><td><code>host</code>, <code>mac</code>, <code>asset</code></td><td>strings</td><td>Hostname (≤253), MAC address as <code>"AA:BB:CC:DD:EE:FF"</code>, asset number (≤32) (2.0.11). Listed in Lists &gt; DEVICES.</td></tr>
+<tr><td><code>slots</code></td><td>object</td><td>A modular device's cards: <code>{&lt;slot id&gt;: &lt;card id&gt; | null}</code>. A slot not named keeps its default card.</td></tr>
+<tr><td><code>override</code></td><td><code>{width?, ports}</code></td><td>This device's own port list, replacing its symbol's. <code>ports</code> is the <b>complete, expanded</b> list. Keep the symbol's port ids for the ports it shares with it.</td></tr>
+<tr><td><code>collapsed</code></td><td><code>true</code></td><td>Draws only the ports something is plugged into.</td></tr>
+<tr><td><code>ifPattern</code></td><td>string</td><td>A Network symbol's port names on its own CLI, with <code>{n}</code> counting its network ports, e.g. <code>"1/0/{n}"</code>.</td></tr>
+<tr><td><code>rack</code></td><td><code>{id, u, x, rear?}</code></td><td>Its place in a rack. <code>u</code> is the lowest unit it fills, 1 = the bottom. <code>x</code> is millimetres from the left of the 450 mm opening, seen from the front. <code>rear: true</code> faces it to the back. The rack must be in <code>racks</code>.</td></tr>
+</table>
+<p>Two kinds of device are made by the app and are best left to it:</p>
+<ul>
+  <li><b><code>external</code></b>: the hidden far end of a cable to a place off the drawing.</li>
+  <li><b><code>patchpanel</code></b>: the symbol of a patch panel in a rack. Write the panel as a <a href="#racks">rack accessory</a> and the app
+    makes its symbol.</li>
+</ul>
+</section>
+
+<section id="links">
+<h2>11. Cables (links)</h2>
+<table>
+<tr><th>Key</th><th>Type</th><th>Meaning</th></tr>
+<tr><td><code>id</code></td><td>string</td><td><b>Required.</b> Unique across the project.</td></tr>
+<tr><td><code>a</code>, <code>b</code></td><td><code>{dev, port}</code></td><td><b>Required.</b> The two ends, by device and port id. The arrow is drawn at <code>b</code>, so write it as source → destination.</td></tr>
+<tr><td><code>signal</code></td><td>signal kind</td><td><b>Required.</b> What the cable carries, which sets its line style. Usually end <code>a</code>'s port signal.</td></tr>
+<tr><td><code>mode</code></td><td><code>"auto"</code>, <code>"manual"</code>, <code>"flag"</code></td><td>Default auto (the app routes it). <code>manual</code> runs through <code>pts</code>. <code>flag</code> draws no line, only a flag at each end naming the other.</td></tr>
+<tr><td><code>pts</code></td><td><code>[{x, y}]</code></td><td>The waypoints of a manual route.</td></tr>
+<tr><td><code>off</code></td><td>number</td><td>A nudge, in canvas units, of an auto route's middle run.</td></tr>
+<tr><td><code>no</code></td><td>whole number ≥1</td><td>The cable number (C001). Leave it out: the app numbers new cables and keeps numbers it is given.</td></tr>
+<tr><td><code>cable</code></td><td>string, ≤40</td><td>The cable type as ordered: CAT6A, 12G SDI, OM3 LC–LC (2.0.9).</td></tr>
+<tr><td><code>len</code></td><td>number</td><td>Its length in <b>metres</b>, whatever the project shows (2.0.9).</td></tr>
+</table>
+<h3>A cable to another sheet</h3>
+<p>Store it on the sheet of end <code>a</code>. Give end <code>b</code> the far sheet's id, as in
+<code>"b": {"dev": "d-pj", "port": "p0", "sheet": "s2"}</code>, and use <code>"mode": "flag"</code>. It is drawn as a flag on each sheet. The
+file keeps it only when <code>b.dev</code> really is on that sheet, and it is not this one.</p>
+<h3>What the app checks</h3>
+<p>The editor refuses some cables: a second cable on a port (except a breakout DAC's trunk), an output into an output, and connectors
+that do not mate without a converter. <b>The loader checks none of this</b>, so a file can hold cables the editor would refuse. A
+cable is dropped on load only when a device it names is not on its sheet. A cable to a port the device does not have is kept, but not
+drawn.</p>
+</section>
+
+<section id="notes">
+<h2>12. Text notes and zones</h2>
+<p>Both live in a sheet's <code>notes</code>:</p>
+<ul>
+  <li><b>A text note</b> is <code>{id, type: "text", x, y, text, color?, fs?}</code>. <code>text</code> may hold line breaks (<code>\n</code>).</li>
+  <li><b>A zone</b>, a titled box round part of the drawing, is <code>{id, type: "box", x, y, w, h, text, color?, fs?}</code>, with the title as
+    <code>text</code>.</li>
+  <li><b>Common keys:</b> <code>color</code> is <code>#RRGGBB</code>, default <code>#1A1A18</code>. <code>fs</code> is the text size, 8–36.
+    <code>text</code> is required; since 2.0.12 a note without it is read as empty.</li>
+</ul>
+</section>
+
+<section id="images">
+<h2>13. Pictures</h2>
+<ul>
+  <li><b>On a sheet:</b> <code>images</code> is <code>[{id, img, x, y, w, h, name?, op?, lock?, front?}]</code>.
+    <ul>
+      <li><code>img</code> names a picture in the project's <code>imageData</code>, so one picture can be placed many times.</li>
+      <li>x, y, w and h are the box in canvas units.</li>
+      <li><code>op</code> is the opacity, 0.05 to below 1.</li>
+      <li><code>lock: true</code> stops it being moved. <code>front: true</code> draws it over the cables instead of under them.</li>
+    </ul></li>
+  <li><b>In the project:</b> <code>imageData</code> is <code>{&lt;img&gt;: {data, w, h}}</code>.
+    <ul>
+      <li>The key is <code>im</code> and then 4–40 lower-case letters or digits.</li>
+      <li><code>data</code> is a PNG or JPEG <code>data:</code> URL, up to 8 million characters.</li>
+      <li>w and h are its pixel size.</li>
+    </ul></li>
+</ul>
+</section>
+
+<section id="vlans">
+<h2>14. VLANs</h2>
+<ul>
+  <li><b>The list:</b> <code>vlans</code> is <code>[{num, name, color, subnet?, start?}]</code>.</li>
+  <li><b><code>num</code>:</b> a string, e.g. <code>"10"</code>. Ports name a VLAN by it.</li>
+  <li><b><code>name</code></b> is up to 16 characters, and <b><code>color</code></b> is <code>#RRGGBB</code>.</li>
+  <li><b><code>subnet</code>:</b> the network's first three numbers, e.g. <code>"192.168.10"</code>. The app numbers devices in it from
+    <code>start</code> (1–254, default 10).</li>
+</ul>
+<p>Since 2.0.12 a subnet written as <code>"192.168.10.0/24"</code> is read as <code>"192.168.10"</code>.</p>
+</section>
+
+<section id="styles">
+<h2>15. Drawing conventions: styles</h2>
+<table>
+<tr><th>Key</th><th>Meaning</th></tr>
+<tr><td><code>sig</code></td><td>Line styles that differ from the standard ones: <code>{&lt;key&gt;: {c, dash, w, label}}</code>. A key is a signal kind, a video connector (12G SDI, 6G SDI, 3G SDI, HD SDI, HDMI, DP, DVI) or a group (SPEAKER, RF, DMX, TIMECODE). <code>c</code> is #RRGGBB. <code>dash</code> is an SVG dash pattern such as <code>"6 3"</code>, or <code>""</code>. <code>w</code> is the line width, 0.5–5. <code>label</code> is the legend's name for it.</td></tr>
+<tr><td><code>hops</code></td><td>Where cables cross: <code>"none"</code>, <code>"arc"</code> or <code>"gap"</code>.</td></tr>
+<tr><td><code>textCase</code></td><td><code>"typed"</code> keeps names as written; absent = CAPITALS.</td></tr>
+<tr><td><code>cableLabels</code></td><td><code>false</code> turns off the small labels at each end of a cable (2.0.9).</td></tr>
+<tr><td><code>font</code></td><td>The drawing's fonts: <code>{text?, head?}</code>, each <code>{family, src: "free" | "file"}</code>. <code>free</code> names a font on Fontsource. <code>file</code> names one installed on a machine, which other machines will not have.</td></tr>
+</table>
+</section>
+
+<section id="racks">
+<h2>16. Racks and accessories</h2>
+<p><code>racks</code> is <code>[{id, name, u, depth?, row?, col?, acc?}]</code>:</p>
+<ul>
+  <li><b>The frame:</b> <code>u</code> is its height in units (1–60, default 42) and <code>depth</code> its depth in millimetres (default 800).</li>
+  <li><b>The layout:</b> <code>row</code> and <code>col</code> place it in the Racks tab's grid. Without them, racks stand in one row in list order.</li>
+  <li><b>Devices:</b> they go in a rack by their own <code>rack</code> key (<a href="#devices">Devices</a>).</li>
+</ul>
+<p><code>acc</code> lists the rack's accessories:</p>
+<ul>
+  <li><b>Every accessory:</b> <code>{id, kind, u, h, face, label?}</code>.
+    <ul>
+      <li><code>kind</code> is <code>blank</code>, <code>brush</code>, <code>fan</code>, <code>drawer</code> or <code>patch</code>.</li>
+      <li><code>u</code> is its lowest unit and <code>h</code> its height in units.</li>
+      <li><code>face</code> is the rails it is on: <code>"f"</code> or <code>"r"</code>.</li>
+    </ul></li>
+  <li><b>A drawer</b> takes <code>depth</code> (mm), and <b>a fan panel</b> takes <code>fans</code> (1–12).</li>
+  <li><b>A patch panel</b> takes <code>rows</code> (1–6), <code>cols</code> (1–48) and <code>ports</code>.
+    <ul>
+      <li><code>ports</code> is <code>[{c, l?, m?}]</code> in reading order: <code>c</code> is a connector, <code>l</code> a label, and
+        <code>m: true</code> makes an XLR male.</li>
+      <li>The app gives every patch panel a symbol on a sheet, so its connectors can be cabled.</li>
+    </ul></li>
+</ul>
+</section>
+
+<section id="fills">
+<h2>17. What the app does with a file</h2>
+<h3>When it opens one</h3>
+<ul>
+  <li><b>Built-in symbols:</b> supplied by id, and missing port ids on symbols numbered.</li>
+  <li><b>Devices whose symbol is nowhere:</b> dropped, with a note saying how many.</li>
+  <li><b>Cables:</b> those whose devices are not where they say are dropped. Missing <code>mode</code> and <code>pts</code> are filled in.</li>
+  <li><b>Cable numbers:</b> those given are kept. Cables without one get the next free numbers. Of two cables claiming one number, the
+    first keeps it.</li>
+  <li><b>Racks:</b> their values are kept in range and their grid closed up. A device's rack place is kept only in a rack the file has.</li>
+  <li><b>Pictures:</b> those with no box or no data are dropped.</li>
+  <li><b>Since 2.0.12, unworkable values are repaired so the drawing opens:</b>
+    <ul>
+      <li>a port side that is not left or right reads as left;</li>
+      <li>a port without a label gets an empty one;</li>
+      <li>a symbol without a width or category gets 160 and Custom;</li>
+      <li>an <code>override</code> without a port list is dropped;</li>
+      <li>a note without text gets an empty one;</li>
+      <li>a sheet, device or cable without an id gets one;</li>
+      <li><code>active</code> is kept in range;</li>
+      <li>VLAN subnets are read as their three numbers.</li>
+    </ul></li>
+</ul>
+<h3>Soon after</h3>
+<ul>
+  <li><b>Patch panels:</b> each rack patch panel gets its symbol on a sheet.</li>
+  <li><b>External far ends:</b> one that no cable uses is removed.</li>
+  <li><b>Page frames:</b> each sheet's frame is placed when the sheet is first shown with a paper size set.</li>
+</ul>
+<h3>When it saves</h3>
+<p>Everything is written in full: every key above, and the whole library, built-ins included. A file the app has saved is a good example
+of anything this page leaves unclear.</p>
+</section>
+
+<section id="history">
+<h2>18. Version history</h2>
+<table>
+<tr><th>File version</th><th>App</th><th>What came</th></tr>
+<tr><td>3</td><td>1.x</td><td>The format at the start of the repository (September 2026): <code>meta</code>, <code>library</code>, several <code>sheets</code>, <code>active</code>, <code>view</code>, <code>vlans</code>; later <code>styles</code>, <code>focus</code>, pictures. Older files used <code>customDefs</code> for the library and top-level <code>devices</code> and <code>links</code> for one sheet; both still open.</td></tr>
+<tr><td>4</td><td>2.0.0</td><td><code>racks</code> and a device's <code>rack</code> place.</td></tr>
+<tr><td>4</td><td>2.0.2–2.0.7</td><td><code>phys.at</code> / <code>bays</code>, cables to places off the drawing, rack accessories and their grid, patch panels.</td></tr>
+<tr><td>4</td><td>2.0.8</td><td>A1 and A0 paper (written as A2 + <code>paper</code>), a page frame's <code>w</code>.</td></tr>
+<tr><td>4</td><td>2.0.9</td><td>A cable's <code>cable</code> and <code>len</code>, <code>meta.units</code>, <code>styles.cableLabels</code>.</td></tr>
+<tr><td>4</td><td>2.0.11</td><td>A device's <code>host</code>, <code>mac</code> and <code>asset</code>; a sheet's <code>title</code>; <code>meta.rev</code>, <code>status</code> and <code>revDate</code>.</td></tr>
+<tr><td>4</td><td>2.0.12</td><td>No new keys. Missing ids and unworkable values are repaired on load (<a href="#fills">17</a>). This page and the schema.</td></tr>
+</table>
+</section>
+
+<footer>SignalFlow · project file format, version 4 · written from the app's own reading and writing code ·
+<a href="./signalflow-project.schema.json">JSON Schema</a> · <a href="./builtins.json">builtins.json</a></footer>
+</div></body></html>

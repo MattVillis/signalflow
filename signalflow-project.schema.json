@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mattvillis.github.io/signalflow/signalflow-project.schema.json",
+  "title": "SignalFlow project file, version 4",
+  "description": "A .signalflow.json file as SignalFlow 2.x reads and writes it. Described in full at https://mattvillis.github.io/signalflow/file-format.html. Extra keys are allowed everywhere: within 2.x the format grows by adding optional keys.",
+  "type": "object",
+  "properties": {
+    "version": { "type": "integer", "description": "Write 4. Not read: the app reads a file by its keys." },
+    "meta": { "$ref": "#/$defs/meta" },
+    "library": { "type": "array", "items": { "$ref": "#/$defs/symbol" }, "description": "Your own symbols. Built-ins are supplied by the app; a copy here replaces the built-in for this project." },
+    "sheets": { "type": "array", "items": { "$ref": "#/$defs/sheet" } },
+    "active": { "type": "integer", "minimum": 0, "description": "Index of the sheet that opens." },
+    "view": { "type": "object", "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "k": { "type": "number", "minimum": 0.25, "maximum": 3 } } },
+    "vlans": { "type": "array", "items": { "$ref": "#/$defs/vlan" } },
+    "styles": { "$ref": "#/$defs/styles" },
+    "focus": { "type": "array", "items": { "$ref": "#/$defs/signal" }, "uniqueItems": true },
+    "racks": { "type": "array", "items": { "$ref": "#/$defs/rack" } },
+    "imageData": {
+      "type": "object",
+      "propertyNames": { "pattern": "^im[0-9a-z]{4,40}$" },
+      "additionalProperties": {
+        "type": "object", "required": ["data", "w", "h"],
+        "properties": {
+          "data": { "type": "string", "pattern": "^data:image/(png|jpeg);base64,", "maxLength": 8000000 },
+          "w": { "type": "number", "minimum": 1 }, "h": { "type": "number", "minimum": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "signal": { "enum": ["video", "fiber", "network", "audio", "control", "power"] },
+    "id": { "type": "string", "minLength": 1 },
+    "point": { "type": "object", "required": ["x", "y"], "properties": { "x": { "type": "number" }, "y": { "type": "number" } } },
+    "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+    "meta": {
+      "type": "object",
+      "required": ["project"],
+      "properties": {
+        "project": { "type": "string" },
+        "drawnBy": { "type": "string" },
+        "rev": { "type": "string", "maxLength": 8 },
+        "status": { "type": "string", "maxLength": 32 },
+        "revDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "units": { "const": "ft" },
+        "page": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object", "required": ["size"],
+              "properties": {
+                "size": { "enum": ["A4", "A3", "A2", "A1", "A0"], "description": "Write A1 and A0 as size A2 with paper A1 / A0, which a build before 2.0.8 also opens." },
+                "paper": { "enum": ["A1", "A0"] },
+                "orient": { "const": "portrait" }
+              }
+            }
+          ]
+        },
+        "logo": { "type": "string", "pattern": "^data:image/" },
+        "logoPos": { "enum": ["top", "left", "right"] },
+        "logoSize": { "type": "number", "minimum": 24, "maximum": 180 },
+        "logoAlign": { "enum": ["start", "center", "end"] }
+      }
+    },
+    "port": {
+      "type": "object",
+      "required": ["label", "side"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string", "maxLength": 24 },
+        "side": { "enum": ["left", "right"] },
+        "dir": { "enum": ["in", "out", "bi"] },
+        "signal": { "$ref": "#/$defs/signal" },
+        "conn": { "type": "string" },
+        "gap": { "type": "boolean" },
+        "vlan": { "type": "string" },
+        "tagged": { "type": "array", "items": { "type": "string" } },
+        "trunk": { "type": "boolean" },
+        "lag": { "type": "string", "maxLength": 8 },
+        "ip": { "type": "string" },
+        "universe": { "type": "string", "pattern": "^(0|[1-9][0-9]{0,4})$" },
+        "protocol": { "enum": ["SACN", "ART-NET"] }
+      }
+    },
+    "symbol": {
+      "type": "object",
+      "required": ["id", "name", "ports"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "maxLength": 36 },
+        "category": { "type": "string" },
+        "class": { "enum": ["video", "audio", "lighting", "network", "control", "power"] },
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "rev": { "type": "integer", "minimum": 0 },
+        "ports": { "type": "array", "items": { "$ref": "#/$defs/port" } },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["id"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" }, "label": { "type": "string" },
+              "accepts": { "oneOf": [{ "$ref": "#/$defs/kind" }, { "type": "array", "items": { "$ref": "#/$defs/kind" } }] },
+              "card": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["id", "name", "ports"],
+            "properties": { "id": { "$ref": "#/$defs/id" }, "name": { "type": "string" }, "kind": { "$ref": "#/$defs/kind" }, "ports": { "type": "array", "items": { "$ref": "#/$defs/port" } } }
+          }
+        },
+        "phys": {
+          "type": "object",
+          "properties": {
+            "mount": { "enum": ["rack", "shelf", "none"] },
+            "ru": { "type": "integer", "minimum": 1, "maximum": 60 },
+            "width": { "enum": ["full", "half", "third", "quarter"] },
+            "mm": { "type": "object", "properties": { "w": { "type": "number" }, "h": { "type": "number" }, "d": { "type": "number" } } },
+            "kg": { "type": "number", "minimum": 0 },
+            "watts": { "type": "integer", "minimum": 0 },
+            "btu": { "type": "integer", "minimum": 0 },
+            "at": { "type": "object", "additionalProperties": { "type": "array", "prefixItems": [{ "enum": ["f", "r"] }, { "type": "number" }, { "type": "number" }], "minItems": 1, "maxItems": 3 } },
+            "bays": { "type": "object", "additionalProperties": { "type": "array", "prefixItems": [{ "enum": ["f", "r"] }, { "type": "number" }, { "type": "number" }, { "type": "number" }], "minItems": 1, "maxItems": 4 } }
+          }
+        }
+      }
+    },
+    "kind": { "enum": ["in", "out", "link", "aux", "any"] },
+    "sheet": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "title": { "type": "string", "maxLength": 48 },
+        "page": { "type": "object", "required": ["x", "y"], "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "w": { "type": "number", "exclusiveMinimum": 0 } } },
+        "devices": { "type": "array", "items": { "$ref": "#/$defs/device" } },
+        "links": { "type": "array", "items": { "$ref": "#/$defs/link" } },
+        "notes": { "type": "array", "items": { "$ref": "#/$defs/note" } },
+        "images": { "type": "array", "items": { "$ref": "#/$defs/image" } }
+      }
+    },
+    "device": {
+      "type": "object",
+      "required": ["id", "defId", "x", "y"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "defId": { "$ref": "#/$defs/id" },
+        "x": { "type": "number" }, "y": { "type": "number" },
+        "label": { "type": "string" },
+        "ip": { "type": "string" },
+        "host": { "type": "string", "maxLength": 253 },
+        "mac": { "type": "string", "pattern": "^([0-9A-F]{2}:){5}[0-9A-F]{2}$" },
+        "asset": { "type": "string", "maxLength": 32 },
+        "slots": { "type": "object", "additionalProperties": { "type": ["string", "null"] } },
+        "override": {
+          "type": "object", "required": ["ports"],
+          "properties": { "width": { "type": "number", "exclusiveMinimum": 0 }, "ports": { "type": "array", "items": { "allOf": [{ "$ref": "#/$defs/port" }, { "required": ["id"] }] } } }
+        },
+        "collapsed": { "type": "boolean" },
+        "ifPattern": { "type": "string", "maxLength": 20 },
+        "rack": {
+          "type": "object", "required": ["id", "u", "x"],
+          "properties": { "id": { "$ref": "#/$defs/id" }, "u": { "type": "integer", "minimum": 1 }, "x": { "type": "number", "minimum": 0 }, "rear": { "type": "boolean" } }
+        }
+      }
+    },
+    "end": {
+      "type": "object", "required": ["dev", "port"],
+      "properties": { "dev": { "$ref": "#/$defs/id" }, "port": { "$ref": "#/$defs/id" }, "sheet": { "$ref": "#/$defs/id" } }
+    },
+    "link": {
+      "type": "object",
+      "required": ["id", "a", "b", "signal"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "a": { "$ref": "#/$defs/end" }, "b": { "$ref": "#/$defs/end" },
+        "signal": { "$ref": "#/$defs/signal" },
+        "mode": { "enum": ["auto", "manual", "flag"] },
+        "pts": { "type": "array", "items": { "$ref": "#/$defs/point" } },
+        "off": { "type": "number" },
+        "no": { "type": "integer", "minimum": 1 },
+        "cable": { "type": "string", "maxLength": 40 },
+        "len": { "type": "number", "exclusiveMinimum": 0, "maximum": 10000, "description": "Metres, whatever meta.units shows." }
+      }
+    },
+    "note": {
+      "type": "object",
+      "required": ["id", "x", "y", "text"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "enum": ["text", "box"], "description": "box = a zone, with w and h." },
+        "x": { "type": "number" }, "y": { "type": "number" }, "w": { "type": "number" }, "h": { "type": "number" },
+        "text": { "type": "string" },
+        "color": { "$ref": "#/$defs/color" },
+        "fs": { "type": "number", "minimum": 8, "maximum": 36 }
+      }
+    },
+    "image": {
+      "type": "object",
+      "required": ["id", "img", "x", "y", "w", "h"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" }, "img": { "type": "string", "pattern": "^im[0-9a-z]{4,40}$" },
+        "x": { "type": "number" }, "y": { "type": "number" }, "w": { "type": "number", "exclusiveMinimum": 0 }, "h": { "type": "number", "exclusiveMinimum": 0 },
+        "name": { "type": "string", "maxLength": 80 },
+        "op": { "type": "number", "minimum": 0.05, "exclusiveMaximum": 1 },
+        "lock": { "const": true }, "front": { "const": true }
+      }
+    },
+    "vlan": {
+      "type": "object",
+      "required": ["num"],
+      "properties": {
+        "num": { "type": "string", "maxLength": 8 },
+        "name": { "type": "string", "maxLength": 16 },
+        "color": { "$ref": "#/$defs/color" },
+        "subnet": { "type": "string", "pattern": "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$", "description": "The network's first three numbers, e.g. 192.168.10." },
+        "start": { "type": "integer", "minimum": 1, "maximum": 254 }
+      }
+    },
+    "styles": {
+      "type": "object",
+      "properties": {
+        "sig": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": { "c": { "$ref": "#/$defs/color" }, "dash": { "type": "string" }, "w": { "type": "number", "minimum": 0.5, "maximum": 5 }, "label": { "type": "string", "maxLength": 24 } }
+          }
+        },
+        "hops": { "enum": ["none", "arc", "gap"] },
+        "textCase": { "const": "typed" },
+        "cableLabels": { "const": false },
+        "font": {
+          "type": "object",
+          "properties": {
+            "text": { "$ref": "#/$defs/fontRef" }, "head": { "$ref": "#/$defs/fontRef" }
+          }
+        }
+      }
+    },
+    "fontRef": { "type": "object", "required": ["family", "src"], "properties": { "family": { "type": "string", "maxLength": 48 }, "src": { "enum": ["free", "file"] } } },
+    "rack": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "maxLength": 24 },
+        "u": { "type": "integer", "minimum": 1, "maximum": 60 },
+        "depth": { "type": "number", "minimum": 1, "maximum": 2000 },
+        "row": { "type": "integer", "minimum": 0 }, "col": { "type": "integer", "minimum": 0 },
+        "acc": { "type": "array", "maxItems": 120, "items": { "$ref": "#/$defs/accessory" } }
+      }
+    },
+    "accessory": {
+      "type": "object",
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "kind": { "enum": ["blank", "brush", "fan", "drawer", "patch"] },
+        "u": { "type": "integer", "minimum": 1, "maximum": 60 },
+        "h": { "type": "integer", "minimum": 1, "maximum": 60 },
+        "face": { "enum": ["f", "r"] },
+        "label": { "type": "string", "maxLength": 24 },
+        "depth": { "type": "number", "minimum": 50, "maximum": 1200 },
+        "fans": { "type": "integer", "minimum": 1, "maximum": 12 },
+        "rows": { "type": "integer", "minimum": 1, "maximum": 6 },
+        "cols": { "type": "integer", "minimum": 1, "maximum": 48 },
+        "ports": {
+          "type": "array",
+          "items": { "type": "object", "properties": { "c": { "type": "string", "maxLength": 20 }, "l": { "type": "string", "maxLength": 16 }, "m": { "const": true } } }
+        },
+        "flip": { "const": true }
+      }
+    }
+  }
+}
