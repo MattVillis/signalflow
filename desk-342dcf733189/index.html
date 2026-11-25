@@ -17,6 +17,9 @@
   The token is a fine-grained PAT on MattVillis/signalflow-symbols with Issues: read and write,
   kept in this browser's localStorage only; it is sent to api.github.com and nowhere else.
   Everything a submitter controls (titles, bodies, symbol and port names) is escaped before use.
+  AI check: the symbols repo's ai-check workflow (Claude on the ANTHROPIC_API_KEY secret) comments on each new submission;
+  each card shows that comment's findings and "the AI version", which Use writes into the issue like an edit. The key is
+  never here: Check again only adds the ai-check label. Only comments by github-actions[bot] are read as checks.
   Source: D:/signalflow/admin/symbol-desk.html; copied into the site repo by hand (build.mjs never touches it).
   Installable as a phone app (Chrome > Add to home screen): admin/desk-pwa/ holds manifest.webmanifest, sw.js and the
   icons, copied next to index.html. "Pair phone" shows a QR of this page with #pair=<token>; the phone stores the
@@ -201,6 +204,22 @@ footer a { color: var(--muted); }
 .kitrow > summary, .kit-h { font: 600 9.5px var(--mono); letter-spacing: .14em; color: #6B6A63; cursor: pointer; }
 .kit-h { cursor: default; margin-bottom: 6px; }
 .kitrow [data-kit="panels"] { margin-top: 8px; }
+/* the AI check (the symbols repo's ai-check.yml): what Claude found, the AI version's symbol and its panels */
+.aicheck { border-top: 1px solid var(--rule); padding: 10px 14px 12px; }
+.aicheck > summary, .aicheck .kit-h { font: 600 9.5px var(--mono); letter-spacing: .14em; color: var(--muted); }
+.aicheck > summary b { color: var(--ink); font-weight: 600; }
+.ai-b { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; margin-top: 10px; align-items: start; }
+.ai-b .msgs ul { margin: 4px 0 0; padding-left: 18px; }
+.ai-b .msgs li + li { margin-top: 2px; }
+.ai-prev { background: var(--paper); border: 1px solid var(--rule); padding: 10px; max-width: 360px; overflow: auto; max-height: 70vh; }
+.ai-prev svg { max-width: 100%; height: auto; }
+.ai-prev .note { margin-bottom: 6px; text-align: center; }
+.aicheck .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.aicheck .kitrow { margin: 10px -14px -12px; }
+.aicheck .v-ok { color: var(--ok); } .aicheck .v-warn { color: var(--warn); } .aicheck .v-bad { color: var(--bad); } .aicheck .v-mute { color: var(--muted); }
+.ai-src { font-size: 11px; margin: 4px 0 0; padding-left: 18px; }
+.ai-src q { color: var(--muted); }
+@media (max-width: 720px) { .ai-b { grid-template-columns: 1fr; } .ai-prev { max-width: none; } }
 .kitrow .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .kitphys { padding: 2px 0; }
 .sy-d .kitrow { grid-column: 1 / -1; }
@@ -305,6 +324,8 @@ footer a { color: var(--muted); }
   }
   let token = store.get(), me = null, lib = null, catalog = null, L = null, tab = "queue", builtins = null;
   const state = { queue: [], done: [], busy: {}, open: {}, rejecting: {}, status: {}, edit: {}, saved: {}, fixing: {}, catEdit: {}, catOpen: [], justClosed: {}, justOpened: {}, closedEarly: [],
+    // the AI check of each submission: {n: {key (the issue's comment count + updated_at when read), check}}
+    ai: {},
     // the Symbols tab: filters, the expanded row, ticked rows, changes not yet published, the publish status
     sy: { q: "", fcls: "", fcat: "", fsrc: "", changed: false, open: null, sel: new Set(), pend: { sym: {}, cats: {} }, newName: "", newCls: "", pub: null, optimistic: null, showCats: false } };
 
@@ -831,6 +852,8 @@ footer a { color: var(--muted); }
       return d ? { def: d, set: p ? ph => { if (ph) p.sym.phys = ph; else delete p.sym.phys; livePanel(); mountKits(); } : null } : null;
     }
     if (k === "b") { const d = kit.builtin(v); return d ? { def: d } : null; }
+    // the AI check's version of a submission, read-only
+    if (k === "a") { const d = state.ai[+v]?.check?.symbol; return d ? { def: d } : null; }
     return null;
   }
   function mountKits() {
@@ -861,14 +884,16 @@ footer a { color: var(--muted); }
     [["size", p => p.mm ? [p.mm.w, p.mm.h, p.mm.d].map(v => v || "?").join(" × ") + " mm" : "none"], ["weight", p => p.kg ? p.kg + " kg" : "none"],
       ["power", p => p.watts ? p.watts + " W" : "none"], ["heat", p => p.btu ? p.btu + " BTU/h" : "none"]]
       .forEach(([lab, f]) => { if (f(pa) !== f(pb)) out.push(`${lab} ${f(pa)} → ${f(pb)}`); });
-    const count = (A, B, full) => { let placed = 0, moved = 0, gone = 0;
+    // a place lost = cleared; a face given where there was no place (a new port, or one with no face) = given a face
+    const count = (A, B, full) => { let placed = 0, moved = 0, gone = 0, faced = 0;
       new Set([...Object.keys(A || {}), ...Object.keys(B || {})]).forEach(id => { const x = (A || {})[id], y = (B || {})[id];
         if (JSON.stringify(x) === JSON.stringify(y)) return;
-        if (!y || y.length < full) gone++; else if (!x || x.length < full) placed++; else moved++; });
-      return [placed, moved, gone]; };
-    const [p1, m1, g1] = count(pa.at, pb.at, 3), [p2, m2, g2] = count(pa.bays, pb.bays, 4);
+        if (!y || y.length < full) { if (y && (!x || x.length < full)) faced++; else gone++; } else if (!x || x.length < full) placed++; else moved++; });
+      return [placed, moved, gone, faced]; };
+    const [p1, m1, g1, f1] = count(pa.at, pb.at, 3), [p2, m2, g2] = count(pa.bays, pb.bays, 4);
     const say = (n, what) => n ? out.push(`${n} ${n === 1 ? what[0] : what[1]}`) : 0;
     say(p1, ["connector placed", "connectors placed"]); say(m1, ["connector moved", "connectors moved"]); say(g1, ["connector's place cleared", "connectors' places cleared"]);
+    say(f1, ["connector given its face only", "connectors given their face only"]);
     say(p2 + m2, ["card bay placed or moved", "card bays placed or moved"]); say(g2, ["card bay's place cleared", "card bays' places cleared"]);
     return out;
   }
@@ -1005,7 +1030,138 @@ footer a { color: var(--muted); }
     if (a.fix) c.unshift(`<span class="chip info">FIX · ${a.fix.target === "builtin" ? "BUILT-IN" : "SHARED"}</span>`);
     if (a.fix?.target === "builtin" && a.labels.includes("accepted")) c.push(`<span class="chip warn">ACCEPTED · TO FIX IN THE APP</span>`);
     if (a.labels.includes("approved") && a.fix?.target !== "builtin") c.push(`<span class="chip warn">APPROVED · NOT PUBLISHED</span>`);
+    const x = !a.cat && !a.fix && a.sym ? aiOf(a) : null;
+    if (x?.busy) c.push(`<span class="chip info">AI · CHECKING…</span>`);
+    else if (x?.asked) c.push(`<span class="chip mute">AI · ASKED</span>`);
+    else if (x?.c) {
+      const v = x.c.head.verdict, k = x.c.review?.changes?.length || 0;
+      c.push(x.inUse ? `<span class="chip ok">AI VERSION IN USE</span>` : x.physIn ? `<span class="chip ok">AI PANELS IN USE</span>` : v === "error" ? `<span class="chip bad">AI · FAILED</span>` : x.stale ? `<span class="chip mute">AI · OUT OF DATE</span>`
+        : v === "ok" ? `<span class="chip ok">AI ✓ MATCHES</span>` : v === "changes" ? `<span class="chip warn">AI · ${k ? `${k} CHANGE${k > 1 ? "S" : ""}` : "CHANGES"}</span>`
+        : `<span class="chip mute">AI · ${v === "not_found" ? "NOT FOUND" : "UNSURE"}</span>`);
+      if (x.c.review?.duplicate?.of) c.push(`<span class="chip bad">AI · DUPLICATE?</span>`);
+    }
     return c.join("");
+  }
+  /* ---------- the AI check (the symbols repo's .github/workflows/ai-check.yml + scripts/ai/) ----------
+     Claude checks each new submission on GitHub and comments on its issue: a review (the device, what it changes in the
+     connectors and why, its sources, a duplicate it knows of, notes) and THE AI VERSION of the symbol (the connectors as
+     the maker lists them with the submitted port ids kept, the size and power, where each connector sits), as a json block
+     after a marker. Only a comment by the workflow's own account counts (anyone can comment on an issue). The check changes
+     nothing: "Use the AI version" writes it into the issue as an edit does (the original is kept there), then Approve
+     publishes as before. "Check again" adds the ai-check label, which the workflow listens for.
+     aiText / aiHash / aiRead copy scripts/ai/review.mjs submissionText / subHash / readCheck: keep them in step. */
+  const AI_BOT = "github-actions[bot]", AI_MARK = "sf-ai-check", AI_LABELS = ["ai-check", "ai-checking", "ai-checked", "ai-failed"];
+  function aiText(body) {
+    const m = /```json\s*([\s\S]*?)```/.exec(body || "");
+    if (m && m[1].trim()) return m[1].trim();
+    const t = String(body || ""), a = t.indexOf("{"), b = t.lastIndexOf("}");
+    return a < 0 || b < a ? "" : t.slice(a, b + 1);
+  }
+  function aiHash(body) { const s = aiText(body); let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, "0"); }
+  function aiRead(c) {
+    if (!c || c.user?.login !== AI_BOT) return null;
+    const m = new RegExp(`^\\s*<!--\\s*${AI_MARK}\\s+(\\{[^]*?\\})\\s*-->`).exec(c.body || "");
+    if (!m) return null;
+    let head; try { head = JSON.parse(m[1]); } catch { return null; }
+    const rest = (c.body || "").slice(m.index + m[0].length), b = /```json\s*([\s\S]*?)```/.exec(rest);
+    let data = null; if (b) { try { data = JSON.parse(b[1]); } catch {} }
+    return { head, symbol: data?.symbol || null, review: data?.review || null, at: c.created_at, id: c.id, url: c.html_url || "" };
+  }
+  // the comments of a submission that has an AI label, read again only when its comment count or updated_at moved
+  async function loadChecks() {
+    const want = state.queue.filter(a => !a.cat && a.labels.some(l => AI_LABELS.includes(l)));
+    await Promise.all(want.map(async a => {
+      const n = a.issue.number, key = `${a.issue.comments}|${a.issue.updated_at}`;
+      if (state.ai[n]?.key === key) return;
+      try {
+        const checks = (await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments?per_page=100`)).map(aiRead).filter(Boolean);
+        state.ai[n] = { key, check: checks[checks.length - 1] || null };
+      } catch { /* the next refresh tries again */ }
+    }));
+  }
+  // the latest check as it bears on the submission NOW: in use (the submission is the AI version), out of date (edited since)
+  function aiOf(a) {
+    const c = state.ai[a.issue.number]?.check || null, busy = a.labels.includes("ai-checking"), asked = a.labels.includes("ai-check");
+    if (!c) return { c, busy, asked };
+    let sym = null; try { sym = c.symbol && !L.validate(c.symbol).length ? L.normalise(c.symbol) : null; } catch {}
+    const inUse = !!(sym && a.sym && JSON.stringify(sym) === JSON.stringify(a.sym)), edited = c.head.base !== aiHash(a.issue.body);
+    // physNews = taking its size and panels would change the submission; physIn = edited since the check by doing just that
+    // (so say so, rather than "out of date"); neither means anything when the check found no size or places at all
+    const found = !!(sym?.phys && (sym.phys.mount || Object.keys(sym.phys.at || {}).length || Object.keys(sym.phys.bays || {}).length));
+    const same = found && a.sym && JSON.stringify(aiPhysOnly(a, sym)) === JSON.stringify(a.sym);
+    const physIn = !!(!inUse && edited && same);
+    const bare = s => ({ ...s, phys: undefined, width: 0 });
+    return { c, sym, busy, asked, inUse, physIn, stale: !inUse && !physIn && edited, diff: sym && a.sym ? diffSym(a.sym, sym) : [],
+      portsDiffer: !!(sym && a.sym && diffSym(bare(a.sym), bare(sym)).length), physNews: !!(found && a.sym && !same) };
+  }
+  // the submission's own ports with the AI version's size, power and places (by port id; a measured place beats a face alone)
+  function aiPhysOnly(a, sym) {
+    const cur = clone(a.sym), A = sym.phys || {}, B = cur.phys || {};
+    const pick = (x, y, full) => x?.length >= full ? x : y?.length >= full ? y : x || y;
+    const at = {}; cur.ports.forEach(p => { const v = pick(A.at?.[p.id], B.at?.[p.id], 3); if (v) at[p.id] = v; });
+    const bays = {}; (cur.slots || []).forEach(s => { const v = pick(A.bays?.[s.id], B.bays?.[s.id], 4); if (v) bays[s.id] = v; });
+    const fig = { ...B, ...A }; delete fig.at; delete fig.bays;
+    cur.phys = { ...fig, ...(Object.keys(at).length ? { at } : {}), ...(Object.keys(bays).length ? { bays } : {}) };
+    return L.normalise(cur);
+  }
+  const aiLink = u => /^https?:\/\//i.test(String(u || "")) ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(String(u).replace(/^https?:\/\/(www\.)?/i, "").slice(0, 70))}</a>` : "";
+  const aiPlaced = s => { const at = s.phys?.at || {}; let placed = 0, f = 0, r = 0;
+    s.ports.forEach(p => { const v = at[p.id]; if (!v) return; if (v[0] === "f") f++; else r++; if (v.length >= 3) placed++; });
+    return `${placed} of ${s.ports.length} connectors placed${f + r ? ` (${f} front, ${r} rear)` : ""}`; };
+  const AI_VERDICT = { ok: ["ok", "the connectors match the maker's data"], changes: ["warn", "changes suggested"], unsure: ["mute", "couldn't settle the connectors"],
+    not_found: ["mute", "device not identified"], error: ["bad", "didn't finish"] };
+  function aiHtml(a) {
+    if (a.cat || a.fix || !a.sym) return "";
+    const n = a.issue.number, x = aiOf(a), st = state.status[n], hold = st?.busy || st?.done;
+    const ask = (label, title) => `<button data-act="ai-ask" data-n="${n}" ${hold || x.busy || x.asked ? "disabled" : ""} title="${esc(title)}">${label}</button>`;
+    if (x.busy || x.asked) return `<div class="aicheck" data-ai="${n}"><div class="kit-h">AI CHECK · ${x.busy ? '<span class="spin"></span> CLAUDE IS CHECKING IT' : "ASKED FOR"}</div>
+      <div class="note">${x.busy ? "It looks up the device, its panels, size and power, which takes a few minutes. This card updates by itself." : "The AI check workflow picks it up within a minute, or at its next hourly run if today's limit is used up."}</div></div>`;
+    if (!x.c) return `<div class="aicheck" data-ai="${n}"><div class="row" style="margin-top:0"><span class="kit-h" style="margin:0">AI CHECK</span><span class="note">Not checked by Claude yet.</span>
+      ${ask("Ask Claude to check it", "Adds the ai-check label: the symbols repo's AI check researches the device and comments")}</div></div>`;
+    const c = x.c, h = c.head, r = c.review || {}, v = AI_VERDICT[h.verdict] || AI_VERDICT.unsure;
+    const when = `${esc(h.model || "Claude")} · ${ago(c.at)} · about $${(+h.usd || 0).toFixed(2)}`;
+    const more = c.url ? `<a class="note" href="${esc(c.url)}" target="_blank" rel="noopener">its comment on GitHub ↗</a>` : "";
+    if (h.verdict === "error") return `<div class="aicheck" data-ai="${n}"><div class="kit-h">AI CHECK · <b class="v-bad">DIDN'T FINISH</b> · ${when}</div>
+      <div class="msg bad">${esc(h.msg || "The check stopped part way.")}</div><div class="row">${ask("↻ Check again", "Adds the ai-check label: Claude tries again")}${more}</div></div>`;
+    const msgs = [], dev = [r.device?.maker, r.device?.model].filter(Boolean).join(" ");
+    if (dev || r.device?.url) msgs.push(`<div class="msg"><b>Device:</b> ${esc(dev || "?")}${r.device?.url ? ` · ${aiLink(r.device.url)}` : ""}</div>`);
+    if (r.changes?.length) msgs.push(`<div class="msg warn"><b>What it changes in the connectors:</b><ul>${r.changes.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>`);
+    if (x.sym) msgs.push(`<div class="msg"><b>Size and power:</b> ${esc(physLine(x.sym))} · <b>Panels:</b> ${esc(aiPlaced(x.sym))}</div>`);
+    else if (h.verdict !== "not_found") msgs.push(`<div class="msg">No AI version: its answer had no symbol that passes the library's checks.</div>`);
+    if (r.duplicate?.of) msgs.push(`<div class="msg bad"><b>The AI says the library already has this device:</b> ${esc(r.duplicate.of)}${r.duplicate.why ? ` (${esc(r.duplicate.why)})` : ""}.</div>`);
+    (r.warnings || []).forEach(w => msgs.push(`<div class="msg warn">${esc(w)}</div>`));
+    if (r.notes) msgs.push(`<div class="msg"><b>Notes:</b> ${esc(r.notes)}</div>`);
+    if (x.inUse) msgs.push(`<div class="msg ok">The submission is the AI version now: <b>Approve</b> publishes it.</div>`);
+    else if (x.physIn) msgs.push(`<div class="msg ok">The submission has the AI check's size, power and panels now; its changes to the connectors are not taken.</div>`);
+    else if (x.stale) msgs.push(`<div class="msg warn">This check was made on an earlier version of the submission, which has been edited since. <b>Check again</b> checks what is there now.</div>`);
+    else if (x.sym && !x.diff.length) msgs.push(`<div class="msg ok">The AI version is the same as the submission.</div>`);
+    const diff = x.sym && !x.inUse && x.diff.length ? `<details ${x.diff.length <= 10 ? "open" : ""}><summary>WHAT TAKING THE AI VERSION CHANGES (${x.diff.length})</summary><ul class="ai-src">${x.diff.map(d => `<li>${esc(d)}</li>`).join("")}</ul></details>` : "";
+    const src = r.sources?.length ? `<details><summary>ITS SOURCES (${r.sources.length})</summary><ul class="ai-src">${r.sources.map(s => `<li>${esc(s.what)}: ${aiLink(s.url)}${s.quote ? ` <q>${esc(s.quote)}</q>` : ""}</li>`).join("")}</ul></details>` : "";
+    const take = x.sym && !x.inUse && x.diff.length > 0;
+    const row = `<div class="row">
+      ${take ? `<button class="primary" data-act="ai-use" data-n="${n}" ${hold ? "disabled" : ""} title="Writes the AI version into the issue as an edit does (the original is kept there); Approve then publishes it">Use the AI version</button>` : ""}
+      ${take && x.portsDiffer && x.physNews ? `<button data-act="ai-phys" data-n="${n}" ${hold ? "disabled" : ""} title="Keeps the submitted connectors and takes only the AI version's size, power and connector places">Use only its size and panels</button>` : ""}
+      ${ask("↻ Check again", "Adds the ai-check label: Claude checks the submission as it is now")}${more}</div>`;
+    return `<details class="aicheck" data-ai="${n}" open><summary>AI CHECK · <b class="v-${v[0]}">${esc(v[1].toUpperCase())}</b> · ${when}</summary>
+      <div class="ai-b"><div class="msgs">${msgs.join("")}${diff}${src}${row}</div>
+        ${x.sym ? `<div class="ai-prev"><div class="note">THE AI VERSION</div>${preview(x.sym)}</div>` : ""}</div>
+      ${x.sym && hasPlaces(x.sym) ? `<div class="kitrow"><div class="kit-h">THE AI VERSION'S PANELS</div><div data-kit="panels" data-src="a:${n}"></div></div>` : ""}
+    </details>`;
+  }
+  async function askAi(n) {
+    setStatus(n, "busy", "Asking Claude…");
+    try {
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/labels`, { method: "POST", body: JSON.stringify({ labels: ["ai-check"] }) });
+      const a = state.queue.find(x => x.issue.number === n); if (a && !a.labels.includes("ai-check")) a.labels.push("ai-check");
+      setStatus(n, "ok", "Asked. The check runs on GitHub and takes a few minutes; this card updates by itself.");
+      setTimeout(() => { if (state.status[n]?.kind === "ok") { delete state.status[n]; render(); } }, 8000);
+    } catch (e) { setStatus(n, "bad", e.status === 403 || e.status === 404 ? "The token can't edit issues. Give it Issues: Read and write." : e.message); }
+  }
+  async function useAi(n, how) {
+    const a = state.queue.find(x => x.issue.number === n); if (!a?.sym) return;
+    const x = aiOf(a); if (!x.sym) return;
+    const sym = how === "phys" ? aiPhysOnly(a, x.sym) : x.sym;
+    await writeSym(n, sym, diffSym(a.sym, sym), how === "phys" ? "✎ Took the AI check's size, power and panels before approval" : "✎ Took the AI check's version before approval");
   }
   /* ---------- category suggestions ----------
      Approve runs the same label flow as a symbol (approve()). Edit renames the category or takes symbols out, written
@@ -1144,6 +1300,7 @@ footer a { color: var(--muted); }
         </div>
       </div>
       ${s && a.fix?.target !== "builtin" ? `<details class="kitrow" ${hasPlaces(s) ? "open" : ""}><summary>PANELS${hasPlaces(s) ? "" : " · no connector places in this submission"}</summary><div data-kit="panels" data-src="q:${n}"></div></details>` : ""}
+      ${aiHtml(a)}
       ${state.fixing[n] ? `<div class="reject">
           <label class="note" for="ver${n}">Which app version has the fix? (posted on the issue)</label>
           <input id="ver${n}" placeholder="e.g. 1.27.0" maxlength="20" style="max-width:200px">
@@ -1323,8 +1480,11 @@ footer a { color: var(--muted); }
   }
   async function saveEdit(n) {
     const a = state.queue.find(x => x.issue.number === n), ed = state.edit[n]; if (!a || !ed) return;
-    const changes = diffSym(ed.orig, ed.sym);
-    if (L.validate(ed.sym).length || !changes.length) return;
+    await writeSym(n, ed.sym, diffSym(ed.orig, ed.sym), "✎ Edited before approval", () => { delete state.edit[n]; });
+  }
+  // a symbol written into the issue: the desk's own edit, or the AI check's version taken (said = the comment's first line)
+  async function writeSym(n, sym, changes, said, wrote) {
+    if (L.validate(sym).length || !changes.length) return;
     setStatus(n, "busy", "Saving to the issue…");
     try {
       const fresh = await gh(`/repos/${OWNER}/${REPO}/issues/${n}`);
@@ -1334,15 +1494,15 @@ footer a { color: var(--muted); }
       // replace ONLY the first json block, so whatever else the issue says (a fix's note, target and the
       // current symbol) survives; then the edited-by line and the first-ever original after it
       const old = fresh.body || "", first = new RegExp(T3 + "json\\s*[\\s\\S]*?" + T3).exec(old);
-      const block = `${T3}json\n${JSON.stringify(ed.sym)}\n${T3}`;
+      const block = `${T3}json\n${JSON.stringify(sym)}\n${T3}`;
       const tail = `\n\n_Edited by @${me.login} before approval._` + (prior ? "" : `\n\n<details><summary>Original submission</summary>\n\n${T3}text\n${origJson}\n${T3}\n</details>`);
       let body = first ? old.slice(0, first.index) + block + tail + old.slice(first.index + first[0].length).replace(/^\s*_Edited by @[^\n]*before approval\._/, "")
                        : `${MARK}.\n\n${block}${tail}\n`;
       // GitHub's issue LIST can serve the old body for a minute after an edit, so the issue the PATCH returns
       // is kept and used until the list's updated_at catches up (a saved edit used to vanish on refresh)
       state.saved[n] = await gh(`/repos/${OWNER}/${REPO}/issues/${n}`, { method: "PATCH", body: JSON.stringify({ body }) });
-      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments`, { method: "POST", body: JSON.stringify({ body: `✎ Edited before approval:\n\n${changes.map(c => "- " + c).join("\n")}\n\nThe original is kept at the bottom of the issue.` }) });
-      delete state.edit[n];
+      await gh(`/repos/${OWNER}/${REPO}/issues/${n}/comments`, { method: "POST", body: JSON.stringify({ body: `${said}:\n\n${changes.map(c => "- " + c).join("\n")}\n\nThe original is kept at the bottom of the issue.` }) });
+      wrote?.();
       setStatus(n, "ok", "Saved. The checker re-runs on GitHub; approve when you're happy.");
       await refresh(); render();
       setTimeout(() => { if (state.status[n]?.kind === "ok") { delete state.status[n]; render(); } }, 6000);
@@ -1414,6 +1574,7 @@ footer a { color: var(--muted); }
     state.catOpen = issues.filter(isCatalogIssue);
     state.done = closed.filter(i => isSubmission(i) || isCatalogIssue(i));
     state.closedEarly = closed.filter(i => unreviewed(i) && Date.now() - new Date(i.closed_at) < 30 * 864e5);
+    await loadChecks();
   }
   async function boot() {
     $("#app").innerHTML = `<div class="empty"><span class="spin"></span> Connecting…</div>`;
@@ -1527,6 +1688,9 @@ footer a { color: var(--muted); }
     if (b.dataset.act === "reject-cancel") { state.rejecting[n] = false; render(); }
     if (b.dataset.act === "reject-go") reject(n);
     if (b.dataset.act === "reopen") reopen(n);
+    if (b.dataset.act === "ai-ask") askAi(n);
+    if (b.dataset.act === "ai-use") useAi(n, "all");
+    if (b.dataset.act === "ai-phys") useAi(n, "phys");
   });
   document.addEventListener("input", e => {
     // the Symbols tab's search redraws the list as you type, and keeps the caret where it was
@@ -1553,6 +1717,8 @@ footer a { color: var(--muted); }
   // the categories panel stays open or shut across redraws ("toggle" does not bubble, so listen while it travels down)
   document.addEventListener("toggle", e => { if (e.target.matches?.("[data-sy-cats]")) sy.showCats = e.target.open; }, true);
   setInterval(quietRefresh, 120000);
+  // while Claude is checking a submission (or has been asked to), look every 30 s, so the result shows soon after it lands
+  setInterval(() => { if (state.queue.some(a => a.labels.includes("ai-checking") || a.labels.includes("ai-check"))) quietRefresh(); }, 30000);
   // reopening the phone app resumes the old page, so check again when it comes back after a while
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - lastQuiet > 30000) quietRefresh(); });
   if ("serviceWorker" in navigator && window.isSecureContext) navigator.serviceWorker.register("sw.js").catch(() => {});
