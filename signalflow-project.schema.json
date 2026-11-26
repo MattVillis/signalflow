@@ -163,6 +163,7 @@
         },
         "collapsed": { "type": "boolean" },
         "ifPattern": { "type": "string", "maxLength": 20 },
+        "lagStatic": { "type": "array", "items": { "type": "string" }, "description": "The LAGs (by their ports lag label) that are static rather than LACP in the switch change set (2.3.1)." },
         "rack": {
           "type": "object", "required": ["id", "u", "x"],
           "properties": { "id": { "$ref": "#/$defs/id" }, "u": { "type": "integer", "minimum": 1 }, "x": { "type": "number", "minimum": 0 }, "rear": { "type": "boolean" },
