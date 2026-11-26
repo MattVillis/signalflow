@@ -78,6 +78,7 @@
         "trunk": { "type": "boolean" },
         "lag": { "type": "string", "maxLength": 8 },
         "ip": { "type": "string" },
+        "module": { "type": "string", "maxLength": 24, "description": "The SFP module in a cage port (2.3.0)." },
         "universe": { "type": "string", "pattern": "^(0|[1-9][0-9]{0,4})$" },
         "protocol": { "enum": ["SACN", "ART-NET"] }
       }
@@ -167,7 +168,8 @@
           "properties": { "id": { "$ref": "#/$defs/id" }, "u": { "type": "integer", "minimum": 1 }, "x": { "type": "number", "minimum": 0 }, "rear": { "type": "boolean" },
             "turn": { "type": "boolean", "description": "Turned round, its front panel to the back of the rack (2.2.0). Absent: turned when rear." },
             "group": { "type": "string", "maxLength": 40, "description": "Ties devices in one rack together (2.2.0)." },
-            "post": { "enum": ["l", "r"], "description": "A vertical strip's upright, seen from the front (2.2.0)." } }
+            "post": { "enum": ["l", "r"], "description": "A vertical strip's upright, seen from the front (2.2.0)." },
+            "mid": { "type": "boolean", "description": "Hangs from the mid rails (2.3.0)." } }
         }
       }
     },
@@ -255,8 +257,15 @@
         "name": { "type": "string", "maxLength": 24 },
         "u": { "type": "integer", "minimum": 1, "maximum": 60 },
         "depth": { "type": "number", "minimum": 1, "maximum": 2000 },
+        "mid": { "type": "number", "minimum": 1, "maximum": 1950, "description": "Mid rails, mm behind the front rails (2.3.0)." },
         "row": { "type": "integer", "minimum": 0 }, "col": { "type": "integer", "minimum": 0 },
-        "acc": { "type": "array", "maxItems": 120, "items": { "$ref": "#/$defs/accessory" } }
+        "acc": { "type": "array", "maxItems": 120, "items": { "$ref": "#/$defs/accessory" } },
+        "notes": {
+          "type": "array", "maxItems": 60, "description": "Notes on the Racks tab (2.3.0).",
+          "items": { "type": "object", "required": ["id", "text"], "properties": {
+            "id": { "type": "string", "minLength": 1, "maxLength": 40 }, "x": { "type": "number" }, "y": { "type": "number" },
+            "text": { "type": "string", "minLength": 1, "maxLength": 400 }, "size": { "enum": [9, 14, 22] }, "view": { "enum": ["front", "rear", "side"] } } }
+        }
       }
     },
     "accessory": {
@@ -264,7 +273,7 @@
       "required": ["id", "kind"],
       "properties": {
         "id": { "type": "string", "minLength": 1, "maxLength": 40 },
-        "kind": { "enum": ["blank", "brush", "fan", "drawer", "patch"] },
+        "kind": { "enum": ["blank", "brush", "vent", "fan", "drawer", "shelf", "patch"] },
         "u": { "type": "integer", "minimum": 1, "maximum": 60 },
         "h": { "type": "integer", "minimum": 1, "maximum": 60 },
         "face": { "enum": ["f", "r"] },

@@ -250,6 +250,7 @@ reads that pattern, and the app does not re-key a file's ids.</p>
 <tr><td><code>gap</code></td><td><code>true</code></td><td>Leaves a gap above this port, to group ports.</td></tr>
 <tr><td><code>vlan</code>, <code>tagged</code>, <code>trunk</code>, <code>lag</code></td><td>string, string[], <code>true</code>, string ≤8</td><td>Network and fibre ports only. <code>vlan</code> is the untagged VLAN (a trunk's native) by its number. <code>tagged</code> lists VLAN numbers carried tagged. <code>trunk</code> marks a trunk. Ports sharing a <code>lag</code> label are one aggregated link.</td></tr>
 <tr><td><code>ip</code></td><td>string</td><td>An address on this port, for a device with more than one network port.</td></tr>
+<tr><td><code>module</code></td><td>string ≤24</td><td>(2.3.0) The SFP module in a cage port (connector SFP, SFP+, SFP28, QSFP+ or QSFP28), as typed: an optic such as <code>"10GBASE-LR"</code> or <code>"10G BIDI 1270"</code>, or <code>"DAC"</code>. Each end of a cable has its own.</td></tr>
 <tr><td><code>universe</code>, <code>protocol</code></td><td>digit string, <code>"SACN"</code> / <code>"ART-NET"</code></td><td>A DMX output's universe (no leading zeros): 1–63999, or 0–32767 for Art-Net.</td></tr>
 </table>
 <h3>Connectors, by signal kind</h3>
@@ -318,7 +319,7 @@ desks, so that cables on older drawings stay put). A port id on a built-in is no
 <tr><td><code>override</code></td><td><code>{width?, ports}</code></td><td>This device's own port list, replacing its symbol's. <code>ports</code> is the <b>complete, expanded</b> list. Keep the symbol's port ids for the ports it shares with it.</td></tr>
 <tr><td><code>collapsed</code></td><td><code>true</code></td><td>Draws only the ports something is plugged into.</td></tr>
 <tr><td><code>ifPattern</code></td><td>string</td><td>A Network symbol's port names on its own CLI, with <code>{n}</code> counting its network ports, e.g. <code>"1/0/{n}"</code>.</td></tr>
-<tr><td><code>rack</code></td><td><code>{id, u, x, rear?, turn?, group?, post?}</code></td><td>Its place in a rack. A vertical strip (2.2.0) stands on an upright: <code>post</code> is <code>"l"</code> or <code>"r"</code> seen from the front, <code>rear: true</code> the rear uprights, <code>u</code> the unit its foot is at, and <code>x</code> is 0. <code>u</code> is the lowest unit it fills, 1 = the bottom. <code>x</code> is millimetres from the left of the 450 mm opening, seen from the front. <code>rear: true</code> hangs it from the rear rails. <code>turn</code> (2.2.0) says which way round it is: <code>true</code> = its front panel faces the back of the rack. Without <code>turn</code> a unit on the rear rails is turned round, which is what <code>rear</code> alone meant before 2.2.0, so write <code>turn: false</code> for one on the rear rails that faces the front. <code>group</code> (2.2.0, a string) ties devices in one rack together: the rack view moves them as one. The rack must be in <code>racks</code>.</td></tr>
+<tr><td><code>rack</code></td><td><code>{id, u, x, rear?, mid?, turn?, group?, post?}</code></td><td>Its place in a rack. <code>mid: true</code> (2.3.0) hangs it from the rack's mid rails (a rack without them reads it as the front rails). A vertical strip (2.2.0) stands on an upright: <code>post</code> is <code>"l"</code> or <code>"r"</code> seen from the front, <code>rear: true</code> the rear uprights, <code>u</code> the unit its foot is at, and <code>x</code> is 0. <code>u</code> is the lowest unit it fills, 1 = the bottom. <code>x</code> is millimetres from the left of the 450 mm opening, seen from the front. <code>rear: true</code> hangs it from the rear rails. <code>turn</code> (2.2.0) says which way round it is: <code>true</code> = its front panel faces the back of the rack. Without <code>turn</code> a unit on the rear rails is turned round, which is what <code>rear</code> alone meant before 2.2.0, so write <code>turn: false</code> for one on the rear rails that faces the front. <code>group</code> (2.2.0, a string) ties devices in one rack together: the rack view moves them as one. The rack must be in <code>racks</code>.</td></tr>
 </table>
 <p>Two kinds of device are made by the app and are best left to it:</p>
 <ul>
@@ -411,9 +412,14 @@ drawn.</p>
 
 <section id="racks">
 <h2>16. Racks and accessories</h2>
-<p><code>racks</code> is <code>[{id, name, u, depth?, row?, col?, acc?}]</code>:</p>
+<p><code>racks</code> is <code>[{id, name, u, depth?, mid?, row?, col?, acc?, notes?}]</code>:</p>
 <ul>
-  <li><b>The frame:</b> <code>u</code> is its height in units (1–60, default 42) and <code>depth</code> its depth in millimetres (default 800).</li>
+  <li><b>The frame:</b> <code>u</code> is its height in units (1–60, default 42) and <code>depth</code> its depth in millimetres (default 800).
+    <code>mid</code> (2.3.0) gives it mid rails, that many millimetres behind the front rails; without it there are none.</li>
+  <li><b>Notes</b> (2.3.0): <code>notes</code> is <code>[{id, x, y, text, size?, view?}]</code>, text written on the Racks tab. <code>x</code> and
+    <code>y</code> are millimetres from the top left of the rack's frame, <code>text</code> may hold line breaks (up to 400 characters),
+    <code>size</code> is the text height in millimetres (9, 14 or 22; 14 when not given) and <code>view</code> is <code>"front"</code>,
+    <code>"rear"</code> or <code>"side"</code>, the one view it shows in (none: every view).</li>
   <li><b>The layout:</b> <code>row</code> and <code>col</code> place it in the Racks tab's grid. Without them, racks stand in one row in list order.</li>
   <li><b>Devices:</b> they go in a rack by their own <code>rack</code> key (<a href="#devices">Devices</a>).</li>
 </ul>
@@ -421,11 +427,12 @@ drawn.</p>
 <ul>
   <li><b>Every accessory:</b> <code>{id, kind, u, h, face, label?}</code>.
     <ul>
-      <li><code>kind</code> is <code>blank</code>, <code>brush</code>, <code>fan</code>, <code>drawer</code> or <code>patch</code>.</li>
+      <li><code>kind</code> is <code>blank</code>, <code>brush</code>, <code>vent</code> (2.3.0), <code>fan</code>, <code>drawer</code>, <code>shelf</code> (2.3.0) or <code>patch</code>.</li>
       <li><code>u</code> is its lowest unit and <code>h</code> its height in units.</li>
       <li><code>face</code> is the rails it is on: <code>"f"</code> or <code>"r"</code>.</li>
     </ul></li>
-  <li><b>A drawer</b> takes <code>depth</code> (mm), and <b>a fan panel</b> takes <code>fans</code> (1–12).</li>
+  <li><b>A drawer</b> and <b>a shelf</b> take <code>depth</code> (mm), and <b>a fan panel</b> takes <code>fans</code> (1–12). What stands on a shelf is
+    not stored with it: a device on the shelf's rails whose lowest U is one of its rows stands on it, and moves with it.</li>
   <li><b>A patch panel</b> takes <code>rows</code> (1–6), <code>cols</code> (1–48) and <code>ports</code>.
     <ul>
       <li><code>ports</code> is <code>[{c, l?, m?}]</code> in reading order: <code>c</code> is a connector, <code>l</code> a label, and
@@ -483,6 +490,7 @@ of anything this page leaves unclear.</p>
 <tr><td>4</td><td>2.0.9</td><td>A cable's <code>cable</code> and <code>len</code>, <code>meta.units</code>, <code>styles.cableLabels</code>.</td></tr>
 <tr><td>4</td><td>2.0.11</td><td>A device's <code>host</code>, <code>mac</code> and <code>asset</code>; a sheet's <code>title</code>; <code>meta.rev</code>, <code>status</code> and <code>revDate</code>.</td></tr>
 <tr><td>4</td><td>2.0.12</td><td>No new keys. Missing ids and unworkable values are repaired on load (<a href="#fills">17</a>). This page and the schema.</td></tr>
+<tr><td>4</td><td>2.3.0</td><td>A rack's <code>mid</code> and <code>notes</code>; a device's <code>rack.mid</code>; the accessories <code>vent</code> and <code>shelf</code>; a port's <code>module</code>.</td></tr>
 <tr><td>4</td><td>2.2.0</td><td>A device's <code>rack.turn</code>, <code>rack.group</code> and <code>rack.post</code>; a cable's <code>loom</code>; <code>meta.volts</code>; <code>phys.poe</code>, <code>mount: "vertical"</code> and a card connector's own place in <code>phys.at</code>; a patch panel's <code>w</code> and <code>x</code> and its <code>"EMPTY"</code> positions. Connectors UK 13A and IEC C5 to C8.</td></tr>
 </table>
 </section>
