@@ -42,6 +42,7 @@
         "status": { "type": "string", "maxLength": 32 },
         "revDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
         "units": { "const": "ft" },
+        "volts": { "type": "number", "minimum": 90, "maximum": 480, "description": "The POWER list's mains voltage (2.2.0); absent = 230." },
         "page": {
           "oneOf": [
             { "type": "null" },
@@ -113,13 +114,14 @@
         "phys": {
           "type": "object",
           "properties": {
-            "mount": { "enum": ["rack", "shelf", "none"] },
+            "mount": { "enum": ["rack", "shelf", "none", "vertical"] },
             "ru": { "type": "integer", "minimum": 1, "maximum": 60 },
             "width": { "enum": ["full", "half", "third", "quarter"] },
             "mm": { "type": "object", "properties": { "w": { "type": "number" }, "h": { "type": "number" }, "d": { "type": "number" } } },
             "kg": { "type": "number", "minimum": 0 },
             "watts": { "type": "integer", "minimum": 0 },
             "btu": { "type": "integer", "minimum": 0 },
+            "poe": { "type": "integer", "minimum": 0, "description": "A switch's PoE budget, watts (2.2.0)." },
             "at": { "type": "object", "additionalProperties": { "type": "array", "prefixItems": [{ "enum": ["f", "r"] }, { "type": "number" }, { "type": "number" }], "minItems": 1, "maxItems": 3 } },
             "bays": { "type": "object", "additionalProperties": { "type": "array", "prefixItems": [{ "enum": ["f", "r"] }, { "type": "number" }, { "type": "number" }, { "type": "number" }], "minItems": 1, "maxItems": 4 } }
           }
@@ -162,7 +164,10 @@
         "ifPattern": { "type": "string", "maxLength": 20 },
         "rack": {
           "type": "object", "required": ["id", "u", "x"],
-          "properties": { "id": { "$ref": "#/$defs/id" }, "u": { "type": "integer", "minimum": 1 }, "x": { "type": "number", "minimum": 0 }, "rear": { "type": "boolean" } }
+          "properties": { "id": { "$ref": "#/$defs/id" }, "u": { "type": "integer", "minimum": 1 }, "x": { "type": "number", "minimum": 0 }, "rear": { "type": "boolean" },
+            "turn": { "type": "boolean", "description": "Turned round, its front panel to the back of the rack (2.2.0). Absent: turned when rear." },
+            "group": { "type": "string", "maxLength": 40, "description": "Ties devices in one rack together (2.2.0)." },
+            "post": { "enum": ["l", "r"], "description": "A vertical strip's upright, seen from the front (2.2.0)." } }
         }
       }
     },
@@ -182,7 +187,8 @@
         "off": { "type": "number" },
         "no": { "type": "integer", "minimum": 1 },
         "cable": { "type": "string", "maxLength": 40 },
-        "len": { "type": "number", "exclusiveMinimum": 0, "maximum": 10000, "description": "Metres, whatever meta.units shows." }
+        "len": { "type": "number", "exclusiveMinimum": 0, "maximum": 10000, "description": "Metres, whatever meta.units shows." },
+        "loom": { "type": "string", "maxLength": 32, "description": "The loom or multicore it runs in (2.2.0)." }
       }
     },
     "note": {
@@ -271,7 +277,9 @@
           "type": "array",
           "items": { "type": "object", "properties": { "c": { "type": "string", "maxLength": 20 }, "l": { "type": "string", "maxLength": 16 }, "m": { "const": true } } }
         },
-        "flip": { "const": true }
+        "flip": { "const": true },
+        "w": { "type": "integer", "minimum": 40, "maximum": 449, "description": "A patch panel narrower than the rack, mm (2.2.0)." },
+        "x": { "type": "number", "minimum": 0, "description": "Its place across the opening, mm from the left seen from the front (2.2.0)." }
       }
     }
   }

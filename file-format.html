@@ -168,6 +168,7 @@ reads that pattern, and the app does not re-key a file's ids.</p>
 <tr><td><code>revDate</code></td><td><code>"YYYY-MM-DD"</code></td><td>The title block's DATE (2.0.11). Without it, DATE is the day of the export.</td></tr>
 <tr><td><code>page</code></td><td>object or absent</td><td>The paper. Absent or <code>null</code> = no page frame. See below.</td></tr>
 <tr><td><code>units</code></td><td><code>"ft"</code> or absent</td><td>Shows cable lengths in feet. Lengths are always stored in metres.</td></tr>
+<tr><td><code>volts</code></td><td>number, 90–480, or absent</td><td>The mains voltage the POWER list works its amps out at (2.2.0). Absent = 230.</td></tr>
 <tr><td><code>logo</code></td><td>data URL</td><td>A client logo in the title block: PNG, JPEG or SVG as a <code>data:</code> URL. Keep it small: about 520 × 200 pixels is what the app stores.</td></tr>
 <tr><td><code>logoPos</code></td><td><code>"top"</code>, <code>"left"</code>, <code>"right"</code></td><td>Where the logo sits; default top.</td></tr>
 <tr><td><code>logoSize</code></td><td>number, 24–180</td><td>The strip's height (top) or the column's width (left, right), in title-block units. Default 40 for top, 90 for left and right.</td></tr>
@@ -221,13 +222,18 @@ reads that pattern, and the app does not re-key a file's ids.</p>
 </ul>
 <h3>Physical data: phys</h3>
 <ul>
-  <li><b><code>mount</code>:</b> <code>"rack"</code>, <code>"shelf"</code> or <code>"none"</code>.</li>
+  <li><b><code>mount</code>:</b> <code>"rack"</code>, <code>"shelf"</code>, <code>"none"</code> or <code>"vertical"</code> (2.2.0: a vertical
+    strip, 0U, that stands on an upright beside the rails; <code>mm.h</code> is its length and <code>mm.w</code> its width).</li>
   <li><b>Rack units:</b> <code>ru</code> is 1–60, and <code>width</code> is <code>"full"</code>, <code>"half"</code>, <code>"third"</code>
     or <code>"quarter"</code>.</li>
   <li><b>Size and power:</b> <code>mm</code> is <code>{w, h, d}</code> in millimetres; <code>kg</code> is a number; <code>watts</code> and
     <code>btu</code> are whole numbers.</li>
+  <li><b>PoE budget:</b> <code>poe</code> is a whole number of watts, what a switch can feed over PoE (2.2.0). It may sit in a block
+    with no <code>mount</code>.</li>
   <li><b>Where each connector is on the panels:</b> <code>at</code> is <code>{&lt;port id&gt;: ["f"|"r", x, y]}</code>, with x and y in
-    percent of that face as seen looking at it. A card's bay goes in <code>bays</code>: <code>{&lt;slot id&gt;: ["f"|"r", x, y, width]}</code>.</li>
+    percent of that face as seen looking at it. A card's bay goes in <code>bays</code>: <code>{&lt;slot id&gt;: ["f"|"r", x, y, width]}</code>.
+    Since 2.2.0 a card's connector may have a place of its own in <code>at</code>, under the id the app gives a card's port,
+    <code>&lt;slot id&gt;.&lt;port id&gt;</code>; the card's other connectors keep to its bay.</li>
 </ul>
 </section>
 
@@ -312,7 +318,7 @@ desks, so that cables on older drawings stay put). A port id on a built-in is no
 <tr><td><code>override</code></td><td><code>{width?, ports}</code></td><td>This device's own port list, replacing its symbol's. <code>ports</code> is the <b>complete, expanded</b> list. Keep the symbol's port ids for the ports it shares with it.</td></tr>
 <tr><td><code>collapsed</code></td><td><code>true</code></td><td>Draws only the ports something is plugged into.</td></tr>
 <tr><td><code>ifPattern</code></td><td>string</td><td>A Network symbol's port names on its own CLI, with <code>{n}</code> counting its network ports, e.g. <code>"1/0/{n}"</code>.</td></tr>
-<tr><td><code>rack</code></td><td><code>{id, u, x, rear?}</code></td><td>Its place in a rack. <code>u</code> is the lowest unit it fills, 1 = the bottom. <code>x</code> is millimetres from the left of the 450 mm opening, seen from the front. <code>rear: true</code> faces it to the back. The rack must be in <code>racks</code>.</td></tr>
+<tr><td><code>rack</code></td><td><code>{id, u, x, rear?, turn?, group?, post?}</code></td><td>Its place in a rack. A vertical strip (2.2.0) stands on an upright: <code>post</code> is <code>"l"</code> or <code>"r"</code> seen from the front, <code>rear: true</code> the rear uprights, <code>u</code> the unit its foot is at, and <code>x</code> is 0. <code>u</code> is the lowest unit it fills, 1 = the bottom. <code>x</code> is millimetres from the left of the 450 mm opening, seen from the front. <code>rear: true</code> hangs it from the rear rails. <code>turn</code> (2.2.0) says which way round it is: <code>true</code> = its front panel faces the back of the rack. Without <code>turn</code> a unit on the rear rails is turned round, which is what <code>rear</code> alone meant before 2.2.0, so write <code>turn: false</code> for one on the rear rails that faces the front. <code>group</code> (2.2.0, a string) ties devices in one rack together: the rack view moves them as one. The rack must be in <code>racks</code>.</td></tr>
 </table>
 <p>Two kinds of device are made by the app and are best left to it:</p>
 <ul>
@@ -335,6 +341,7 @@ desks, so that cables on older drawings stay put). A port id on a built-in is no
 <tr><td><code>no</code></td><td>whole number ≥1</td><td>The cable number (C001). Leave it out: the app numbers new cables and keeps numbers it is given.</td></tr>
 <tr><td><code>cable</code></td><td>string, ≤40</td><td>The cable type as ordered: CAT6A, 12G SDI, OM3 LC–LC (2.0.9).</td></tr>
 <tr><td><code>len</code></td><td>number</td><td>Its length in <b>metres</b>, whatever the project shows (2.0.9).</td></tr>
+<tr><td><code>loom</code></td><td>string, ≤32</td><td>The loom or multicore it runs in (2.2.0): cables with the same name are listed together.</td></tr>
 </table>
 <h3>A cable to another sheet</h3>
 <p>Store it on the sheet of end <code>a</code>. Give end <code>b</code> the far sheet's id, as in
@@ -422,7 +429,10 @@ drawn.</p>
   <li><b>A patch panel</b> takes <code>rows</code> (1–6), <code>cols</code> (1–48) and <code>ports</code>.
     <ul>
       <li><code>ports</code> is <code>[{c, l?, m?}]</code> in reading order: <code>c</code> is a connector, <code>l</code> a label, and
-        <code>m: true</code> makes an XLR male.</li>
+        <code>m: true</code> makes an XLR male. <code>c</code> may be <code>"D HOLE"</code>, <code>"D BLANK"</code> or (2.2.0)
+        <code>"EMPTY"</code>, a position with nothing in it.</li>
+      <li><code>w</code> and <code>x</code> (2.2.0): a panel narrower than the rack, <code>w</code> millimetres wide (40–449) and
+        <code>x</code> millimetres from the left of the 450 mm opening, seen from the front. Without <code>w</code> it is full width.</li>
       <li>The app gives every patch panel a symbol on a sheet, so its connectors can be cabled.</li>
     </ul></li>
 </ul>
@@ -473,6 +483,7 @@ of anything this page leaves unclear.</p>
 <tr><td>4</td><td>2.0.9</td><td>A cable's <code>cable</code> and <code>len</code>, <code>meta.units</code>, <code>styles.cableLabels</code>.</td></tr>
 <tr><td>4</td><td>2.0.11</td><td>A device's <code>host</code>, <code>mac</code> and <code>asset</code>; a sheet's <code>title</code>; <code>meta.rev</code>, <code>status</code> and <code>revDate</code>.</td></tr>
 <tr><td>4</td><td>2.0.12</td><td>No new keys. Missing ids and unworkable values are repaired on load (<a href="#fills">17</a>). This page and the schema.</td></tr>
+<tr><td>4</td><td>2.2.0</td><td>A device's <code>rack.turn</code>, <code>rack.group</code> and <code>rack.post</code>; a cable's <code>loom</code>; <code>meta.volts</code>; <code>phys.poe</code>, <code>mount: "vertical"</code> and a card connector's own place in <code>phys.at</code>; a patch panel's <code>w</code> and <code>x</code> and its <code>"EMPTY"</code> positions. Connectors UK 13A and IEC C5 to C8.</td></tr>
 </table>
 </section>
 
